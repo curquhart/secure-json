@@ -15,7 +15,7 @@ class ListReader implements IReader<List<Object>> {
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) {
-        return parIterator.peek() == '[';
+        return parIterator.peek() == JSONSymbolCollection.Token.L_BRACE.getShortSymbol();
     }
 
     @Override
