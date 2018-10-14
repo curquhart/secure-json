@@ -3,8 +3,6 @@ package com.chelseaurquhart.securejson;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedUnicodeValueException;
 
-import io.github.novacrypto.SecureCharBuffer;
-
 import java.io.IOException;
 
 class StringReader implements IReader<CharSequence> {
@@ -12,18 +10,24 @@ class StringReader implements IReader<CharSequence> {
     private static final int TWO_DIGIT_MIN = 10;
 
     @Override
-    public boolean isStart(final IterableCharSequence parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) {
         return parIterator.peek() == JSONSymbolCollection.Token.QUOTE.getShortSymbol();
     }
 
     @Override
-    public CharSequence read(final IterableCharSequence parInput)
+    public CharSequence read(final ICharacterIterator parInput)
             throws IOException {
         if (parInput.next() != JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
             throw new MalformedStringException(parInput);
         }
 
-        final SecureCharBuffer mySecureBuffer = SecureCharBuffer.withCapacity(parInput.length());
+        final ManagedSecureCharBuffer mySecureBuffer;
+        if (parInput instanceof ISizeable) {
+            // hack to prevent extra allocation when we're not working on a stream.
+            mySecureBuffer = new ManagedSecureCharBuffer(((ISizeable) parInput).getSize());
+        } else {
+            mySecureBuffer = new ManagedSecureCharBuffer();
+        }
 
         while (parInput.hasNext()) {
             char myChar = parInput.next();
@@ -56,7 +60,7 @@ class StringReader implements IReader<CharSequence> {
         throw new MalformedStringException(parInput);
     }
 
-    private char readUnicode(final IterableCharSequence parInput) throws IOException {
+    private char readUnicode(final ICharacterIterator parInput) throws IOException {
         int myValue = 0;
         for (int myIndex = 0; myIndex < UNICODE_DIGITS; myIndex++) {
             char myChar = Character.toLowerCase(parInput.next());

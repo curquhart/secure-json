@@ -59,7 +59,7 @@ class JSONReader {
         return read(new IterableCharSequence(parJson), true);
     }
 
-    Object read(final IterableCharSequence parIterator, final boolean parIsRoot) throws IOException {
+    Object read(final ICharacterIterator parIterator, final boolean parIsRoot) throws IOException {
         moveToNextToken(parIterator);
 
         final Object myResult;
@@ -89,7 +89,7 @@ class JSONReader {
         return parChar == JSONSymbolCollection.Token.L_CURLY.getShortSymbol();
     }
 
-    void moveToNextToken(final IterableCharSequence parIterator) throws IOException {
+    void moveToNextToken(final ICharacterIterator parIterator) throws IOException {
         while (parIterator.hasNext()) {
             final char myChar = Character.toLowerCase(parIterator.peek());
             if (JSONSymbolCollection.WHITESPACES.containsKey(myChar)) {

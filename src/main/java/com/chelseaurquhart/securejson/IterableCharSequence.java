@@ -1,9 +1,8 @@
 package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
-import java.util.Iterator;
 
-class IterableCharSequence implements CharSequence, Iterator<Character> {
+class IterableCharSequence implements ISizeable, ICharacterIterator {
     private final CharSequence chars;
     private int offset;
 
@@ -11,11 +10,13 @@ class IterableCharSequence implements CharSequence, Iterator<Character> {
         this.chars = parChars;
     }
 
-    Character peek() {
+    @Override
+    public Character peek() {
         return chars.charAt(offset);
     }
 
-    int getOffset() {
+    @Override
+    public int getOffset() {
         return offset;
     }
 
@@ -30,26 +31,16 @@ class IterableCharSequence implements CharSequence, Iterator<Character> {
     }
 
     @Override
-    public int length() {
-        return chars.length();
-    }
-
-    @Override
-    public char charAt(final int parOffset) {
-        return chars.charAt(parOffset);
-    }
-
-    @Override
-    public CharSequence subSequence(final int parStart, final int parEnd) {
-        return chars.subSequence(parStart, parEnd);
-    }
-
-    @Override
     public void remove() {
         try {
             throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_ITERATOR_REMOVE_NOT_ALLOWED));
         } catch (final IOException myException) {
             throw new RuntimeException(myException);
         }
+    }
+
+    @Override
+    public int getSize() {
+        return chars.length();
     }
 }

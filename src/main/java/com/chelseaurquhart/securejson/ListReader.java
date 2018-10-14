@@ -14,12 +14,12 @@ class ListReader implements IReader<List<Object>> {
     }
 
     @Override
-    public boolean isStart(final IterableCharSequence parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) {
         return parIterator.peek() == '[';
     }
 
     @Override
-    public List<Object> read(final IterableCharSequence parIterator) throws IOException {
+    public List<Object> read(final ICharacterIterator parIterator) throws IOException {
         final List<Object> myList = new LinkedList<>();
 
         parIterator.next();

@@ -3,7 +3,7 @@ package com.chelseaurquhart.securejson;
 import java.io.IOException;
 
 interface IReader<T> {
-    T read(IterableCharSequence parIterator) throws IOException;
+    T read(ICharacterIterator parIterator) throws IOException;
 
-    boolean isStart(IterableCharSequence parIterator);
+    boolean isStart(ICharacterIterator parIterator);
 }

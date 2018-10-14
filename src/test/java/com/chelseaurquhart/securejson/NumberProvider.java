@@ -471,7 +471,7 @@ public final class NumberProvider {
         }
 
         @Override
-        int getOffset() {
+        public int getOffset() {
             return offset;
         }
     }

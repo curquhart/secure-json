@@ -25,17 +25,15 @@ class NumberReader implements IReader<Number> {
     }
 
     @Override
-    public boolean isStart(final IterableCharSequence parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) {
         final char myChar = parIterator.peek();
         return myChar == JSONSymbolCollection.Token.MINUS.getShortSymbol() || Character.isDigit(myChar);
     }
 
     @Override
-    public Number read(final IterableCharSequence parIterator) throws IOException {
-        final int myIteratorLength = parIterator.length();
-
+    public Number read(final ICharacterIterator parIterator) throws IOException {
         int myDecimalPosition = 0;
-        int myExponentPosition = myIteratorLength + 1;
+        int myExponentPosition = 0;
         char myExponentSign = JSONSymbolCollection.Token.PLUS.getShortSymbol();
 
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
@@ -53,16 +51,16 @@ class NumberReader implements IReader<Number> {
                 }
                 myDecimalPosition = myIteratorOffset;
             } else if (Character.toLowerCase(myNextChar) == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
-                if (myExponentPosition != myIteratorLength + 1) {
+                if (myExponentPosition != 0) {
                     throw new MalformedNumberException(parIterator);
                 }
                 myExponentPosition = myIteratorOffset;
-                final char myFirstExpDigit = parIterator.charAt(myExponentPosition + 1);
+                mySecureBuffer.append(parIterator.next());
+                final char myFirstExpDigit = parIterator.peek();
                 if (myFirstExpDigit == JSONSymbolCollection.Token.PLUS.getShortSymbol()
                         || myFirstExpDigit == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
                     myExponentSign = myFirstExpDigit;
                     myExponentPosition++;
-                    mySecureBuffer.append(parIterator.next());
                 } else if (!Character.isDigit(myFirstExpDigit)) {
                     throw new MalformedNumberException(parIterator);
                 }

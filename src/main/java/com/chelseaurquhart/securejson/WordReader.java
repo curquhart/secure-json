@@ -4,7 +4,7 @@ import java.io.IOException;
 
 class WordReader implements IReader<Object> {
     @Override
-    public boolean isStart(final IterableCharSequence parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) {
         final char myChar = parIterator.peek();
 
         return myChar == JSONSymbolCollection.Token.NULL.getShortSymbol()
@@ -13,7 +13,7 @@ class WordReader implements IReader<Object> {
     }
 
     @Override
-    public Object read(final IterableCharSequence parIterator)
+    public Object read(final ICharacterIterator parIterator)
             throws IOException {
 
         final char myChar = parIterator.peek();
@@ -31,7 +31,7 @@ class WordReader implements IReader<Object> {
         throw new JSONDecodeException.InvalidTokenException(parIterator);
     }
 
-    private Object readWord(final IterableCharSequence parIterator, final JSONSymbolCollection.Token parToken)
+    private Object readWord(final ICharacterIterator parIterator, final JSONSymbolCollection.Token parToken)
             throws IOException {
         final CharSequence myWord = parToken.toString().toLowerCase();
         final int myCheckingLength = myWord.length();
