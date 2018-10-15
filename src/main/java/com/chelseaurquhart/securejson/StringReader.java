@@ -10,7 +10,7 @@ class StringReader implements IReader<CharSequence> {
     private static final int TWO_DIGIT_MIN = 10;
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
         return parIterator.peek() == JSONSymbolCollection.Token.QUOTE.getShortSymbol();
     }
 

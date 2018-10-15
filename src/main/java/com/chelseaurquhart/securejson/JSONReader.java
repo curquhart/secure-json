@@ -4,6 +4,7 @@ import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersExcepti
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 class JSONReader {
     private final NumberReader numberReader;
@@ -59,6 +60,10 @@ class JSONReader {
         return read(new IterableCharSequence(parJson), true);
     }
 
+    Object read(final InputStream parInputStream) throws IOException {
+        return read(new IterableInputStream(parInputStream), true);
+    }
+
     Object read(final ICharacterIterator parIterator, final boolean parIsRoot) throws IOException {
         moveToNextToken(parIterator);
 
@@ -79,6 +84,7 @@ class JSONReader {
 
         moveToNextToken(parIterator);
         if (parIsRoot && parIterator.hasNext()) {
+//            parIterator.next();
             throw new ExtraCharactersException(parIterator);
         }
 

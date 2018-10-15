@@ -458,21 +458,4 @@ public final class NumberProvider {
             return testName;
         }
     }
-    private static class PresetIterableCharSequence extends IterableCharSequence {
-        private final int offset;
-
-        PresetIterableCharSequence() {
-            this(0);
-        }
-
-        PresetIterableCharSequence(final int parOffset) {
-            super("");
-            offset = parOffset;
-        }
-
-        @Override
-        public int getOffset() {
-            return offset;
-        }
-    }
 }

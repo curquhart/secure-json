@@ -14,7 +14,7 @@ class ListReader implements IReader<List<Object>> {
     }
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
         return parIterator.peek() == JSONSymbolCollection.Token.L_BRACE.getShortSymbol();
     }
 
@@ -22,38 +22,42 @@ class ListReader implements IReader<List<Object>> {
     public List<Object> read(final ICharacterIterator parIterator) throws IOException {
         final List<Object> myList = new LinkedList<>();
 
+        if (parIterator.peek() != JSONSymbolCollection.Token.L_BRACE.getShortSymbol()) {
+            throw new MalformedListException(parIterator);
+        }
+
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
+
         if (!parIterator.hasNext()) {
             throw new MalformedListException(parIterator);
-        } else if (parIterator.peek() == JSONSymbolCollection.Token.R_BRACE.getShortSymbol()) {
-            parIterator.next();
-            return myList;
         }
 
         char myNextChar;
-        boolean myIsListEnd;
-        do {
-            myList.add(jsonReader.read(parIterator, false));
-            jsonReader.moveToNextToken(parIterator);
-            if (!parIterator.hasNext()) {
-                throw new MalformedListException(parIterator);
-            }
-            myNextChar = parIterator.peek();
-            myIsListEnd = myNextChar == JSONSymbolCollection.Token.R_BRACE.getShortSymbol();
+        if (parIterator.peek() != JSONSymbolCollection.Token.R_BRACE.getShortSymbol()) {
+            boolean myIsListEnd;
 
-            if (myNextChar == JSONSymbolCollection.Token.COMMA.getShortSymbol() || myIsListEnd) {
-                parIterator.next();
+            do {
+                myList.add(jsonReader.read(parIterator, false));
                 jsonReader.moveToNextToken(parIterator);
-            } else {
+                if (!parIterator.hasNext()) {
+                    throw new MalformedListException(parIterator);
+                }
+                myNextChar = parIterator.peek();
+                myIsListEnd = myNextChar == JSONSymbolCollection.Token.R_BRACE.getShortSymbol();
+                if (myNextChar == JSONSymbolCollection.Token.COMMA.getShortSymbol()) {
+                    parIterator.next();
+                } else if (!myIsListEnd) {
+                    throw new MalformedListException(parIterator);
+                }
+            } while (parIterator.hasNext() && !myIsListEnd);
+
+            if (!myIsListEnd) {
                 throw new MalformedListException(parIterator);
             }
-        } while (parIterator.hasNext() && !myIsListEnd);
-
-        if (!myIsListEnd) {
-            throw new MalformedListException(parIterator);
         }
 
+        parIterator.next();
         return myList;
     }
 }

@@ -25,7 +25,7 @@ class NumberReader implements IReader<Number> {
     }
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
         final char myChar = parIterator.peek();
         return myChar == JSONSymbolCollection.Token.MINUS.getShortSymbol() || Character.isDigit(myChar);
     }
