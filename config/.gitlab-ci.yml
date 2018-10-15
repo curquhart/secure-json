@@ -28,3 +28,4 @@ testJava11:
   image: gradle:4.10-jdk11
   stage: test
   script: gradle --no-daemon check
+  when: manual
