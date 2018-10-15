@@ -44,3 +44,4 @@ test {
 jacocoTestCoverageVerification.mustRunAfter jacocoTestReport
 
 check.dependsOn jacocoTestReport
+check.dependsOn jacocoTestCoverageVerification
