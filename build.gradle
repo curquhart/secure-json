@@ -1,7 +1,9 @@
 plugins {
     id "com.github.spotbugs" version "1.6.4"
+    id "com.github.ksoichiro.console.reporter" version "0.5.0"
 }
-apply from: 'build.java7.gradle'
+
+apply from: 'build.common.gradle'
 
 tasks.withType(com.github.spotbugs.SpotBugsTask) {
     reports {

@@ -1,44 +1,5 @@
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'checkstyle'
-
-sourceCompatibility = 1.7
-
-repositories {
-    jcenter()
+plugins {
+    id "com.github.ksoichiro.console.reporter" version "0.5.0"
 }
 
-dependencies {
-    compile 'io.github.novacrypto:SecureString:2018.10.06@jar'
-    testCompile 'org.testng:testng:6.14.3'
-    testRuntime 'org.testng:testng:6.14.3'
-}
-
-jacoco {
-    toolVersion = "0.8.1"
-}
-
-checkstyle {
-    configFile file("config/checkstyle.xml")
-}
-
-compileJava {
-    options.compilerArgs << '-Xlint:unchecked'
-}
-
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.8
-            }
-        }
-    }
-}
-
-test {
-    useTestNG()
-}
-
-// don't verify until the report has been generated so that we can have a visual representation.
-jacocoTestCoverageVerification.mustRunAfter jacocoTestReport
+apply from: 'build.common.gradle'
