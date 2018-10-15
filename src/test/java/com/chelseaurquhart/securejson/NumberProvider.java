@@ -364,7 +364,7 @@ public final class NumberProvider {
                 null,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ).readerException(new MalformedNumberException(new PresetIterableCharSequence(5)))
-                .parserException(new NumberFormatException("Not a digit.")),
+                .parserException(new MalformedNumberException(new PresetIterableCharSequence())),
             buildParameters(
                 "overflow",
                 new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT).toString(),
@@ -380,7 +380,7 @@ public final class NumberProvider {
                 null,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ).readerException(new MalformedNumberException(new PresetIterableCharSequence(3)))
-                .parserException(new NumberFormatException("Character array contains more than one decimal point."))
+                .parserException(new MalformedNumberException(new PresetIterableCharSequence()))
         };
     }
 

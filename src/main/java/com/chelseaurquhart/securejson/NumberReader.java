@@ -75,15 +75,16 @@ class NumberReader implements IReader<Number> {
         }
 
         try {
-            return charSequenceToNumber(mySecureBuffer, myDecimalPosition > 0, myExponentSign);
+            return charSequenceToNumber(mySecureBuffer, myDecimalPosition > 0, myExponentSign, parIterator);
         } catch (ArithmeticException | NumberFormatException e) {
             throw new MalformedNumberException(parIterator);
         }
     }
 
     Number charSequenceToNumber(final CharSequence parNumber, final boolean parHasDecimal,
-                                        final char parExponentSign) {
-        final BigDecimal myDecimal = charSequenceToBigDecimal(parNumber);
+                                final char parExponentSign, final ICharacterIterator parIterator)
+            throws IOException {
+        final BigDecimal myDecimal = charSequenceToBigDecimal(parNumber, parIterator);
 
         if (!parHasDecimal && parExponentSign == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
             // return the smallest representation we can.
@@ -116,9 +117,10 @@ class NumberReader implements IReader<Number> {
         }
     }
 
-    private BigDecimal charSequenceToBigDecimal(final CharSequence parNumber) {
+    private BigDecimal charSequenceToBigDecimal(final CharSequence parNumber, final ICharacterIterator parIterator)
+            throws IOException {
         final char[] myBuffer = new char[parNumber.length()];
-        insert(myBuffer, parNumber);
+        insertNumeric(myBuffer, parNumber, parIterator);
         final BigDecimal myResult = new BigDecimal(myBuffer, mathContext);
 
         // clear contents
@@ -127,9 +129,22 @@ class NumberReader implements IReader<Number> {
         return myResult;
     }
 
-    private void insert(final char[] parDestination, final CharSequence parSource) {
+    private void insertNumeric(final char[] parDestination, final CharSequence parSource,
+                               final ICharacterIterator parIterator) throws IOException {
+        boolean myFoundDecimal = false;
+        boolean myFoundExponent = false;
         for (int myIndex = 0; myIndex < parSource.length(); myIndex++) {
-            parDestination[myIndex] = parSource.charAt(myIndex);
+            final char myChar = parSource.charAt(myIndex);
+            // java 10 correctly identifies this as invalid, but previous versions do not.
+            if (myChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()) {
+                if (myFoundDecimal || myFoundExponent) {
+                    throw new MalformedNumberException(parIterator);
+                }
+                myFoundDecimal = true;
+            } else if (Character.toLowerCase(myChar) == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                myFoundExponent = true;
+            }
+            parDestination[myIndex] = myChar;
         }
     }
 }
