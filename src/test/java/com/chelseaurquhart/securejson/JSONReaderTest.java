@@ -3,6 +3,7 @@ package com.chelseaurquhart.securejson;
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException;
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 
 import io.github.novacrypto.SecureCharBuffer;
 import org.testng.Assert;
@@ -17,6 +18,11 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
@@ -170,6 +176,75 @@ public final class JSONReaderTest {
                 null,
                 new InvalidTokenException(new PresetIterableCharSequence())
             ),
+            new Parameters(
+                "empty map",
+                "{}",
+                new HashMap<>(),
+                null
+            ),
+            new Parameters(
+                "map with padding",
+                "  {  }  ",
+                new HashMap<>(),
+                null
+            ),
+            new Parameters(
+                "map with numeric keys",
+                "{1:\"test\"}",
+                null,
+                new MalformedStringException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters(
+                "map with string:string",
+                "{\"1\":\"test\"}",
+                new HashMap<CharSequence, Object>() {{
+                    put("1", "test");
+                }},
+                null
+            ),
+            new Parameters(
+                "map with string:int",
+                "{\"1\":123}",
+                new HashMap<CharSequence, Object>() {{
+                    put("1", (short) 123);
+                }},
+                null
+            ),
+            new Parameters(
+                "map with string:null",
+                "{\"1\":null}",
+                new HashMap<CharSequence, Object>() {{
+                    put("1", null);
+                }},
+                null
+            ),
+            new Parameters(
+                "map with string:bool",
+                "{\"1\":true}",
+                new HashMap<CharSequence, Object>() {{
+                    put("1", true);
+                }},
+                null
+            ),
+            new Parameters(
+                "map with string:bool padded",
+                "{\"1\"   :    true}",
+                new HashMap<CharSequence, Object>() {{
+                    put("1", true);
+                }},
+                null
+            ),
+            new Parameters(
+                "much nesting",
+                "{\"1\"   :    [1,2,3],\"2\":[false,{\"22\":\"456\"}]}",
+                new HashMap<CharSequence, Object>() {{
+                    put("1", Arrays.asList((short) 1, (short) 2, (short) 3));
+                    put("2", Arrays.asList(false, new HashMap<CharSequence, Object>() {{
+                        put("22", "456");
+                    }}));
+                }},
+                null
+            ),
         };
     }
 
@@ -199,19 +274,46 @@ public final class JSONReaderTest {
                 myActual = parReader.read((InputStream) parInput);
             }
             Assert.assertNull(parExpectedException);
-            if (parExpected == null) {
-                Assert.assertNull(myActual);
-            } else if (myActual instanceof CharSequence && parExpected instanceof CharSequence) {
-                Assert.assertEquals(charSequenceToString((CharSequence) myActual),
-                    charSequenceToString((CharSequence) parExpected));
-            } else {
-                Assert.assertEquals(myActual, parExpected);
-            }
+            Assert.assertEquals(deepCharSequenceToString(myActual), deepCharSequenceToString(parExpected));
         } catch (final JSONDecodeException myException) {
             Assert.assertNotNull(parExpectedException);
             Assert.assertEquals(myException.getMessage(), parExpectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parExpectedException.getClass());
         }
+    }
+
+    private Object deepCharSequenceToString(final Object parInput) {
+        if (parInput == null) {
+            return null;
+        } else if (parInput instanceof CharSequence) {
+            return charSequenceToString((CharSequence) parInput);
+        } else if (parInput instanceof Map) {
+            final Map myInputMap = (Map) parInput;
+
+            final Map<String, Object> myInputMapCopy = new LinkedHashMap<>();
+            for (final Object myObject : myInputMap.entrySet()) {
+                final Map.Entry myEntry = (Map.Entry) myObject;
+                myInputMapCopy.put(charSequenceToString((CharSequence) myEntry.getKey()),
+                    deepCharSequenceToString(myEntry.getValue()));
+            }
+
+            return myInputMapCopy;
+        } else if (parInput instanceof Collection) {
+            final Collection myInputList = (Collection) parInput;
+            final Collection<Object> myInputListCopy = new LinkedList<>();
+            for (final Object myItem : myInputList) {
+                myInputListCopy.add(deepCharSequenceToString(myItem));
+            }
+
+            return myInputListCopy;
+        } else if (parInput.getClass().isArray()) {
+            final Object[] myInputArray = (Object[]) parInput;
+            for (int myIndex = 0; myIndex < myInputArray.length; myIndex++) {
+                myInputArray[myIndex] = deepCharSequenceToString(myInputArray[myIndex]);
+            }
+        }
+
+        return parInput;
     }
 
 

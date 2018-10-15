@@ -34,6 +34,12 @@ abstract class JSONDecodeException extends RuntimeException {
         }
     }
 
+    static class MalformedMapException extends JSONDecodeException {
+        MalformedMapException(final ICharacterIterator parCharSequence) throws IOException {
+            super(parCharSequence, Messages.Key.ERROR_MALFORMED_MAP);
+        }
+    }
+
     static class MalformedNumberException extends JSONDecodeException {
         MalformedNumberException(final ICharacterIterator parCharSequence) throws IOException {
             super(parCharSequence, Messages.Key.ERROR_MALFORMED_NUMBER);

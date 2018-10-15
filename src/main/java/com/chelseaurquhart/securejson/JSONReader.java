@@ -11,29 +11,34 @@ class JSONReader {
     private final StringReader stringReader;
     private final ListReader listReader;
     private final WordReader wordReader;
+    private final MapReader mapReader;
 
     JSONReader() {
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
     JSONReader(final NumberReader parNumberReader) {
-        this(parNumberReader, null, null, null);
+        this(parNumberReader, null, null, null, null);
     }
 
     JSONReader(final StringReader parStringReader) {
-        this(null, parStringReader, null, null);
+        this(null, parStringReader, null, null, null);
     }
 
     JSONReader(final ListReader parListReader) {
-        this(null, null, parListReader, null);
+        this(null, null, parListReader, null, null);
     }
 
     JSONReader(final WordReader parWordReader) {
-        this(null, null, null, parWordReader);
+        this(null, null, null, parWordReader, null);
+    }
+
+    JSONReader(final MapReader parMapReader) {
+        this(null, null, null, null, parMapReader);
     }
 
     private JSONReader(final NumberReader parNumberReader, final StringReader parStringReader,
-                       final ListReader parListReader, final WordReader parWordReader) {
+                       final ListReader parListReader, final WordReader parWordReader, final MapReader parMapReader) {
         if (parNumberReader == null) {
             numberReader = new NumberReader();
         } else {
@@ -54,6 +59,11 @@ class JSONReader {
         } else {
             wordReader = parWordReader;
         }
+        if (parMapReader == null) {
+            mapReader = new MapReader(this, stringReader);
+        } else {
+            mapReader = parMapReader;
+        }
     }
 
     Object read(final CharSequence parJson) throws IOException {
@@ -72,8 +82,8 @@ class JSONReader {
             myResult = wordReader.read(parIterator);
         } else if (listReader.isStart(parIterator)) {
             myResult = listReader.read(parIterator);
-        } else if (isMapStart(parIterator.peek())) {
-            throw new UnsupportedOperationException("Not implemented");
+        } else if (mapReader.isStart(parIterator)) {
+            myResult = mapReader.read(parIterator);
         } else if (numberReader.isStart(parIterator)) {
             myResult = numberReader.read(parIterator);
         } else if (stringReader.isStart(parIterator)) {
@@ -84,15 +94,10 @@ class JSONReader {
 
         moveToNextToken(parIterator);
         if (parIsRoot && parIterator.hasNext()) {
-//            parIterator.next();
             throw new ExtraCharactersException(parIterator);
         }
 
         return myResult;
-    }
-
-    private boolean isMapStart(final char parChar) {
-        return parChar == JSONSymbolCollection.Token.L_CURLY.getShortSymbol();
     }
 
     void moveToNextToken(final ICharacterIterator parIterator) throws IOException {

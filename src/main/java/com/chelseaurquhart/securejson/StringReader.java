@@ -17,9 +17,10 @@ class StringReader implements IReader<CharSequence> {
     @Override
     public CharSequence read(final ICharacterIterator parInput)
             throws IOException {
-        if (parInput.next() != JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
+        if (parInput.peek() != JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
             throw new MalformedStringException(parInput);
         }
+        parInput.next();
 
         final ManagedSecureCharBuffer mySecureBuffer;
         if (parInput instanceof ISizeable) {
