@@ -1,0 +1,12 @@
+stages:
+  - test
+
+testJava7:
+  image: java:7
+  stage: test
+  script: gradle check
+
+testJava8:
+  image: java:8
+  stage: test
+  script: gradle check
