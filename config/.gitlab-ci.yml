@@ -21,3 +21,10 @@ testJava10:
   image: gradle:4.10-jdk10
   stage: test
   script: gradle --no-daemon check
+
+testJava11:
+  tags:
+    - docker
+  image: gradle:4.10-jdk11
+  stage: test
+  script: gradle --no-daemon check
