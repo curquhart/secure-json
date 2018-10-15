@@ -4,14 +4,14 @@ stages:
 testJava7:
   image: gradle:4.10-jdk7
   stage: test
-  script: gradle check
+  script: gradle --no-daemon check
 
 testJava8:
   image: gradle:4.10-jdk8
   stage: test
-  script: gradle check
+  script: gradle --no-daemon check
 
 testJava10:
   image: gradle:4.10-jdk10
   stage: test
-  script: gradle check
+  script: gradle --no-daemon check
