@@ -2,11 +2,16 @@ stages:
   - test
 
 testJava7:
-  image: java:7
+  image: gradle:4.10-jdk7
   stage: test
   script: gradle check
 
 testJava8:
-  image: java:8
+  image: gradle:4.10-jdk8
+  stage: test
+  script: gradle check
+
+testJava10:
+  image: gradle:4.10-jdk10
   stage: test
   script: gradle check
