@@ -56,6 +56,7 @@ class MapReader implements IReader<Map<CharSequence, Object>> {
                 myIsMapEnd = myNextChar == JSONSymbolCollection.Token.R_CURLY.getShortSymbol();
                 if (myNextChar == JSONSymbolCollection.Token.COMMA.getShortSymbol()) {
                     parIterator.next();
+                    jsonReader.moveToNextToken(parIterator);
                 } else if (!myIsMapEnd) {
                     throw new MalformedMapException(parIterator);
                 }

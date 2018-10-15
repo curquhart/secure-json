@@ -245,6 +245,21 @@ public final class JSONReaderTest {
                 }},
                 null
             ),
+            new Parameters(
+                "spaces around comma in map",
+                "{\"asd\":\"sdf\"   ,  \"dfg\":\"fgh\"}",
+                new HashMap<CharSequence, Object>() {{
+                    put("asd", "sdf");
+                    put("dfg", "fgh");
+                }},
+                null
+            ),
+            new Parameters(
+                "spaces around comma in list",
+                "[\"abc\"  ,  \"def\"]",
+                Arrays.asList("abc", "def"),
+                null
+            ),
         };
     }
 
@@ -315,7 +330,6 @@ public final class JSONReaderTest {
 
         return parInput;
     }
-
 
     private InputStream charSequenceToStream(final CharSequence parInput) {
         return new ByteArrayInputStream(charSequenceToString(parInput).getBytes(StandardCharsets.UTF_8));

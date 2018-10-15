@@ -205,7 +205,7 @@ public final class NumberProvider {
             ),
             buildParameters(
                 "simple standard notation with decimal padded",
-                "0001.0000000",
+                "1.0000000",
                 1d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
@@ -219,14 +219,14 @@ public final class NumberProvider {
             ).readerException(new InvalidTokenException(new PresetIterableCharSequence())),
             buildParameters(
                 "lots of decimals",
-                "0001.000000123",
+                "1.000000123",
                 1.000000123d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "1.0 padded, negative",
-                "-00000001.00000000",
+                "-1.00000000",
                 -1d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT

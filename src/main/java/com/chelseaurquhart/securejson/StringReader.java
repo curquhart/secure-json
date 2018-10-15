@@ -42,13 +42,19 @@ class StringReader implements IReader<CharSequence> {
                         myChar = '\t';
                     } else if (myChar == 'r') {
                         myChar = '\r';
+                    } else if (myChar == 'b') {
+                        myChar = '\b';
                     } else if (myChar == 'n') {
                         myChar = '\n';
                     } else if (myChar == 'f') {
                         myChar = '\f';
+                    } else if (myChar != '\\' && myChar != '"' && myChar != '/') {
+                        throw new MalformedUnicodeValueException(parInput);
                     }
                     mySecureBuffer.append(myChar);
                 }
+            } else if (myChar < 32) {
+                throw new MalformedUnicodeValueException(parInput);
             } else {
                 if (myChar == JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
                     return mySecureBuffer;
