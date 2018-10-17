@@ -3,7 +3,7 @@ package com.chelseaurquhart.securejson;
 import io.github.novacrypto.SecureCharBuffer;
 
 final class ManagedSecureCharBuffer implements CharSequence {
-    private static final int INITIAL_CAPACITY = 512;
+    private static final int INITIAL_CAPACITY = 32;
 
     private SecureCharBuffer secureBuffer;
     private int capacity;

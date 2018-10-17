@@ -28,13 +28,7 @@ class StringReader implements IReader {
         }
         parInput.next();
 
-        final ManagedSecureCharBuffer mySecureBuffer;
-        if (parInput instanceof ISizeable) {
-            // hack to prevent extra allocation when we're not working on a stream.
-            mySecureBuffer = new ManagedSecureCharBuffer(((ISizeable) parInput).getSize());
-        } else {
-            mySecureBuffer = new ManagedSecureCharBuffer();
-        }
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
 
         while (parInput.hasNext()) {
             char myChar = parInput.next();
