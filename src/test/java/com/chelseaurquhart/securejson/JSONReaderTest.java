@@ -2,6 +2,7 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersException;
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 
@@ -156,7 +157,7 @@ public final class JSONReaderTest {
                 "list with missing closing bracket",
                 "  [1,4  ",
                 null,
-                new MalformedListException(new PresetIterableCharSequence(8))
+                new MalformedJSONException(new PresetIterableCharSequence(8))
             ),
             new Parameters(
                 "empty list with missing closing bracket",
@@ -288,7 +289,7 @@ public final class JSONReaderTest {
             } else {
                 myActual = parReader.read((InputStream) parInput);
             }
-            Assert.assertNull(parExpectedException);
+            Assert.assertNull(parExpectedException, "Expected exception was not thrown");
             Assert.assertEquals(deepCharSequenceToString(myActual), deepCharSequenceToString(parExpected));
         } catch (final JSONDecodeException myException) {
             Assert.assertNotNull(parExpectedException);

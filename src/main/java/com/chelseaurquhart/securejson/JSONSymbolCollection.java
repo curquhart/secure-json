@@ -47,9 +47,7 @@ final class JSONSymbolCollection {
         Token.EIGHT.getShortSymbol(),
         Token.NINE.getShortSymbol(),
         Token.DECIMAL.getShortSymbol(),
-        Token.MINUS.getShortSymbol(),
-        Token.PLUS.getShortSymbol(),
-        Token.EXPONENT.getShortSymbol()
+        Token.MINUS.getShortSymbol()
     );
 
     private static Map<Character, Character> listToMap(final Character... parElements) {

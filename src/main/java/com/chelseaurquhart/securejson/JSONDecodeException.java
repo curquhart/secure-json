@@ -10,6 +10,18 @@ abstract class JSONDecodeException extends RuntimeException {
             .replace(":message", Messages.get(parMessageKey)));
     }
 
+    static class MalformedJSONException extends JSONDecodeException {
+        MalformedJSONException(final ICharacterIterator parCharSequence) throws IOException {
+            super(parCharSequence, Messages.Key.ERROR_MALFORMED_JSON);
+        }
+    }
+
+    static class EmptyJSONException extends JSONDecodeException {
+        EmptyJSONException(final ICharacterIterator parCharSequence) throws IOException {
+            super(parCharSequence, Messages.Key.ERROR_EMPTY_JSON);
+        }
+    }
+
     static class MalformedStringException extends JSONDecodeException {
         MalformedStringException(final ICharacterIterator parCharSequence) throws IOException {
             super(parCharSequence, Messages.Key.ERROR_MALFORMED_STRING);

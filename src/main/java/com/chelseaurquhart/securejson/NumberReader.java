@@ -8,7 +8,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
 
-class NumberReader implements IReader<Number> {
+class NumberReader implements IReader {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);
 
@@ -26,8 +26,12 @@ class NumberReader implements IReader<Number> {
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        final char myChar = parIterator.peek();
-        return myChar == JSONSymbolCollection.Token.MINUS.getShortSymbol() || Character.isDigit(myChar);
+        return JSONSymbolCollection.NUMBERS.containsKey(parIterator.peek());
+    }
+
+    @Override
+    public SymbolType getSymbolType(final ICharacterIterator parIterator) {
+        return SymbolType.UNKNOWN;
     }
 
     @Override
@@ -81,6 +85,10 @@ class NumberReader implements IReader<Number> {
         }
     }
 
+    @Override
+    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+    }
+
     Number charSequenceToNumber(final CharSequence parNumber, final boolean parHasDecimal,
                                 final char parExponentSign, final ICharacterIterator parIterator)
             throws IOException {
@@ -115,6 +123,11 @@ class NumberReader implements IReader<Number> {
         } catch (ArithmeticException | NumberFormatException e) {
             return myDecimal;
         }
+    }
+
+    @Override
+    public Object normalizeCollection(final Object parValue) {
+        return parValue;
     }
 
     private BigDecimal charSequenceToBigDecimal(final CharSequence parNumber, final ICharacterIterator parIterator)

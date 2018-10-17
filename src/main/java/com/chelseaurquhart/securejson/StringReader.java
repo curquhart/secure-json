@@ -5,13 +5,19 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedUnicodeValueE
 
 import java.io.IOException;
 
-class StringReader implements IReader<CharSequence> {
+class StringReader implements IReader {
     private static final short UNICODE_DIGITS = 4;
     private static final int TWO_DIGIT_MIN = 10;
+    private static final int MIN_ALLOWED_ASCII_CODE = 32;
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
         return parIterator.peek() == JSONSymbolCollection.Token.QUOTE.getShortSymbol();
+    }
+
+    @Override
+    public SymbolType getSymbolType(final ICharacterIterator parIterator) {
+        return SymbolType.UNKNOWN;
     }
 
     @Override
@@ -53,7 +59,7 @@ class StringReader implements IReader<CharSequence> {
                     }
                     mySecureBuffer.append(myChar);
                 }
-            } else if (myChar < 32) {
+            } else if (myChar < MIN_ALLOWED_ASCII_CODE) {
                 throw new MalformedUnicodeValueException(parInput);
             } else {
                 if (myChar == JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
@@ -63,8 +69,17 @@ class StringReader implements IReader<CharSequence> {
             }
         }
 
-        // did not find leading quote
+        // did not find trailing quote
         throw new MalformedStringException(parInput);
+    }
+
+    @Override
+    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+    }
+
+    @Override
+    public Object normalizeCollection(final Object parValue) {
+        return parValue;
     }
 
     private char readUnicode(final ICharacterIterator parInput) throws IOException {

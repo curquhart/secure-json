@@ -8,6 +8,8 @@ final class Messages {
     enum Key {
         ERROR_JSON_DECODE,
         ERROR_MALFORMED_STRING,
+        ERROR_EMPTY_JSON,
+        ERROR_MALFORMED_JSON,
         ERROR_MALFORMED_UNICODE_VALUE,
         ERROR_INVALID_TOKEN,
         ERROR_MALFORMED_LIST,
