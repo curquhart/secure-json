@@ -144,18 +144,40 @@ class NumberReader implements IReader {
 
     private void insertNumeric(final char[] parDestination, final CharSequence parSource,
                                final ICharacterIterator parIterator) throws IOException {
-        boolean myFoundDecimal = false;
-        boolean myFoundExponent = false;
-        for (int myIndex = 0; myIndex < parSource.length(); myIndex++) {
+        int myDecimalPos = -1;
+        int myExponentPos = -1;
+        int myLength = parSource.length();
+
+        // need to clean up this dumpster fire later.
+
+        // -01
+        if (myLength > 2 && (parSource.charAt(0) == '-' && parSource.charAt(1) == '0' && parSource.charAt(2) != '.')) {
+            Arrays.fill(parDestination, ' ');
+            throw new MalformedNumberException(parIterator);
+        }
+        // 01.
+        if (myLength > 2 && (parSource.charAt(0) == '0' && parSource.charAt(1) != '.' && parSource.charAt(1) != 'e'
+                && parSource.charAt(1) != '0')) {
+            Arrays.fill(parDestination, ' ');
+            throw new MalformedNumberException(parIterator);
+        }
+
+        for (int myIndex = 0; myIndex < myLength; myIndex++) {
             final char myChar = parSource.charAt(myIndex);
             // java 10 correctly identifies this as invalid, but previous versions do not.
             if (myChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()) {
-                if (myFoundDecimal || myFoundExponent) {
+                if (myDecimalPos != -1 || myExponentPos != -1 || myIndex == myLength - 1
+                        || (myIndex == 1 && parDestination[0] == '-')) {
+                    Arrays.fill(parDestination, ' ');
                     throw new MalformedNumberException(parIterator);
                 }
-                myFoundDecimal = true;
+                myDecimalPos = myIndex;
             } else if (Character.toLowerCase(myChar) == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
-                myFoundExponent = true;
+                if (myIndex == myDecimalPos + 1) {
+                    Arrays.fill(parDestination, ' ');
+                    throw new MalformedNumberException(parIterator);
+                }
+                myExponentPos = myIndex;
             }
             parDestination[myIndex] = myChar;
         }

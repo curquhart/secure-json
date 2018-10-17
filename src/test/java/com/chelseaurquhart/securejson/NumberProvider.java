@@ -344,6 +344,13 @@ public final class NumberProvider {
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
+                "0.0",
+                "0.0",
+                0.0d,
+                Double.class,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ),
+            buildParameters(
                 "enormous number",
                 new BigDecimal(1234567890).pow(1234, HUGE_PRECISION_MATH_CONTEXT).toString(),
                 new BigDecimal(1234567890).pow(1234, HUGE_PRECISION_MATH_CONTEXT),
