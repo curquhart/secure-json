@@ -22,6 +22,10 @@ class MapReader implements IReader {
 
     @Override
     public SymbolType getSymbolType(final ICharacterIterator parIterator) throws IOException {
+        if (!parIterator.hasNext()) {
+            throw new MalformedMapException(parIterator);
+        }
+
         final char myChar = parIterator.peek();
 
         if (myChar == JSONSymbolCollection.Token.R_CURLY.getShortSymbol()) {
@@ -37,8 +41,6 @@ class MapReader implements IReader {
 
     @Override
     public MapReader.Container read(final ICharacterIterator parIterator) throws IOException {
-        final Map<CharSequence, Object> myMap = new LinkedHashMap<>();
-
         if (parIterator.peek() != JSONSymbolCollection.Token.L_CURLY.getShortSymbol()) {
             throw new MalformedMapException(parIterator);
         }
@@ -51,9 +53,9 @@ class MapReader implements IReader {
         }
 
         if (parIterator.peek() == JSONSymbolCollection.Token.R_CURLY.getShortSymbol()) {
-            return new Container(myMap, null);
+            return new Container(null);
         } else {
-            return new Container(myMap, readKey(parIterator));
+            return new Container(readKey(parIterator));
         }
     }
 
@@ -61,7 +63,7 @@ class MapReader implements IReader {
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
             throws IOException {
         final Container myContainer = objectToContainer(parCollection);
-        myContainer.map.put(myContainer.key, parValue);
+        myContainer.put(myContainer.key, parValue);
         jsonReader.moveToNextToken(parIterator);
         final SymbolType mySymbolType = getSymbolType(parIterator);
         if (mySymbolType == SymbolType.RESERVED) {
@@ -76,7 +78,7 @@ class MapReader implements IReader {
     @Override
     public Object normalizeCollection(final Object parValue) {
         if (parValue instanceof Container) {
-            return ((Container) parValue).map;
+            return ((Container) parValue).getMap();
         }
 
         return parValue;
@@ -103,12 +105,23 @@ class MapReader implements IReader {
     }
 
     private static final class Container {
-        private final Map<CharSequence, Object> map;
+        private Map<CharSequence, Object> map;
         private CharSequence key;
 
-        private Container(final Map<CharSequence, Object> parMap, final CharSequence parKey) {
-            map = parMap;
+        private Container(final CharSequence parKey) {
             key = parKey;
+        }
+
+        private void put(final CharSequence parKey, final Object parValue) {
+            getMap().put(parKey, parValue);
+        }
+
+        private Map<CharSequence, Object> getMap() {
+            if (map == null) {
+                map = new LinkedHashMap<>();
+            }
+
+            return map;
         }
     }
 }

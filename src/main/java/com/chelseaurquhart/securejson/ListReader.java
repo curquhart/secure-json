@@ -32,9 +32,7 @@ class ListReader implements IReader {
     }
 
     @Override
-    public List<Object> read(final ICharacterIterator parIterator) throws IOException {
-        final List<Object> myList = new LinkedList<>();
-
+    public Container read(final ICharacterIterator parIterator) throws IOException {
         if (parIterator.peek() != JSONSymbolCollection.Token.L_BRACE.getShortSymbol()) {
             throw new MalformedListException(parIterator);
         }
@@ -51,15 +49,15 @@ class ListReader implements IReader {
             throw new MalformedListException(parIterator);
         }
 
-        return myList;
+        return new Container();
     }
 
     @Override
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
             throws IOException {
-        final List<Object> myList = objectToList(parCollection);
+        final Container myContainer = objectToContainer(parCollection);
+        myContainer.add(parValue);
 
-        myList.add(parValue);
         jsonReader.moveToNextToken(parIterator);
         if (getSymbolType(parIterator) == SymbolType.UNKNOWN) {
             throw new MalformedListException(parIterator);
@@ -68,11 +66,34 @@ class ListReader implements IReader {
 
     @Override
     public Object normalizeCollection(final Object parValue) {
+        if (parValue instanceof Container) {
+            return ((Container) parValue).getList();
+        }
+
         return parValue;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Object> objectToList(final Object parValue) {
-        return (List<Object>) parValue;
+    private Container objectToContainer(final Object parValue) {
+        return (Container) parValue;
     }
+
+    private static final class Container {
+        private List<Object> list;
+
+        private Container() {
+        }
+
+        private void add(final Object parValue) {
+            getList().add(parValue);
+        }
+
+        private List<Object> getList() {
+            if (list == null) {
+                list = new LinkedList<>();
+            }
+
+            return list;
+        }
+    }
+
 }
