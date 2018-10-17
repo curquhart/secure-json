@@ -1,6 +1,8 @@
 package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -14,6 +16,8 @@ import java.util.Map;
  * CLI interface for testing JSON strings.
  */
 public final class CLI {
+    private static final MathContext MATH_CONTEXT = new MathContext((int) Math.pow(2, 17), RoundingMode.HALF_UP);
+
     private CLI() {
     }
 
@@ -44,7 +48,7 @@ public final class CLI {
 
     private static boolean isValidJSON(final String parValue) throws IOException {
         try {
-            JSONReader myReader = new JSONReader();
+            JSONReader myReader = new JSONReader(new NumberReader(MATH_CONTEXT));
             Object myObj = deepCharSequenceToString(myReader.read(parValue));
             System.out.println(myObj);
             if (myObj != null) {
