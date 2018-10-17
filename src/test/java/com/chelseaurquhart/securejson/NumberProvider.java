@@ -351,6 +351,14 @@ public final class NumberProvider {
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
+                "decimal at start",
+                ".5",
+                null,
+                Double.class,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).readerException(new MalformedNumberException(new PresetIterableCharSequence(2)))
+                .parserException(new MalformedNumberException(new PresetIterableCharSequence())),
+            buildParameters(
                 "enormous number",
                 new BigDecimal(1234567890).pow(1234, HUGE_PRECISION_MATH_CONTEXT).toString(),
                 new BigDecimal(1234567890).pow(1234, HUGE_PRECISION_MATH_CONTEXT),

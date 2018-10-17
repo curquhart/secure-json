@@ -149,6 +149,7 @@ class NumberReader implements IReader {
         int myLength = parSource.length();
 
         // need to clean up this dumpster fire later.
+        // need to move most of this logic into read so that the offset is correct
 
         // -01
         if (myLength > 2 && (parSource.charAt(0) == '-' && parSource.charAt(1) == '0' && parSource.charAt(2) != '.')) {
@@ -166,7 +167,7 @@ class NumberReader implements IReader {
             final char myChar = parSource.charAt(myIndex);
             // java 10 correctly identifies this as invalid, but previous versions do not.
             if (myChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()) {
-                if (myDecimalPos != -1 || myExponentPos != -1 || myIndex == myLength - 1
+                if (myIndex == 0 || myDecimalPos != -1 || myExponentPos != -1 || myIndex == myLength - 1
                         || (myIndex == 1 && parDestination[0] == '-')) {
                     Arrays.fill(parDestination, ' ');
                     throw new MalformedNumberException(parIterator);
