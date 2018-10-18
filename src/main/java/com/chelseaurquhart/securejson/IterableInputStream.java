@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 class IterableInputStream implements ISizeable, ICharacterIterator, Closeable {
+    private static final int UNSIGNED_CONVERT_DIGIT = 0xff;
+
     private final InputStream inputStream;
     private Integer nextChar;
     private int offset;
@@ -14,10 +16,10 @@ class IterableInputStream implements ISizeable, ICharacterIterator, Closeable {
     }
 
     @Override
-    public Character peek() throws IOException {
+    public Character peek() {
         cacheNextChar();
 
-        return (char) nextChar.intValue();
+        return (char) (UNSIGNED_CONVERT_DIGIT & nextChar);
     }
 
     @Override
@@ -33,7 +35,7 @@ class IterableInputStream implements ISizeable, ICharacterIterator, Closeable {
 
     @Override
     public Character next() {
-        final char myNextChar = (char) readNextChar();
+        final char myNextChar = (char) (UNSIGNED_CONVERT_DIGIT & readNextChar());
         offset++;
         return myNextChar;
     }

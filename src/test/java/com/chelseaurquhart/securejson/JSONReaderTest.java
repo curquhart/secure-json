@@ -36,7 +36,7 @@ public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromStream(final NumberProvider.Parameters parParameters) throws IOException {
         final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext));
-        runTest(myReader, charSequenceToStream(parParameters.number), parParameters.expected,
+        runTest(myReader, inputToStream(parParameters.number, null), parParameters.expected,
             parParameters.expectedException);
     }
 
@@ -49,7 +49,7 @@ public final class JSONReaderTest {
     @Test(dataProviderClass = StringProvider.class, dataProvider = StringProvider.DATA_PROVIDER_NAME)
     public void testReadStringFromStream(final StringProvider.Parameters parParameters) throws IOException {
         final JSONReader myReader = new JSONReader(new StringReader());
-        runTest(myReader, charSequenceToStream(parParameters.inputString), parParameters.expected,
+        runTest(myReader, inputToStream(parParameters.inputString, null), parParameters.expected,
             parParameters.expectedException);
     }
 
@@ -121,6 +121,36 @@ public final class JSONReaderTest {
             new Parameters(
                 "empty list",
                 "[]",
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF8 BOM",
+                new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf, '[', ']'},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF16 BOM big-endian",
+                new byte[]{(byte) 0xfe, (byte) 0xff, '[', ']'},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF16 BOM little-endian",
+                new byte[]{(byte) 0xff, (byte) 0xfe, '[', ']'},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF32 BOM big-endian",
+                new byte[]{0, 0, (byte) 0xfe, (byte) 0xff, '[', ']'},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF32 BOM little-endian",
+                new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', ']'},
                 new ArrayList<>(),
                 null
             ),
@@ -266,8 +296,15 @@ public final class JSONReaderTest {
 
     @Test(dataProvider = DATA_PROVIDER_NAME)
     public void testReadGenericFromString(final Parameters parParameters) throws IOException {
-        final JSONReader myReader = new JSONReader();
+        if (parParameters.inputBytes != null) {
+            final char[] myChars = new char[parParameters.inputBytes.length];
+            for (int myIndex = myChars.length - 1; myIndex >= 0; myIndex--) {
+                myChars[myIndex] = (char) (0xff & parParameters.inputBytes[myIndex]);
+            }
+            parParameters.inputString = new String(myChars);
+        }
 
+        final JSONReader myReader = new JSONReader();
         runTest(myReader, parParameters.inputString, parParameters.expected,
             parParameters.expectedException);
     }
@@ -276,7 +313,7 @@ public final class JSONReaderTest {
     public void testReadGenericFromStream(final Parameters parParameters) throws IOException {
         final JSONReader myReader = new JSONReader();
 
-        runTest(myReader, charSequenceToStream(parParameters.inputString), parParameters.expected,
+        runTest(myReader, inputToStream(parParameters.inputString, parParameters.inputBytes), parParameters.expected,
             parParameters.expectedException);
     }
 
@@ -332,8 +369,12 @@ public final class JSONReaderTest {
         return parInput;
     }
 
-    private InputStream charSequenceToStream(final CharSequence parInput) {
-        return new ByteArrayInputStream(charSequenceToString(parInput).getBytes(StandardCharsets.UTF_8));
+    private InputStream inputToStream(final CharSequence parInput, final byte[] parBytes) throws IOException {
+        if (parBytes == null) {
+            return new ByteArrayInputStream(charSequenceToString(parInput).getBytes(StandardCharsets.UTF_8));
+        } else {
+            return new ByteArrayInputStream(parBytes);
+        }
     }
 
     private String charSequenceToString(final CharSequence parInput) {
@@ -345,9 +386,18 @@ public final class JSONReaderTest {
 
     private static class Parameters {
         private String testName;
+        private byte[] inputBytes;
         private CharSequence inputString;
         private Object expected;
         private Exception expectedException;
+
+        Parameters(final String parTestName, final byte[] parInputBytes, final Object parExpected,
+                   final Exception parExpectedException) {
+            testName = parTestName;
+            inputBytes = parInputBytes;
+            expected = parExpected;
+            expectedException = parExpectedException;
+        }
 
         Parameters(final String parTestName, final CharSequence parInputString, final Object parExpected,
                    final Exception parExpectedException) {

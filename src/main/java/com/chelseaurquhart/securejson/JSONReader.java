@@ -82,6 +82,8 @@ class JSONReader {
     Object read(final ICharacterIterator parIterator) throws IOException {
         final Stack<Map.Entry<IReader, Object>> myStack = new Stack<>();
 
+        findEncoding(parIterator);
+
         Object mySeparatorForObject = null;
         while (parIterator.hasNext()) {
             moveToNextToken(parIterator);
@@ -165,6 +167,90 @@ class JSONReader {
         throw new EmptyJSONException(parIterator);
     }
 
+    private Encoding findEncoding(final ICharacterIterator parIterator) throws IOException {
+        // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
+        // the only special characters we need to handle.
+
+        final char myUtf8BomChar0 = '\u00ef';
+        final char myUtf8BomChar1 = '\u00bb';
+        final char myUtf8BomChar2 = '\u00bf';
+
+        final char myUtf16BomChar0 = '\u00fe';
+        final char myUtf16BomChar1 = '\u00ff';
+
+        final char myUtfBigEndian = '\ufeff';
+        final char myUtfLittleEndian = '\ufffe';
+        final char myUtf32Char = '\u0000';
+
+        // UTF8
+        final char myNextChar = parIterator.peek();
+        switch (myNextChar) {
+            case myUtf8BomChar0:
+                parIterator.next();
+                if (!parIterator.hasNext() || parIterator.next() != myUtf8BomChar1 || !parIterator.hasNext()
+                        || parIterator.next() != myUtf8BomChar2) {
+                    throw new MalformedJSONException(parIterator);
+                }
+                // UTF-8 but single byte characters
+                return Encoding.UTF8;
+            case myUtfBigEndian:
+                parIterator.next();
+                if (findPartialUtf32Encoding(parIterator)) {
+                    return Encoding.UTF32BE;
+                }
+                return Encoding.UTF16BE;
+            case myUtfLittleEndian:
+                parIterator.next();
+                if (findPartialUtf32Encoding(parIterator)) {
+                    return Encoding.UTF32LE;
+                }
+                return Encoding.UTF16LE;
+            case myUtf32Char:
+                parIterator.next();
+                if (parIterator.hasNext() && parIterator.next() != myUtf32Char) {
+                    throw new MalformedJSONException(parIterator);
+                }
+                final Encoding myEncoding = findEncoding(parIterator);
+                if (myEncoding == Encoding.UTF16BE) {
+                    return Encoding.UTF32BE;
+                }
+                throw new MalformedJSONException(parIterator);
+            case myUtf16BomChar0:
+                parIterator.next();
+                // big-endian
+                if (!parIterator.hasNext() || parIterator.next() != myUtf16BomChar1) {
+                    throw new MalformedJSONException(parIterator);
+                }
+                return Encoding.UTF16BE;
+            case myUtf16BomChar1:
+                parIterator.next();
+                // little-endian
+                if (!parIterator.hasNext() || parIterator.next() != myUtf16BomChar0) {
+                    throw new MalformedJSONException(parIterator);
+                }
+                if (findPartialUtf32Encoding(parIterator)) {
+                    return Encoding.UTF32LE;
+                }
+                return Encoding.UTF16LE;
+            default:
+                return Encoding.UTF8;
+        }
+    }
+
+    private boolean findPartialUtf32Encoding(final ICharacterIterator parIterator) throws IOException {
+        final char myUtf32Char = '\u0000';
+
+        if (parIterator.hasNext() && parIterator.peek() == myUtf32Char) {
+            parIterator.next();
+            if (!parIterator.hasNext() || parIterator.next() != myUtf32Char) {
+                throw new MalformedJSONException(parIterator);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     void moveToNextToken(final ICharacterIterator parIterator) throws IOException {
         while (parIterator.hasNext()) {
             final char myChar = Character.toLowerCase(parIterator.peek());
@@ -180,5 +266,13 @@ class JSONReader {
 
     private boolean isValidToken(final char parChar) {
         return JSONSymbolCollection.TOKENS.containsKey(parChar) || JSONSymbolCollection.NUMBERS.containsKey(parChar);
+    }
+
+    private enum Encoding {
+        UTF8,
+        UTF16BE,
+        UTF16LE,
+        UTF32BE,
+        UTF32LE
     }
 }
