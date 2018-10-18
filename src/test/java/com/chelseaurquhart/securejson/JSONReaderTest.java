@@ -132,27 +132,57 @@ public final class JSONReaderTest {
             ),
             new Parameters(
                 "empty list, UTF16 BOM big-endian",
-                new byte[]{(byte) 0xfe, (byte) 0xff, '[', ']'},
+                new byte[]{(byte) 0xfe, (byte) 0xff, 0, '[', 0, ']'},
                 new ArrayList<>(),
                 null
             ),
             new Parameters(
                 "empty list, UTF16 BOM little-endian",
-                new byte[]{(byte) 0xff, (byte) 0xfe, '[', ']'},
+                new byte[]{(byte) 0xff, (byte) 0xfe, '[', 0, ']', 0},
                 new ArrayList<>(),
                 null
             ),
             new Parameters(
                 "empty list, UTF32 BOM big-endian",
-                new byte[]{0, 0, (byte) 0xfe, (byte) 0xff, '[', ']'},
+                new byte[]{0, 0, (byte) 0xfe, (byte) 0xff, 0, 0, 0, '[', 0, 0, 0, ']'},
                 new ArrayList<>(),
                 null
             ),
             new Parameters(
                 "empty list, UTF32 BOM little-endian",
-                new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', ']'},
+                new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0},
                 new ArrayList<>(),
                 null
+            ),
+            new Parameters(
+                "empty list, UTF8 BOM, extra token",
+                new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf, '[', ']', ']'},
+                new ArrayList<>(),
+                new ExtraCharactersException(new PresetIterableCharSequence(5))
+            ),
+            new Parameters(
+                "empty list, UTF16 BOM big-endian, extra token",
+                new byte[]{(byte) 0xfe, (byte) 0xff, 0, '[', 0, ']', 0, ']'},
+                new ArrayList<>(),
+                new ExtraCharactersException(new PresetIterableCharSequence(7))
+            ),
+            new Parameters(
+                "empty list, UTF16 BOM little-endian, extra token",
+                new byte[]{(byte) 0xff, (byte) 0xfe, '[', 0, ']', 0, ']', 0},
+                new ArrayList<>(),
+                new ExtraCharactersException(new PresetIterableCharSequence(7))
+            ),
+            new Parameters(
+                "empty list, UTF32 BOM big-endian, extra token",
+                new byte[]{0, 0, (byte) 0xfe, (byte) 0xff, 0, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0, ']'},
+                new ArrayList<>(),
+                new ExtraCharactersException(new PresetIterableCharSequence(15))
+            ),
+            new Parameters(
+                "empty list, UTF32 BOM little-endian, extra token",
+                new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0, ']', 0, 0, 0},
+                new ArrayList<>(),
+                new ExtraCharactersException(new PresetIterableCharSequence(15))
             ),
             new Parameters(
                 "empty list padded",

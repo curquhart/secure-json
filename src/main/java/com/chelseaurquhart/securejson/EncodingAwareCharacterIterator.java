@@ -1,13 +1,18 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 
 import java.io.IOException;
 
 abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
+    private static final int UTF16_BYTES = 2;
+    private static final int UTF32_BYTES = 4;
+
     private Character nextChar;
     private int offset;
     private boolean initialized;
+    private Encoding encoding;
 
     EncodingAwareCharacterIterator() {
         this(0);
@@ -38,7 +43,6 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         final char myUtfBigEndian = '\ufeff';
         final char myUtfLittleEndian = '\ufffe';
 
-        // UTF8
         final char myNextChar = peek();
         switch (myNextChar) {
             case myUtf8BomChar0:
@@ -46,7 +50,6 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 if (!hasNext() || next() != myUtf8BomChar1 || !hasNext() || next() != myUtf8BomChar2) {
                     throw new MalformedJSONException(this);
                 }
-                // UTF-8 but single byte characters
                 return Encoding.UTF8;
             case myUtfBigEndian:
                 next();
@@ -76,6 +79,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 if (findPartialUtf32Encoding()) {
                     return Encoding.UTF32LE;
                 }
+                readNullChars(1);
                 return Encoding.UTF16LE;
             default:
                 if (findPartialUtf32Encoding()) {
@@ -106,11 +110,11 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private Character cacheAndGetNextChar() throws IOException {
         if (!initialized) {
             initialized = true;
-            findEncoding();
+            encoding = findEncoding();
         }
 
         if (nextChar == null) {
-            nextChar = readNextChar();
+            nextChar = readAndProcessNextChar();
         }
 
         return nextChar;
@@ -143,9 +147,53 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         }
 
         try {
-            return readNextChar();
+            offset++;
+            return readAndProcessNextChar();
         } catch (final IOException myException) {
             throw new RuntimeException(myException);
+        }
+    }
+
+    private Character readAndProcessNextChar() throws IOException {
+        if (encoding == null || encoding == Encoding.UTF8) {
+            return readNextChar();
+        }
+
+        final Character myChar;
+        switch (encoding) {
+            case UTF16BE:
+                readNullChars(UTF16_BYTES - 1);
+                myChar = readNextChar();
+                break;
+            case UTF16LE:
+                myChar = readNextChar();
+                readNullChars(UTF16_BYTES - 1);
+                break;
+            case UTF32LE:
+                myChar = readNextChar();
+                readNullChars(UTF32_BYTES - 1);
+                break;
+            case UTF32BE:
+                readNullChars(UTF32_BYTES - 1);
+                myChar = readNextChar();
+                break;
+            default:
+                throw new IOException("Invalid encoding");
+        }
+
+        return myChar;
+    }
+
+    private void readNullChars(final int parCount) throws IOException {
+        for (int myIndex = 0; myIndex < parCount; myIndex++) {
+            offset++;
+            final Character myChar = readNextChar();
+            if (myChar == null) {
+                return;
+            } else if (myChar != '\u0000') {
+                throw new InvalidTokenException(this);
+            }
+
         }
     }
 
