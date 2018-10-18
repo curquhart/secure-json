@@ -79,7 +79,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 if (findPartialUtf32Encoding()) {
                     return Encoding.UTF32LE;
                 }
-                readNullChars(1);
+                readNullChars(1, true);
                 return Encoding.UTF16LE;
             default:
                 if (findPartialUtf32Encoding()) {
@@ -162,19 +162,25 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         final Character myChar;
         switch (encoding) {
             case UTF16BE:
-                readNullChars(UTF16_BYTES - 1);
-                myChar = readNextChar();
+                // support UTF8 with UTF16 BOM. >.<
+                readNullChars(UTF16_BYTES - 1, false);
+                if (nextChar == null) {
+                    myChar = readNextChar();
+                } else {
+                    myChar = nextChar;
+                    nextChar = null;
+                }
                 break;
             case UTF16LE:
                 myChar = readNextChar();
-                readNullChars(UTF16_BYTES - 1);
+                readNullChars(UTF16_BYTES - 1, true);
                 break;
             case UTF32LE:
                 myChar = readNextChar();
-                readNullChars(UTF32_BYTES - 1);
+                readNullChars(UTF32_BYTES - 1, true);
                 break;
             case UTF32BE:
-                readNullChars(UTF32_BYTES - 1);
+                readNullChars(UTF32_BYTES - 1, true);
                 myChar = readNextChar();
                 break;
             default:
@@ -184,14 +190,19 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return myChar;
     }
 
-    private void readNullChars(final int parCount) throws IOException {
+    private void readNullChars(final int parCount, final boolean parIsRequired) throws IOException {
         for (int myIndex = 0; myIndex < parCount; myIndex++) {
             offset++;
             final Character myChar = readNextChar();
             if (myChar == null) {
                 return;
             } else if (myChar != '\u0000') {
-                throw new InvalidTokenException(this);
+                if (parIsRequired) {
+                    throw new InvalidTokenException(this);
+                }
+
+                nextChar = myChar;
+                return;
             }
 
         }
