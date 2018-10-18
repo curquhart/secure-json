@@ -1,10 +1,10 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -33,7 +33,7 @@ public final class CLI {
         }
 
         try {
-            final String myValue = new String(Files.readAllBytes(Paths.get(parArgs[0])), Charset.forName("UTF-8"));
+            final byte[] myValue = Files.readAllBytes(Paths.get(parArgs[0]));
             if (isValidJSON(myValue)) {
                 System.out.println("valid");
                 System.exit(0);
@@ -46,10 +46,10 @@ public final class CLI {
         }
     }
 
-    private static boolean isValidJSON(final String parValue) throws IOException {
+    private static boolean isValidJSON(final byte[] parValue) throws IOException {
         try {
             JSONReader myReader = new JSONReader(new NumberReader(MATH_CONTEXT));
-            Object myObj = deepCharSequenceToString(myReader.read(parValue));
+            Object myObj = deepCharSequenceToString(myReader.read(new ByteArrayInputStream(parValue)));
             System.out.println(myObj);
             if (myObj != null) {
                 System.out.println(myObj.getClass().getSimpleName());
