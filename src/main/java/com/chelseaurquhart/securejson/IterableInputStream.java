@@ -4,40 +4,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-class IterableInputStream implements ISizeable, ICharacterIterator, Closeable {
+class IterableInputStream extends EncodingAwareCharacterIterator implements ICharacterIterator, Closeable {
     private static final int UNSIGNED_CONVERT_DIGIT = 0xff;
 
     private final InputStream inputStream;
-    private Integer nextChar;
-    private int offset;
 
     IterableInputStream(final InputStream parInputStream) {
+        super();
         this.inputStream = parInputStream;
-    }
-
-    @Override
-    public Character peek() {
-        cacheNextChar();
-
-        return (char) (UNSIGNED_CONVERT_DIGIT & nextChar);
-    }
-
-    @Override
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public boolean hasNext() {
-        cacheNextChar();
-        return nextChar != -1;
-    }
-
-    @Override
-    public Character next() {
-        final char myNextChar = (char) (UNSIGNED_CONVERT_DIGIT & readNextChar());
-        offset++;
-        return myNextChar;
     }
 
     @Override
@@ -50,32 +24,16 @@ class IterableInputStream implements ISizeable, ICharacterIterator, Closeable {
     }
 
     @Override
-    public int getSize() throws IOException {
-        return inputStream.available() + offset;
-    }
-
-    @Override
     public void close() throws IOException {
         inputStream.close();
     }
 
-    private void cacheNextChar() {
-        if (nextChar == null) {
-            nextChar = readNextChar();
+    @Override
+    protected Character readNextChar() throws IOException {
+        final int myChar = inputStream.read();
+        if (myChar == -1) {
+            return null;
         }
-    }
-
-    private int readNextChar() {
-        if (nextChar != null) {
-            final int myChar = nextChar;
-            nextChar = null;
-            return myChar;
-        }
-
-        try {
-            return inputStream.read();
-        } catch (final IOException myException) {
-            throw new RuntimeException(myException);
-        }
+        return (char) (UNSIGNED_CONVERT_DIGIT & myChar);
     }
 }

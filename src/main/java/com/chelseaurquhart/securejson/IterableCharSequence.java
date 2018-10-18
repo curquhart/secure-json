@@ -2,7 +2,7 @@ package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
 
-class IterableCharSequence implements ISizeable, ICharacterIterator {
+class IterableCharSequence extends EncodingAwareCharacterIterator implements ICharacterIterator {
     private final CharSequence chars;
     private int offset;
 
@@ -11,28 +11,8 @@ class IterableCharSequence implements ISizeable, ICharacterIterator {
     }
 
     IterableCharSequence(final CharSequence parChars, final int parOffset) {
+        super(parOffset);
         this.chars = parChars;
-        this.offset = parOffset;
-    }
-
-    @Override
-    public Character peek() {
-        return chars.charAt(offset);
-    }
-
-    @Override
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return offset < chars.length();
-    }
-
-    @Override
-    public Character next() {
-        return chars.charAt(offset++);
     }
 
     @Override
@@ -45,7 +25,11 @@ class IterableCharSequence implements ISizeable, ICharacterIterator {
     }
 
     @Override
-    public int getSize() {
-        return chars.length();
+    protected Character readNextChar() {
+        if (offset < chars.length()) {
+            return chars.charAt(offset++);
+        }
+
+        return null;
     }
 }

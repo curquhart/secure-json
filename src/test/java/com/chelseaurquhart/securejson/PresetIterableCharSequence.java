@@ -1,19 +1,13 @@
 package com.chelseaurquhart.securejson;
 
-class PresetIterableCharSequence extends IterableCharSequence {
-    private final int offset;
+import java.io.IOException;
 
-    PresetIterableCharSequence() {
+class PresetIterableCharSequence extends IterableCharSequence {
+    PresetIterableCharSequence() throws IOException {
         this(0);
     }
 
-    PresetIterableCharSequence(final int parOffset) {
-        super("");
-        offset = parOffset;
-    }
-
-    @Override
-    public int getOffset() {
-        return offset;
+    PresetIterableCharSequence(final int parOffset) throws IOException {
+        super("", parOffset);
     }
 }
