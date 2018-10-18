@@ -11,13 +11,13 @@ public class NumberReaderTest {
     public final void testRead(final NumberProvider.Parameters parParameters) {
         try {
             final Number myNumber = charSequenceToNumber(parParameters.number, parParameters.mathContext);
-            Assert.assertNull(parParameters.expectedExceptionForParser);
+            Assert.assertNull(parParameters.expectedException);
             Assert.assertSame(myNumber.getClass(), parParameters.expectedNumberClass);
             Assert.assertEquals(myNumber, parParameters.expected);
         } catch (final Exception myException) {
-            Assert.assertNotNull(parParameters.expectedExceptionForParser, myException.getMessage());
-            Assert.assertEquals(myException.getMessage(), parParameters.expectedExceptionForParser.getMessage());
-            Assert.assertEquals(myException.getClass(), parParameters.expectedExceptionForParser.getClass());
+            Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
+            Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
+            Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
         }
     }
 
@@ -36,8 +36,7 @@ public class NumberReaderTest {
         } else {
             myExponentSign = '+';
         }
-        return new NumberReader(parMathContext).charSequenceToNumber(parNumber, myHasDecimal, myExponentSign,
-            new IterableCharSequence(""));
+        return new NumberReader(parMathContext).charSequenceToNumber(parNumber, 0);
     }
 
     private int getIndex(final CharSequence parInput, final char parSearchFor, final int parStartIndex) {

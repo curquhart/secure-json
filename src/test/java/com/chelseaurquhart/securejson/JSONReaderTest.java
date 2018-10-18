@@ -30,14 +30,14 @@ public final class JSONReaderTest {
     public void testReadNumberFromString(final NumberProvider.Parameters parParameters) throws IOException {
         final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext));
 
-        runTest(myReader, parParameters.number, parParameters.expected, parParameters.expectedExceptionForReader);
+        runTest(myReader, parParameters.number, parParameters.expected, parParameters.expectedException);
     }
 
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromStream(final NumberProvider.Parameters parParameters) throws IOException {
         final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext));
         runTest(myReader, charSequenceToStream(parParameters.number), parParameters.expected,
-            parParameters.expectedExceptionForReader);
+            parParameters.expectedException);
     }
 
     @Test(dataProviderClass = StringProvider.class, dataProvider = StringProvider.DATA_PROVIDER_NAME)

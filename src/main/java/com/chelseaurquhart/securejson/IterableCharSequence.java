@@ -7,7 +7,12 @@ class IterableCharSequence implements ISizeable, ICharacterIterator {
     private int offset;
 
     IterableCharSequence(final CharSequence parChars) {
+        this(parChars, 0);
+    }
+
+    IterableCharSequence(final CharSequence parChars, final int parOffset) {
         this.chars = parChars;
+        this.offset = parOffset;
     }
 
     @Override

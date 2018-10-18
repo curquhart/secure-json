@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Map;
 
 class NumberReader implements IReader {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
@@ -42,45 +44,21 @@ class NumberReader implements IReader {
 
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
 
-        if (parIterator.peek() == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
-            mySecureBuffer.append(parIterator.next());
-        }
-
+        final int myOffset = parIterator.getOffset();
         while (parIterator.hasNext()) {
             final char myNextChar = parIterator.peek();
-            final int myIteratorOffset = parIterator.getOffset();
-            if (myNextChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()) {
-                if (myDecimalPosition != 0) {
-                    throw new MalformedNumberException(parIterator);
-                }
-                myDecimalPosition = myIteratorOffset;
-            } else if (Character.toLowerCase(myNextChar) == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
-                if (myExponentPosition != 0) {
-                    throw new MalformedNumberException(parIterator);
-                }
-                myExponentPosition = myIteratorOffset;
-                mySecureBuffer.append(parIterator.next());
-                final char myFirstExpDigit = parIterator.peek();
-                if (myFirstExpDigit == JSONSymbolCollection.Token.PLUS.getShortSymbol()
-                        || myFirstExpDigit == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
-                    myExponentSign = myFirstExpDigit;
-                    myExponentPosition++;
-                } else if (!Character.isDigit(myFirstExpDigit)) {
-                    throw new MalformedNumberException(parIterator);
-                }
-            } else if (JSONSymbolCollection.WHITESPACES.containsKey(myNextChar)
+
+            if (JSONSymbolCollection.WHITESPACES.containsKey(myNextChar)
                     || JSONSymbolCollection.END_TOKENS.containsKey(myNextChar)) {
                 break;
-            } else if (!Character.isDigit(myNextChar)) {
-                throw new MalformedNumberException(parIterator);
+            } else {
+                mySecureBuffer.append(parIterator.next());
             }
-
-            mySecureBuffer.append(parIterator.next());
         }
 
         try {
-            return charSequenceToNumber(mySecureBuffer, myDecimalPosition > 0, myExponentSign, parIterator);
-        } catch (final NumberFormatException myException) {
+            return charSequenceToNumber(mySecureBuffer, myOffset);
+        } catch (final ArithmeticException myException) {
             throw new MalformedNumberException(parIterator);
         }
     }
@@ -89,21 +67,23 @@ class NumberReader implements IReader {
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
     }
 
-    Number charSequenceToNumber(final CharSequence parNumber, final boolean parHasDecimal,
-                                final char parExponentSign, final ICharacterIterator parIterator)
+    Number charSequenceToNumber(final CharSequence parNumber, final int parOffset)
             throws IOException {
-        final BigDecimal myDecimal;
+        final Map.Entry<BigDecimal, Boolean> myDecimalAndForceDouble;
         try {
-            myDecimal = charSequenceToBigDecimal(parNumber, parIterator);
-        } catch (final ArithmeticException myException) {
+            myDecimalAndForceDouble = charSequenceToBigDecimal(parNumber, parOffset);
+        } catch (final NumberFormatException | ArithmeticException myException) {
             // number is probably too big. We can still handle it, but our algorithm is very expensive and
-            // a CharSequence may be okay.
+            // a CharSequence may be okay so we want to lazy convert it, if requested.
             return new HugeDecimal(parNumber);
         }
 
-        if (!parHasDecimal && parExponentSign == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
-            // return the smallest representation we can.
-            // if not decimal or negative exponent, always return a double.
+        final BigDecimal myDecimal = myDecimalAndForceDouble.getKey();
+        final boolean myForceDouble = myDecimalAndForceDouble.getValue();
+
+        // return the smallest representation we can.
+        // if not decimal or negative exponent, always return a double.
+        if (!myForceDouble) {
             try {
                 return myDecimal.shortValueExact();
             } catch (ArithmeticException e) {
@@ -137,57 +117,88 @@ class NumberReader implements IReader {
         return parValue;
     }
 
-    private BigDecimal charSequenceToBigDecimal(final CharSequence parNumber, final ICharacterIterator parIterator)
+    private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset)
             throws IOException {
-        final char[] myBuffer = new char[parNumber.length()];
+        final char[] myBuffer = new char[parSource.length()];
         try {
-            insertNumeric(myBuffer, parNumber, parIterator);
-            return new BigDecimal(myBuffer, mathContext);
+            boolean myFoundExponent = false;
+            boolean myFoundDecimal = false;
+            boolean myFoundNonZeroDigit = false;
+            boolean myForceDouble = false;
+
+            char myLastChar = 0;
+            final int myLength = parSource.length();
+            int myLengthOffset = 0;
+            for (int myIndex = 0; myIndex < myLength; myIndex++) {
+                final char myChar = parSource.charAt(myIndex);
+                final JSONSymbolCollection.Token myToken;
+                try {
+                    myToken = JSONSymbolCollection.Token.forSymbol(myChar);
+                } catch (final IllegalArgumentException myException) {
+                    throw buildException(parSource, myIndex + parOffset);
+                }
+                myBuffer[myIndex + myLengthOffset] = myChar;
+                switch (myToken) {
+                    case ZERO:
+                        if (!myFoundNonZeroDigit && !myFoundDecimal && (myLength < 3 || parSource.charAt(myIndex + 1)
+                                != JSONSymbolCollection.Token.DECIMAL.getShortSymbol())) {
+                            throw buildException(parSource, myIndex + parOffset);
+                        }
+                        break;
+                    case ONE:
+                    case TWO:
+                    case THREE:
+                    case FOUR:
+                    case FIVE:
+                    case SIX:
+                    case SEVEN:
+                    case EIGHT:
+                    case NINE:
+                        myFoundNonZeroDigit = true;
+                        break;
+                    case DECIMAL:
+                        if (myFoundDecimal || myFoundExponent || myIndex == 0) {
+                            throw buildException(parSource, myIndex + parOffset);
+                        }
+                        myFoundDecimal = true;
+                        myForceDouble = true;
+                        break;
+                    case EXPONENT:
+                        if (myFoundExponent || myLastChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                                || myIndex == myLength - 1) {
+                            throw buildException(parSource, myIndex + parOffset);
+                        }
+                        myFoundExponent = true;
+                        final char myNextChar = parSource.charAt(myIndex + 1);
+                        if (myNextChar == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
+                            myForceDouble = true;
+                            myBuffer[++myIndex + myLengthOffset] = JSONSymbolCollection.Token.MINUS.getShortSymbol();
+                        } else if (myNextChar == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
+                            myIndex++;
+                            myLengthOffset--;
+                        }
+                        break;
+                    case MINUS:
+                        if (myIndex == 0) {
+                            // 0 is ok, anything else is not.
+                            break;
+                        }
+                    default:
+                        throw buildException(parSource, myIndex + parOffset);
+                }
+
+                myLastChar = myChar;
+            }
+            return new AbstractMap.SimpleImmutableEntry<>(
+                new BigDecimal(myBuffer, 0, myLength+myLengthOffset, mathContext), myForceDouble);
         } finally {
             // clear contents
             Arrays.fill(myBuffer, ' ');
         }
     }
 
-    private void insertNumeric(final char[] parDestination, final CharSequence parSource,
-                               final ICharacterIterator parIterator) throws IOException {
-        int myDecimalPos = -1;
-        int myExponentPos = -1;
-        int myLength = parSource.length();
-
-        // need to clean up this dumpster fire later.
-        // need to move most of this logic into read so that the offset is correct
-
-        // -01
-        if (myLength > 2 && (parSource.charAt(0) == '-' && parSource.charAt(1) == '0' && parSource.charAt(2) != '.')) {
-            Arrays.fill(parDestination, ' ');
-            throw new MalformedNumberException(parIterator);
-        }
-        // 01.
-        if (myLength > 2 && (parSource.charAt(0) == '0' && parSource.charAt(1) != '.' && parSource.charAt(1) != 'e'
-                && parSource.charAt(1) != '0')) {
-            Arrays.fill(parDestination, ' ');
-            throw new MalformedNumberException(parIterator);
-        }
-
-        for (int myIndex = 0; myIndex < myLength; myIndex++) {
-            final char myChar = parSource.charAt(myIndex);
-            // java 10 correctly identifies this as invalid, but previous versions do not.
-            if (myChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()) {
-                if (myIndex == 0 || myDecimalPos != -1 || myExponentPos != -1 || myIndex == myLength - 1
-                        || (myIndex == 1 && parDestination[0] == '-')) {
-                    Arrays.fill(parDestination, ' ');
-                    throw new MalformedNumberException(parIterator);
-                }
-                myDecimalPos = myIndex;
-            } else if (Character.toLowerCase(myChar) == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
-                if (myIndex == myDecimalPos + 1) {
-                    Arrays.fill(parDestination, ' ');
-                    throw new MalformedNumberException(parIterator);
-                }
-                myExponentPos = myIndex;
-            }
-            parDestination[myIndex] = myChar;
-        }
+    private MalformedNumberException buildException(final CharSequence parSource, final int parOffset)
+            throws IOException {
+        return new MalformedNumberException(new IterableCharSequence(parSource, parOffset));
     }
 }

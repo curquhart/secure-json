@@ -216,7 +216,7 @@ public final class NumberProvider {
                 1d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new InvalidTokenException(new PresetIterableCharSequence())),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
             buildParameters(
                 "lots of decimals",
                 "1.000000123",
@@ -258,14 +258,14 @@ public final class NumberProvider {
                 1d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
             buildParameters(
                 "1.0 padded, positive sign",
                 "+00000001.00000000",
                 1d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new InvalidTokenException(new PresetIterableCharSequence())),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
             buildParameters(
                 "1.0 unpadded, no sign",
                 "1.0",
@@ -279,7 +279,7 @@ public final class NumberProvider {
                 1d,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new InvalidTokenException(new PresetIterableCharSequence())),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
             buildParameters(
                 "simple standard notation with no decimal, negative",
                 "-1",
@@ -356,8 +356,7 @@ public final class NumberProvider {
                 null,
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new MalformedNumberException(new PresetIterableCharSequence(2)))
-                .parserException(new MalformedNumberException(new PresetIterableCharSequence())),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
             buildParameters(
                 "enormous number",
                 new BigDecimal(1234567890).pow(1234, HUGE_PRECISION_MATH_CONTEXT).toString(),
@@ -378,8 +377,7 @@ public final class NumberProvider {
                 null,
                 null,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new MalformedNumberException(new PresetIterableCharSequence(5)))
-                .parserException(new MalformedNumberException(new PresetIterableCharSequence())),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(3))),
             buildParameters(
                 "overflow",
                 new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT).toString(),
@@ -394,8 +392,7 @@ public final class NumberProvider {
                 null,
                 null,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new MalformedNumberException(new PresetIterableCharSequence(3)))
-                .parserException(new MalformedNumberException(new PresetIterableCharSequence()))
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(3)))
         };
     }
 
@@ -440,8 +437,7 @@ public final class NumberProvider {
         final Number expected;
         final Class expectedNumberClass;
         final MathContext mathContext;
-        Exception expectedExceptionForReader;
-        Exception expectedExceptionForParser;
+        Exception expectedException;
 
         Parameters(final String parTestName, final CharSequence parNumber, final Number parExpected,
                    final Class parExpectedNumberClass, final MathContext parMathContext) {
@@ -453,18 +449,7 @@ public final class NumberProvider {
         }
 
         Parameters exception(final Exception parException) {
-            parserException(parException);
-            readerException(parException);
-            return this;
-        }
-
-        Parameters parserException(final Exception parException) {
-            this.expectedExceptionForParser = parException;
-            return this;
-        }
-
-        Parameters readerException(final Exception parException) {
-            this.expectedExceptionForReader = parException;
+            expectedException = parException;
             return this;
         }
 

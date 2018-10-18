@@ -47,7 +47,8 @@ final class JSONSymbolCollection {
         Token.EIGHT.getShortSymbol(),
         Token.NINE.getShortSymbol(),
         Token.DECIMAL.getShortSymbol(),
-        Token.MINUS.getShortSymbol()
+        Token.MINUS.getShortSymbol(),
+        Token.PLUS.getShortSymbol()
     );
 
     private static Map<Character, Character> listToMap(final Character... parElements) {
@@ -89,8 +90,9 @@ final class JSONSymbolCollection {
         EXPONENT('e');
 
         static Token forSymbol(final char parSymbol) {
-            if (SHORT_TOKEN_MAP.containsKey(Character.toLowerCase(parSymbol))) {
-                return SHORT_TOKEN_MAP.get(parSymbol);
+            final char mySymbol = Character.toLowerCase(parSymbol);
+            if (SHORT_TOKEN_MAP.containsKey(mySymbol)) {
+                return SHORT_TOKEN_MAP.get(mySymbol);
             }
 
             throw new IllegalArgumentException(String.format("%c is an invalid symbol.", parSymbol));
