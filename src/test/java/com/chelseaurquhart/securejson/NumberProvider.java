@@ -1,7 +1,6 @@
 package com.chelseaurquhart.securejson;
 
 import  com.chelseaurquhart.securejson.JSONDecodeException.MalformedNumberException;
-import  com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 
 import io.github.novacrypto.SecureCharBuffer;
 import org.testng.annotations.DataProvider;
@@ -276,10 +275,24 @@ public final class NumberProvider {
             buildParameters(
                 "1.0 unpadded, positive sign",
                 "+1.0",
-                1d,
-                Double.class,
+                null,
+                null,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
+            buildParameters(
+                "trailing decimal on 0",
+                "0.",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(1))),
+            buildParameters(
+                "trailing decimal on 11",
+                "11.",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(2))),
             buildParameters(
                 "simple standard notation with no decimal, negative",
                 "-1",

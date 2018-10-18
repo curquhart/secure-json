@@ -140,7 +140,8 @@ class NumberReader implements IReader {
                 myBuffer[myIndex + myLengthOffset] = myChar;
                 switch (myToken) {
                     case ZERO:
-                        if (!myFoundNonZeroDigit && !myFoundDecimal && (myLength < 3 || parSource.charAt(myIndex + 1)
+                        if (!myFoundNonZeroDigit && !myFoundDecimal && (myLength < myIndex + 1
+                                || parSource.charAt(myIndex + 1)
                                 != JSONSymbolCollection.Token.DECIMAL.getShortSymbol())) {
                             throw buildException(parSource, myIndex + parOffset);
                         }
@@ -157,7 +158,7 @@ class NumberReader implements IReader {
                         myFoundNonZeroDigit = true;
                         break;
                     case DECIMAL:
-                        if (myFoundDecimal || myFoundExponent || myIndex == 0) {
+                        if (myFoundDecimal || myFoundExponent || myIndex == 0 || myIndex == myLength - 1) {
                             throw buildException(parSource, myIndex + parOffset);
                         }
                         myFoundDecimal = true;
@@ -190,7 +191,7 @@ class NumberReader implements IReader {
                 myLastChar = myChar;
             }
             return new AbstractMap.SimpleImmutableEntry<>(
-                new BigDecimal(myBuffer, 0, myLength+myLengthOffset, mathContext), myForceDouble);
+                new BigDecimal(myBuffer, 0, myLength + myLengthOffset, mathContext), myForceDouble);
         } finally {
             // clear contents
             Arrays.fill(myBuffer, ' ');
