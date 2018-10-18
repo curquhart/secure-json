@@ -254,10 +254,17 @@ public final class NumberProvider {
             buildParameters(
                 "1.0 padded, no sign",
                 "00000001.00000000",
-                1d,
-                Double.class,
+                null,
+                null,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(1))),
+            buildParameters(
+                "negative zero",
+                "-0",
+                (short) -0,
+                Short.class,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ),
             buildParameters(
                 "1.0 padded, positive sign",
                 "+00000001.00000000",
@@ -272,6 +279,48 @@ public final class NumberProvider {
                 Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
+            buildParameters(
+                "zero",
+                "0",
+                (short) 0,
+                Short.class,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ),
+            buildParameters(
+                "0e+",
+                "0e+",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(2))),
+            buildParameters(
+                "0e1",
+                "0e1",
+                (short) 0,
+                Short.class,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ),
+            buildParameters(
+                "0e+1",
+                "0e+1",
+                (short) 0,
+                Short.class,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ),
+            buildParameters(
+                "no integer part, decimal",
+                "-.1",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(1))),
+            buildParameters(
+                "no integer part, exponent",
+                "-e1",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(1))),
             buildParameters(
                 "1.0 unpadded, positive sign",
                 "+1.0",
@@ -289,6 +338,41 @@ public final class NumberProvider {
             buildParameters(
                 "trailing decimal on 11",
                 "11.",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(2))),
+            buildParameters(
+                "just decimal",
+                ".",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
+            buildParameters(
+                "just minus",
+                "-",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
+            buildParameters(
+                "minus decimal",
+                "-.",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence(1))),
+            buildParameters(
+                "exponent minus",
+                "e-",
+                null,
+                null,
+                NumberReader.DEFAULT_MATH_CONTEXT
+            ).exception(new MalformedNumberException(new PresetIterableCharSequence())),
+            buildParameters(
+                "exponent minus with number",
+                "3e-",
                 null,
                 null,
                 NumberReader.DEFAULT_MATH_CONTEXT

@@ -38,10 +38,6 @@ class NumberReader implements IReader {
 
     @Override
     public Number read(final ICharacterIterator parIterator) throws IOException {
-        int myDecimalPosition = 0;
-        int myExponentPosition = 0;
-        char myExponentSign = JSONSymbolCollection.Token.PLUS.getShortSymbol();
-
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
 
         final int myOffset = parIterator.getOffset();
@@ -138,12 +134,24 @@ class NumberReader implements IReader {
                     throw buildException(parSource, myIndex + parOffset);
                 }
                 myBuffer[myIndex + myLengthOffset] = myChar;
+                final char myNextChar;
+                if (myLength > myIndex + 1) {
+                    myNextChar = parSource.charAt(myIndex + 1);
+                } else {
+                    myNextChar = 0;
+                }
+
                 switch (myToken) {
                     case ZERO:
-                        if (!myFoundNonZeroDigit && !myFoundDecimal && (myLength < myIndex + 1
-                                || parSource.charAt(myIndex + 1)
-                                != JSONSymbolCollection.Token.DECIMAL.getShortSymbol())) {
-                            throw buildException(parSource, myIndex + parOffset);
+                        if (myLength != 1 && !myFoundNonZeroDigit && !myFoundDecimal) {
+                            if (myLength <= myIndex + 1) {
+                                if (myLastChar != JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
+                                    throw buildException(parSource, myIndex + parOffset);
+                                }
+                            } else if (myNextChar != JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                                    && myNextChar != JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                                throw buildException(parSource, myIndex + parOffset + 1);
+                            }
                         }
                         break;
                     case ONE:
@@ -166,21 +174,33 @@ class NumberReader implements IReader {
                         break;
                     case EXPONENT:
                         if (myFoundExponent || myLastChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
-                                || myIndex == myLength - 1) {
+                                || myIndex == myLength - 1 || myIndex == 0) {
                             throw buildException(parSource, myIndex + parOffset);
                         }
                         myFoundExponent = true;
-                        final char myNextChar = parSource.charAt(myIndex + 1);
                         if (myNextChar == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
                             myForceDouble = true;
                             myBuffer[++myIndex + myLengthOffset] = JSONSymbolCollection.Token.MINUS.getShortSymbol();
+                            if (myIndex == myLength - 1) {
+                                throw buildException(parSource, myIndex + parOffset);
+                            }
                         } else if (myNextChar == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
                             myIndex++;
+                            if (myIndex == myLength - 1) {
+                                throw buildException(parSource, myIndex + parOffset);
+                            }
                             myLengthOffset--;
                         }
                         break;
                     case MINUS:
-                        if (myIndex == 0) {
+                        if (myIndex == myLength - 1) {
+                            throw buildException(parSource, myIndex + parOffset);
+                        }
+
+                        if (myNextChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                                || myNextChar == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                            throw buildException(parSource, myIndex + parOffset + 1);
+                        } else if (myIndex == 0) {
                             // 0 is ok, anything else is not.
                             break;
                         }
