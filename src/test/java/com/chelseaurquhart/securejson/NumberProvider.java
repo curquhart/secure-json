@@ -383,11 +383,11 @@ public final class NumberProvider {
             buildParameters(
                 "overflow",
                 new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT).toString(),
-                null,
-                null,
+                new HugeDecimal(new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT)
+                    .toString()),
+                HugeDecimal.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
-            ).readerException(new MalformedNumberException(new PresetIterableCharSequence(309)))
-                .parserException(new ArithmeticException("Rounding necessary")),
+            ),
             buildParameters(
                 "multiple decimals",
                 "1.2.3",

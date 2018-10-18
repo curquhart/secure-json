@@ -80,7 +80,7 @@ class NumberReader implements IReader {
 
         try {
             return charSequenceToNumber(mySecureBuffer, myDecimalPosition > 0, myExponentSign, parIterator);
-        } catch (ArithmeticException | NumberFormatException e) {
+        } catch (final NumberFormatException myException) {
             throw new MalformedNumberException(parIterator);
         }
     }
@@ -92,7 +92,14 @@ class NumberReader implements IReader {
     Number charSequenceToNumber(final CharSequence parNumber, final boolean parHasDecimal,
                                 final char parExponentSign, final ICharacterIterator parIterator)
             throws IOException {
-        final BigDecimal myDecimal = charSequenceToBigDecimal(parNumber, parIterator);
+        final BigDecimal myDecimal;
+        try {
+            myDecimal = charSequenceToBigDecimal(parNumber, parIterator);
+        } catch (final ArithmeticException myException) {
+            // number is probably too big. We can still handle it, but our algorithm is very expensive and
+            // a CharSequence may be okay.
+            return new HugeDecimal(parNumber);
+        }
 
         if (!parHasDecimal && parExponentSign == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
             // return the smallest representation we can.
@@ -120,7 +127,7 @@ class NumberReader implements IReader {
             }
 
             return myDoubleValue;
-        } catch (ArithmeticException | NumberFormatException e) {
+        } catch (final ArithmeticException | NumberFormatException myException) {
             return myDecimal;
         }
     }
@@ -133,13 +140,13 @@ class NumberReader implements IReader {
     private BigDecimal charSequenceToBigDecimal(final CharSequence parNumber, final ICharacterIterator parIterator)
             throws IOException {
         final char[] myBuffer = new char[parNumber.length()];
-        insertNumeric(myBuffer, parNumber, parIterator);
-        final BigDecimal myResult = new BigDecimal(myBuffer, mathContext);
-
-        // clear contents
-        Arrays.fill(myBuffer, ' ');
-
-        return myResult;
+        try {
+            insertNumeric(myBuffer, parNumber, parIterator);
+            return new BigDecimal(myBuffer, mathContext);
+        } finally {
+            // clear contents
+            Arrays.fill(myBuffer, ' ');
+        }
     }
 
     private void insertNumeric(final char[] parDestination, final CharSequence parSource,
