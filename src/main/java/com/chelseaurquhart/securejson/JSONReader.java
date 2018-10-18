@@ -180,7 +180,6 @@ class JSONReader {
 
         final char myUtfBigEndian = '\ufeff';
         final char myUtfLittleEndian = '\ufffe';
-        final char myUtf32Char = '\u0000';
 
         // UTF8
         final char myNextChar = parIterator.peek();
@@ -205,16 +204,6 @@ class JSONReader {
                     return Encoding.UTF32LE;
                 }
                 return Encoding.UTF16LE;
-            case myUtf32Char:
-                parIterator.next();
-                if (parIterator.hasNext() && parIterator.next() != myUtf32Char) {
-                    throw new MalformedJSONException(parIterator);
-                }
-                final Encoding myEncoding = findEncoding(parIterator);
-                if (myEncoding == Encoding.UTF16BE) {
-                    return Encoding.UTF32BE;
-                }
-                throw new MalformedJSONException(parIterator);
             case myUtf16BomChar0:
                 parIterator.next();
                 // big-endian
@@ -233,6 +222,13 @@ class JSONReader {
                 }
                 return Encoding.UTF16LE;
             default:
+                if (findPartialUtf32Encoding(parIterator)) {
+                    final Encoding myEncoding = findEncoding(parIterator);
+                    if (myEncoding == Encoding.UTF16BE) {
+                        return Encoding.UTF32BE;
+                    }
+                    throw new MalformedJSONException(parIterator);
+                }
                 return Encoding.UTF8;
         }
     }
