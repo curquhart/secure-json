@@ -19,7 +19,7 @@ public final class SecureJSON {
      * Convert an object to a JSON string. If it cannot be converted, throws JSONEncodeException. After the consumer
      * returns, the buffer will be destroyed so it MUST be fully consumed.
      *
-     * @param parInput The input object to serialize to JSON.
+     * @param parInput The input object to toJSONAble to JSON.
      * @param parConsumer The consumer to provide the JSON character sequence to when completed.
      * @throws JSONEncodeException On encode failure.
      */
@@ -37,7 +37,7 @@ public final class SecureJSON {
     /**
      * Convert an object to a JSON string, writing to the provided stream.
      *
-     * @param parInput The input object to serialize to JSON.
+     * @param parInput The input object to toJSONAble to JSON.
      * @param parOutputStream The stream to write to.
      * @throws JSONEncodeException On encode failure.
      */
@@ -48,7 +48,7 @@ public final class SecureJSON {
     /**
      * Convert an object to a JSON string, writing to the provided stream.
      *
-     * @param parInput The input object to serialize to JSON.
+     * @param parInput The input object to toJSONAble to JSON.
      * @param parOutputStream The stream to write to.
      * @param parCharset The charset to use.
      * @throws JSONEncodeException On encode failure.

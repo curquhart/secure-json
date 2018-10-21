@@ -26,6 +26,11 @@ class JSONWriter implements Closeable, AutoCloseable {
     }
 
     void write(final Object parInput, final ICharacterWriter parSecureBuffer) throws IOException {
+        if (parInput instanceof IJSONAware) {
+            write(((IJSONAware) parInput).toJSONable(), parSecureBuffer);
+            return;
+        }
+
         if (parInput instanceof Collection) {
             parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
             for (final Object myElement : ((Collection) parInput)) {
