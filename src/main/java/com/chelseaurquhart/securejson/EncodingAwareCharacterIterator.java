@@ -4,12 +4,14 @@ import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final int UTF16_BYTES = 2;
     private static final int UTF32_BYTES = 4;
 
-    private Character nextChar;
+    private final Deque<Character> charQueue;
     private int offset;
     private boolean initialized;
     private Encoding encoding;
@@ -20,13 +22,14 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
     EncodingAwareCharacterIterator(final int parOffset) {
         offset = parOffset;
+        charQueue = new ArrayDeque<>();
     }
 
     @Override
     public final Character peek() throws IOException {
         cacheAndGetNextChar();
 
-        return nextChar;
+        return charQueue.peek();
     }
 
     private Encoding findEncoding() throws IOException {
@@ -93,7 +96,17 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                     return Encoding.UTF16BE;
                 }
 
-                return Encoding.UTF8_IMPLICIT;
+                final int myNullCount = readNullChars(UTF32_BYTES - 1);
+
+                if (myNullCount == UTF32_BYTES - 1) {
+                    return Encoding.UTF32LE;
+                } else if (myNullCount == UTF16_BYTES - 1) {
+                    return Encoding.UTF16LE;
+                } else if (myNullCount != 0 && myNullCount != -1) {
+                    throw new MalformedJSONException(this);
+                } else {
+                    return Encoding.UTF8;
+                }
         }
     }
 
@@ -118,11 +131,16 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             encoding = findEncoding();
         }
 
-        if (nextChar == null) {
-            nextChar = readAndProcessNextChar();
+        if (charQueue.isEmpty()) {
+            final Character myNextChar = readAndProcessNextChar();
+            if (null != myNextChar) {
+                charQueue.add(myNextChar);
+            }
+
+            return myNextChar;
         }
 
-        return nextChar;
+        return charQueue.peek();
     }
 
     @Override
@@ -142,13 +160,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
     @Override
     public final Character next() {
-        if (nextChar != null) {
-            try {
-                offset++;
-                return nextChar;
-            } finally {
-                nextChar = null;
-            }
+        if (!charQueue.isEmpty()) {
+            offset++;
+            return charQueue.pop();
         }
 
         try {
@@ -169,11 +183,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             case UTF16BE:
                 // support UTF8 with UTF16 BOM. >.<
                 readNullChars(UTF16_BYTES - 1);
-                if (nextChar == null) {
+                if (charQueue.isEmpty()) {
                     myChar = readNextChar();
                 } else {
-                    myChar = nextChar;
-                    nextChar = null;
+                    myChar = charQueue.pop();
                 }
                 break;
             case UTF16LE:
@@ -187,10 +200,6 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             case UTF32BE:
                 forceReadNullChars(UTF32_BYTES - 1);
                 myChar = readNextChar();
-                break;
-            case UTF8_IMPLICIT:
-                myChar = readNextChar();
-                encoding = Encoding.UTF8;
                 break;
             default:
                 throw new IOException("Invalid encoding");
@@ -209,16 +218,16 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private int readNullChars(final int parCount) throws IOException {
         int myReadNulls = 0;
         for (int myIndex = 0; myIndex < parCount; myIndex++) {
-            offset++;
             final Character myChar = readNextChar();
             if (myChar == null) {
                 // EOF
                 return -1;
             } else if (myChar != '\u0000') {
-                nextChar = myChar;
+                charQueue.add(myChar);
                 return myReadNulls;
             }
             myReadNulls++;
+            offset++;
         }
 
         return myReadNulls;
