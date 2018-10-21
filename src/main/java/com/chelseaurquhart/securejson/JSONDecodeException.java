@@ -2,12 +2,16 @@ package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
 
-abstract class JSONDecodeException extends RuntimeException {
+class JSONDecodeException extends IOException {
     JSONDecodeException(final ICharacterIterator parCharSequence, final Messages.Key parMessageKey)
             throws IOException {
         super(Messages.get(Messages.Key.ERROR_JSON_DECODE)
             .replace(":offset", "" + parCharSequence.getOffset())
             .replace(":message", Messages.get(parMessageKey)));
+    }
+
+    JSONDecodeException(final Throwable parInput) {
+        super(Util.unwrapException(parInput));
     }
 
     static class MalformedJSONException extends JSONDecodeException {

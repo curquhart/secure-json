@@ -10,7 +10,7 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
 
-class NumberReader implements IReader {
+class NumberReader extends ManagedSecureBufferList implements IReader {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);
 
@@ -39,6 +39,7 @@ class NumberReader implements IReader {
     @Override
     public Number read(final ICharacterIterator parIterator) throws IOException {
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
+        addSecureBuffer(mySecureBuffer);
 
         final int myOffset = parIterator.getOffset();
         while (parIterator.hasNext()) {

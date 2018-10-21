@@ -5,7 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 final class JSONSymbolCollection {
-    private static final Map<Character, Token> SHORT_TOKEN_MAP = new HashMap<>();
+    static final int MIN_ALLOWED_ASCII_CODE = 32;
+    static final int MAX_ALLOWED_ASCII_CODE = 126;
+    static final short UNICODE_DIGITS = 4;
+    static final short UNICODE_DIGIT_FIRST = UNICODE_DIGITS * 3;
+    static final short UNICODE_DIGIT_SECOND = UNICODE_DIGITS * 2;
+    static final short UNICODE_DIGIT_THIRD = UNICODE_DIGITS;
+    static final short HEX_MIN_ALPHA = 10;
+    static final short HEX_MAX = 15;
 
     static final Map<Character, Character> END_TOKENS = listToMap(
         Token.R_BRACE.getShortSymbol(),
@@ -73,7 +80,7 @@ final class JSONSymbolCollection {
         L_CURLY('{'),
         R_CURLY('}'),
         COLON(':'),
-        QUOTE('"'),
+        QUOTE('"', "\\\""),
         COMMA(','),
         ZERO('0'),
         ONE('1'),
@@ -88,7 +95,22 @@ final class JSONSymbolCollection {
         DECIMAL('.'),
         MINUS('-'),
         PLUS('+'),
-        EXPONENT('e');
+        EXPONENT('e'),
+        SLASH('/', "\\/"),
+        CARRIAGE_RETURN('\r', "\\r"),
+        LINE_FEED('\n', "\\n"),
+        FORM_FEED('\f', "\\f"),
+        BACKSPACE('\b', "\\b"),
+        UNICODE('u'),
+        ESCAPE('\\', "\\\\");
+
+        private static final Map<Character, Token> SHORT_TOKEN_MAP = new HashMap<>();
+
+        static {
+            for (final Token myValue : values()) {
+                SHORT_TOKEN_MAP.put(myValue.getShortSymbol(), myValue);
+            }
+        }
 
         static Token forSymbol(final char parSymbol) {
             final char mySymbol = Character.toLowerCase(parSymbol);
@@ -101,6 +123,7 @@ final class JSONSymbolCollection {
 
         private final Object symbol;
         private final Object value;
+        private final char shortSymbol;
 
         Token(final Object parSymbol) {
             this(parSymbol, parSymbol);
@@ -109,7 +132,11 @@ final class JSONSymbolCollection {
         Token(final Object parSymbol, final Object parValue) {
             this.symbol = parSymbol;
             this.value = parValue;
-            SHORT_TOKEN_MAP.put(getShortSymbol(), this);
+            if (symbol instanceof Character) {
+                this.shortSymbol = (char) symbol;
+            } else {
+                this.shortSymbol = symbol.toString().charAt(0);
+            }
         }
 
         Object getValue() {
@@ -121,11 +148,7 @@ final class JSONSymbolCollection {
         }
 
         char getShortSymbol() {
-            if (symbol instanceof Character) {
-                return (char) symbol;
-            }
-
-            return symbol.toString().charAt(0);
+            return shortSymbol;
         }
     }
 }

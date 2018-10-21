@@ -7,6 +7,7 @@ import java.util.Properties;
 final class Messages {
     enum Key {
         ERROR_JSON_DECODE,
+        ERROR_JSON_ENCODE,
         ERROR_MALFORMED_STRING,
         ERROR_EMPTY_JSON,
         ERROR_MALFORMED_JSON,
@@ -16,7 +17,8 @@ final class Messages {
         ERROR_MALFORMED_MAP,
         ERROR_MALFORMED_NUMBER,
         ERROR_EXTRA_CHARACTERS,
-        ERROR_ITERATOR_REMOVE_NOT_ALLOWED
+        ERROR_ITERATOR_REMOVE_NOT_ALLOWED,
+        ERROR_INVALID_TYPE
     }
 
     static String get(final Key parKey) throws IOException {

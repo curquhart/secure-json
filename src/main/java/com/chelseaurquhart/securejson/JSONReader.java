@@ -5,13 +5,14 @@ import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersExcepti
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Stack;
 
-class JSONReader {
+class JSONReader implements Closeable, AutoCloseable {
     private final NumberReader numberReader;
     private final StringReader stringReader;
     private final ListReader listReader;
@@ -163,6 +164,12 @@ class JSONReader {
         }
 
         throw new EmptyJSONException(parIterator);
+    }
+
+    @Override
+    public void close() {
+        numberReader.close();
+        stringReader.close();
     }
 
     void moveToNextToken(final ICharacterIterator parIterator) throws IOException {

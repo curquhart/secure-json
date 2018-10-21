@@ -6,6 +6,32 @@ plugins {
 
 apply from: 'build.common.gradle'
 
+sourceSets {
+    shared {
+        java {
+            srcDirs 'src/shared/java'
+        }
+    }
+
+    cli {
+        java {
+            srcDirs 'src/cli/java'
+        }
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.shared.output
+        runtimeClasspath += sourceSets.shared.output
+    }
+
+    test {
+        java {
+            compileClasspath += sourceSets.shared.output
+            runtimeClasspath += sourceSets.shared.output
+        }
+    }
+}
+
+
 tasks.withType(com.github.spotbugs.SpotBugsTask) {
     reports {
         xml.enabled = false

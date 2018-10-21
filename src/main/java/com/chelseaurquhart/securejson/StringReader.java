@@ -5,10 +5,8 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedUnicodeValueE
 
 import java.io.IOException;
 
-class StringReader implements IReader {
-    private static final short UNICODE_DIGITS = 4;
+class StringReader extends ManagedSecureBufferList implements IReader {
     private static final int TWO_DIGIT_MIN = 10;
-    private static final int MIN_ALLOWED_ASCII_CODE = 32;
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
@@ -29,6 +27,7 @@ class StringReader implements IReader {
         parInput.next();
 
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
+        addSecureBuffer(mySecureBuffer);
 
         while (parInput.hasNext()) {
             char myChar = parInput.next();
@@ -53,7 +52,7 @@ class StringReader implements IReader {
                     }
                     mySecureBuffer.append(myChar);
                 }
-            } else if (myChar < MIN_ALLOWED_ASCII_CODE) {
+            } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
                 throw new MalformedUnicodeValueException(parInput);
             } else {
                 if (myChar == JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
@@ -78,12 +77,12 @@ class StringReader implements IReader {
 
     private char readUnicode(final ICharacterIterator parInput) throws IOException {
         int myValue = 0;
-        for (int myIndex = 0; myIndex < UNICODE_DIGITS; myIndex++) {
+        for (int myIndex = 0; myIndex < JSONSymbolCollection.UNICODE_DIGITS; myIndex++) {
             char myChar = Character.toLowerCase(parInput.next());
             if (Character.isDigit(myChar)) {
-                myValue = (myValue << UNICODE_DIGITS) + myChar - '0';
+                myValue = (myValue << JSONSymbolCollection.UNICODE_DIGITS) + myChar - '0';
             } else if (myChar >= 'a' && myChar <= 'f') {
-                myValue = (myValue << UNICODE_DIGITS) + TWO_DIGIT_MIN + myChar - 'a';
+                myValue = (myValue << JSONSymbolCollection.UNICODE_DIGITS) + TWO_DIGIT_MIN + myChar - 'a';
             } else {
                 throw new MalformedUnicodeValueException(parInput);
             }

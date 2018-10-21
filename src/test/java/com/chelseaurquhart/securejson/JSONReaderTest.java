@@ -6,6 +6,7 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 
+import com.chelseaurquhart.securejson.util.StringUtil;
 import io.github.novacrypto.SecureCharBuffer;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -15,15 +16,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
 
 public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
@@ -53,7 +49,7 @@ public final class JSONReaderTest {
             parParameters.expectedException);
     }
 
-    private static final String DATA_PROVIDER_NAME = "JSONReaderTest";
+    static final String DATA_PROVIDER_NAME = "JSONReaderTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
     private static Object[] dataProvider(final Method parMethod) throws IOException {
@@ -384,7 +380,7 @@ public final class JSONReaderTest {
     }
 
     private void runTest(final JSONReader parReader, final Object parInput, final Object parExpected,
-                         final Exception parExpectedException) throws IOException {
+                         final Exception parExpectedException) {
         try {
             final Object myActual;
             if (parInput instanceof CharSequence) {
@@ -393,64 +389,26 @@ public final class JSONReaderTest {
                 myActual = parReader.read((InputStream) parInput);
             }
             Assert.assertNull(parExpectedException, "Expected exception was not thrown");
-            Assert.assertEquals(deepCharSequenceToString(myActual), deepCharSequenceToString(parExpected));
-        } catch (final JSONDecodeException myException) {
+            Assert.assertEquals(StringUtil.deepCharSequenceToString(myActual),
+                StringUtil.deepCharSequenceToString(parExpected));
+        } catch (final Exception myException) {
             Assert.assertNotNull(parExpectedException);
-            Assert.assertEquals(myException.getMessage(), parExpectedException.getMessage());
-            Assert.assertEquals(myException.getClass(), parExpectedException.getClass());
+            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+                parExpectedException.getMessage());
+            Assert.assertEquals(Util.unwrapException(myException).getClass(),
+                parExpectedException.getClass());
         }
     }
 
-    private Object deepCharSequenceToString(final Object parInput) {
-        if (parInput == null) {
-            return null;
-        } else if (parInput instanceof CharSequence) {
-            return charSequenceToString((CharSequence) parInput);
-        } else if (parInput instanceof Map) {
-            final Map myInputMap = (Map) parInput;
-
-            final Map<String, Object> myInputMapCopy = new LinkedHashMap<>();
-            for (final Object myObject : myInputMap.entrySet()) {
-                final Map.Entry myEntry = (Map.Entry) myObject;
-                myInputMapCopy.put(charSequenceToString((CharSequence) myEntry.getKey()),
-                    deepCharSequenceToString(myEntry.getValue()));
-            }
-
-            return myInputMapCopy;
-        } else if (parInput instanceof Collection) {
-            final Collection myInputList = (Collection) parInput;
-            final Collection<Object> myInputListCopy = new LinkedList<>();
-            for (final Object myItem : myInputList) {
-                myInputListCopy.add(deepCharSequenceToString(myItem));
-            }
-
-            return myInputListCopy;
-        } else if (parInput.getClass().isArray()) {
-            final Object[] myInputArray = (Object[]) parInput;
-            for (int myIndex = 0; myIndex < myInputArray.length; myIndex++) {
-                myInputArray[myIndex] = deepCharSequenceToString(myInputArray[myIndex]);
-            }
-        }
-
-        return parInput;
-    }
-
-    private InputStream inputToStream(final CharSequence parInput, final byte[] parBytes) throws IOException {
+    static InputStream inputToStream(final CharSequence parInput, final byte[] parBytes) {
         if (parBytes == null) {
-            return new ByteArrayInputStream(charSequenceToString(parInput).getBytes(StandardCharsets.UTF_8));
+            return new ByteArrayInputStream(StringUtil.charSequenceToString(parInput).getBytes(StandardCharsets.UTF_8));
         } else {
             return new ByteArrayInputStream(parBytes);
         }
     }
 
-    private String charSequenceToString(final CharSequence parInput) {
-        final char[] myChars = new char[parInput.length()];
-        CharBuffer.wrap(parInput).get(myChars);
-
-        return new String(myChars);
-    }
-
-    private static class Parameters {
+    static class Parameters {
         private String testName;
         private byte[] inputBytes;
         private CharSequence inputString;
@@ -473,6 +431,34 @@ public final class JSONReaderTest {
             inputString = mySecureBuffer;
             expected = parExpected;
             expectedException = parExpectedException;
+        }
+
+        CharSequence getInputString() {
+            if (inputBytes != null) {
+                final char[] myChars = new char[inputBytes.length];
+                for (int myIndex = myChars.length - 1; myIndex >= 0; myIndex--) {
+                    myChars[myIndex] = (char) (0xff & inputBytes[myIndex]);
+                }
+                return new String(myChars);
+            }
+
+            return inputString;
+        }
+
+        public String getTestName() {
+            return testName;
+        }
+
+        public byte[] getInputBytes() {
+            return inputBytes;
+        }
+
+        public Object getExpected() {
+            return expected;
+        }
+
+        public Exception getExpectedException() {
+            return expectedException;
         }
 
         @Override
