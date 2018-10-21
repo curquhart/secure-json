@@ -82,7 +82,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 if (findPartialUtf32Encoding() == Encoding.UTF32) {
                     return Encoding.UTF32LE;
                 }
-                forceReadNullChars(1);
+                if (forceReadNullChars(1) == EOFMarker.EOF) {
+                    throw new MalformedJSONException(this);
+                }
                 return Encoding.UTF16LE;
             default:
                 final Encoding myPartialEncoding = findPartialUtf32Encoding();
@@ -96,11 +98,18 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                     return Encoding.UTF16BE;
                 }
 
+                final int myQueueSize = charQueue.size();
                 final int myNullCount = readNullChars(UTF32_BYTES - 1);
 
                 if (myNullCount == UTF32_BYTES - 1) {
                     return Encoding.UTF32LE;
                 } else if (myNullCount == UTF16_BYTES - 1) {
+                    // For UTF16BE, the last character is always the next non-NULL character except where EOF. We can
+                    // determine if we should force the next null marker by checking our queue size before and after the
+                    // above read.
+                    if (myQueueSize != charQueue.size() && forceReadNullChars(UTF16_BYTES - 1) == EOFMarker.EOF) {
+                        throw new MalformedJSONException(this);
+                    }
                     return Encoding.UTF16LE;
                 } else if (myNullCount != 0 && myNullCount != -1) {
                     throw new MalformedJSONException(this);
@@ -208,11 +217,16 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return myChar;
     }
 
-    private void forceReadNullChars(final int parCount) throws IOException {
+    private EOFMarker forceReadNullChars(final int parCount) throws IOException {
         final int myReadChars = readNullChars(parCount);
-        if (myReadChars != parCount && myReadChars != -1) {
+        if (myReadChars == -1) {
+            return EOFMarker.EOF;
+        }
+        if (myReadChars != parCount) {
             throw new InvalidTokenException(this);
         }
+
+        return EOFMarker.UNKNOWN;
     }
 
     private int readNullChars(final int parCount) throws IOException {
@@ -244,5 +258,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         UTF32,
         UTF16,
         UTF8_IMPLICIT
+    }
+
+    private enum EOFMarker {
+        EOF,
+        UNKNOWN
     }
 }

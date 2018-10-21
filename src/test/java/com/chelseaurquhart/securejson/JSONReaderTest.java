@@ -143,8 +143,20 @@ public final class JSONReaderTest {
                 null
             ),
             new Parameters(
+                "empty list, UTF8 with BOM",
+                new byte[]{0, '[', ']'},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
                 "empty list, UTF16 BOM little-endian",
                 new byte[]{(byte) 0xff, (byte) 0xfe, '[', 0, ']', 0},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF16 NO BOM little-endian",
+                new byte[]{'[', 0, ']', 0},
                 new ArrayList<>(),
                 null
             ),
@@ -161,8 +173,20 @@ public final class JSONReaderTest {
                 null
             ),
             new Parameters(
+                "empty list, UTF32 NO BOM big-endian, malformed",
+                new byte[]{0, 0, 0, '[', 0, 0, ']'},
+                new ArrayList<>(),
+                new InvalidTokenException(new PresetIterableCharSequence(6))
+            ),
+            new Parameters(
                 "empty list, UTF32 BOM little-endian",
                 new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0},
+                new ArrayList<>(),
+                null
+            ),
+            new Parameters(
+                "empty list, UTF32 NO BOM little-endian",
+                new byte[]{'[', 0, 0, 0, ']', 0, 0, 0},
                 new ArrayList<>(),
                 null
             ),
