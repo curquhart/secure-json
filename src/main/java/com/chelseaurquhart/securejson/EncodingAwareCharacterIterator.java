@@ -53,13 +53,13 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 return Encoding.UTF8;
             case myUtfBigEndian:
                 next();
-                if (findPartialUtf32Encoding()) {
+                if (findPartialUtf32Encoding() == Encoding.UTF32) {
                     return Encoding.UTF32BE;
                 }
                 return Encoding.UTF16BE;
             case myUtfLittleEndian:
                 next();
-                if (findPartialUtf32Encoding()) {
+                if (findPartialUtf32Encoding() == Encoding.UTF32) {
                     return Encoding.UTF32LE;
                 }
                 return Encoding.UTF16LE;
@@ -76,35 +76,40 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 if (!hasNext() || next() != myUtf16BomChar0) {
                     throw new MalformedJSONException(this);
                 }
-                if (findPartialUtf32Encoding()) {
+                if (findPartialUtf32Encoding() == Encoding.UTF32) {
                     return Encoding.UTF32LE;
                 }
-                readNullChars(1, true);
+                forceReadNullChars(1);
                 return Encoding.UTF16LE;
             default:
-                if (findPartialUtf32Encoding()) {
+                final Encoding myPartialEncoding = findPartialUtf32Encoding();
+                if (myPartialEncoding == Encoding.UTF32) {
                     final Encoding myEncoding = findEncoding();
                     if (myEncoding == Encoding.UTF16BE) {
                         return Encoding.UTF32BE;
                     }
                     throw new MalformedJSONException(this);
+                } else if (myPartialEncoding == Encoding.UTF16) {
+                    return Encoding.UTF16BE;
                 }
-                return Encoding.UTF8;
+
+                return Encoding.UTF8_IMPLICIT;
         }
     }
 
-    private boolean findPartialUtf32Encoding() throws IOException {
+    private Encoding findPartialUtf32Encoding() throws IOException {
         final char myUtf32Char = '\u0000';
 
         if (hasNext() && peek() == myUtf32Char) {
             next();
-            if (!hasNext() || next() != myUtf32Char) {
-                throw new MalformedJSONException(this);
+            if (!hasNext() || peek() != myUtf32Char) {
+                return Encoding.UTF16;
             }
-            return true;
+            next();
+            return Encoding.UTF32;
         }
 
-        return false;
+        return Encoding.UTF8_IMPLICIT;
     }
 
     private Character cacheAndGetNextChar() throws IOException {
@@ -163,7 +168,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         switch (encoding) {
             case UTF16BE:
                 // support UTF8 with UTF16 BOM. >.<
-                readNullChars(UTF16_BYTES - 1, false);
+                readNullChars(UTF16_BYTES - 1);
                 if (nextChar == null) {
                     myChar = readNextChar();
                 } else {
@@ -173,15 +178,19 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 break;
             case UTF16LE:
                 myChar = readNextChar();
-                readNullChars(UTF16_BYTES - 1, true);
+                forceReadNullChars(UTF16_BYTES - 1);
                 break;
             case UTF32LE:
                 myChar = readNextChar();
-                readNullChars(UTF32_BYTES - 1, true);
+                forceReadNullChars(UTF32_BYTES - 1);
                 break;
             case UTF32BE:
-                readNullChars(UTF32_BYTES - 1, true);
+                forceReadNullChars(UTF32_BYTES - 1);
                 myChar = readNextChar();
+                break;
+            case UTF8_IMPLICIT:
+                myChar = readNextChar();
+                encoding = Encoding.UTF8;
                 break;
             default:
                 throw new IOException("Invalid encoding");
@@ -190,22 +199,29 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return myChar;
     }
 
-    private void readNullChars(final int parCount, final boolean parIsRequired) throws IOException {
+    private void forceReadNullChars(final int parCount) throws IOException {
+        final int myReadChars = readNullChars(parCount);
+        if (myReadChars != parCount && myReadChars != -1) {
+            throw new InvalidTokenException(this);
+        }
+    }
+
+    private int readNullChars(final int parCount) throws IOException {
+        int myReadNulls = 0;
         for (int myIndex = 0; myIndex < parCount; myIndex++) {
             offset++;
             final Character myChar = readNextChar();
             if (myChar == null) {
-                return;
+                // EOF
+                return -1;
             } else if (myChar != '\u0000') {
-                if (parIsRequired) {
-                    throw new InvalidTokenException(this);
-                }
-
                 nextChar = myChar;
-                return;
+                return myReadNulls;
             }
-
+            myReadNulls++;
         }
+
+        return myReadNulls;
     }
 
     protected abstract Character readNextChar() throws IOException;
@@ -215,6 +231,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         UTF16BE,
         UTF16LE,
         UTF32BE,
-        UTF32LE
+        UTF32LE,
+        UTF32,
+        UTF16,
+        UTF8_IMPLICIT
     }
 }
