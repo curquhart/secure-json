@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public final class SecureJSONTest {
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
@@ -71,5 +72,25 @@ public final class SecureJSONTest {
         SecureJSON.toJSON(parParameters.getInputObject(), myOutputStream);
         Assert.assertEquals(StringUtil.charSequenceToString(myOutputStream.toString(StandardCharsets.UTF_8.name())),
             StringUtil.charSequenceToString(parParameters.getExpected()));
+    }
+
+    @Test(expectedExceptions = JSONDecodeException.class)
+    public void testReadIncorrectType() throws JSONDecodeException {
+        final CharSequence myInput = "\"test\"";
+        // read correct type to test for general functionality
+        SecureJSON.fromJSON(myInput, new IConsumer<CharSequence>() {
+            @Override
+            public void accept(final CharSequence parInput) {
+                Assert.assertEquals(StringUtil.charSequenceToString(parInput), "test");
+            }
+        });
+
+        // Bad cast
+        SecureJSON.fromJSON(myInput, new IConsumer<Map>() {
+            @Override
+            public void accept(final Map parInput) {
+                Assert.fail("invalid type");
+            }
+        });
     }
 }
