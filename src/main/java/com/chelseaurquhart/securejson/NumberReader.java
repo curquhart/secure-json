@@ -72,7 +72,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader {
         } catch (final NumberFormatException | ArithmeticException myException) {
             // number is probably too big. We can still handle it, but our algorithm is very expensive and
             // a CharSequence may be okay so we want to lazy convert it, if requested.
-            return new HugeDecimal(parNumber);
+            return new HugeDecimal(parNumber, this);
         }
 
         final BigDecimal myDecimal = myDecimalAndForceDouble.getKey();
@@ -114,7 +114,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader {
         return parValue;
     }
 
-    private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset)
+    Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset)
             throws IOException {
         final char[] myBuffer = new char[parSource.length()];
         try {
