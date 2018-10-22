@@ -479,7 +479,7 @@ public final class NumberProvider {
                 "overflow",
                 new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT).toString(),
                 new HugeDecimal(new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT)
-                    .toString()),
+                    .toString(), new NumberReader()),
                 HugeDecimal.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),

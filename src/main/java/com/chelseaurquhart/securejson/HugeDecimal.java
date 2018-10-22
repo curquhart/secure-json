@@ -1,5 +1,9 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Objects;
@@ -8,30 +12,70 @@ import java.util.Objects;
  * HugeDecimal is for numbers that are too big to parse with BigDecimal through normal means.
  */
 public class HugeDecimal extends Number {
-    private final CharSequence chars;
+    private static final long serialVersionUID = 1L;
 
-    HugeDecimal(final CharSequence parChars) {
+    private final CharSequence chars;
+    private final transient NumberReader numberReader;
+
+    HugeDecimal(final CharSequence parChars, final NumberReader parNumberReader) {
         chars = parChars;
+        numberReader = parNumberReader;
     }
 
+    /**
+     * Get our integer value.
+     *
+     * @return An integer representation of our value.
+     */
     @Override
     public final int intValue() {
-        return 0;
+        try {
+            return numberReader.charSequenceToBigDecimal(chars, 0).getKey().intValue();
+        } catch (final IOException myException) {
+            throw new RuntimeException(myException);
+        }
     }
 
+    /**
+     * Get our long value.
+     *
+     * @return A long representation of our value.
+     */
     @Override
     public final long longValue() {
-        return 0;
+        try {
+            return numberReader.charSequenceToBigDecimal(chars, 0).getKey().longValue();
+        } catch (final IOException myException) {
+            throw new RuntimeException(myException);
+        }
     }
 
+    /**
+     * Get our float value.
+     *
+     * @return A float representation of our value.
+     */
     @Override
     public final float floatValue() {
-        return 0;
+        try {
+            return numberReader.charSequenceToBigDecimal(chars, 0).getKey().floatValue();
+        } catch (final IOException myException) {
+            throw new RuntimeException(myException);
+        }
     }
 
+    /**
+     * Get our double value.
+     *
+     * @return A double representation of our value.
+     */
     @Override
     public final double doubleValue() {
-        return 0;
+        try {
+            return numberReader.charSequenceToBigDecimal(chars, 0).getKey().doubleValue();
+        } catch (final IOException myException) {
+            throw new RuntimeException(myException);
+        }
     }
 
     /**
@@ -86,5 +130,13 @@ public class HugeDecimal extends Number {
     @Override
     public final int hashCode() {
         return Objects.hash(chars);
+    }
+
+    private void writeObject(final ObjectOutputStream parObjectOutputStream) throws IOException {
+        throw new NotSerializableException();
+    }
+
+    private void readObject(final ObjectInputStream parObjectInputStream) throws ClassNotFoundException, IOException {
+        throw new NotSerializableException();
     }
 }

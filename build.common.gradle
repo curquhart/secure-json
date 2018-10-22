@@ -8,8 +8,34 @@ repositories {
     jcenter()
 }
 
+sourceSets {
+    shared {
+        java {
+            srcDirs 'src/shared/java'
+        }
+    }
+
+    cli {
+        java {
+            srcDirs 'src/cli/java'
+        }
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.shared.output
+        runtimeClasspath += sourceSets.shared.output
+    }
+
+    test {
+        java {
+            compileClasspath += sourceSets.shared.output
+            runtimeClasspath += sourceSets.shared.output
+        }
+    }
+}
+
 dependencies {
     compile 'io.github.novacrypto:SecureString:2018.10.06@jar'
+    cliCompile 'io.github.novacrypto:SecureString:2018.10.06@jar'
     testCompile 'org.testng:testng:6.14.3'
     testRuntime 'org.testng:testng:6.14.3'
 }
@@ -36,31 +62,6 @@ jacocoTestCoverageVerification {
     }
 }
 
-sourceSets {
-    shared {
-        java {
-            srcDirs 'src/shared/java'
-        }
-    }
-
-    cli {
-        java {
-            srcDirs 'src/cli/java'
-        }
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
-        compileClasspath += sourceSets.shared.output
-        runtimeClasspath += sourceSets.shared.output
-    }
-
-    test {
-        java {
-            compileClasspath += sourceSets.shared.output
-            runtimeClasspath += sourceSets.shared.output
-        }
-    }
-}
-
 test {
     useTestNG()
 }
@@ -70,3 +71,30 @@ jacocoTestCoverageVerification.mustRunAfter jacocoTestReport
 
 check.dependsOn jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
+
+clean {
+    delete buildDir
+}
+
+task cloneJSONTestSuite(type: Exec) {
+    ext {
+        cloneDir = "${buildDir}/JSONTestSuite"
+    }
+
+    commandLine 'git', 'clone', 'https://github.com/nst/JSONTestSuite', ext.cloneDir
+    outputs.files(cloneDir)
+}
+cloneJSONTestSuite.mustRunAfter clean
+
+task verifyJSONTestSuite(dependsOn: [cloneJSONTestSuite, compileCliJava]) {
+    def jsonFiles = fileTree("${cloneJSONTestSuite.ext.cloneDir}/test_parsing/")
+    inputs.files jsonFiles
+    doLast {
+        javaexec {
+            systemProperties['verifyRunMode'] = 'batch'
+            classpath sourceSets.cli.runtimeClasspath
+            main = 'com.chelseaurquhart.securejson.Verify'
+            args = jsonFiles
+        }
+    }
+}
