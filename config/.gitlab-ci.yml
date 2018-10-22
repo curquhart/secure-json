@@ -29,3 +29,10 @@ testJava11:
   stage: test
   script: gradle --no-daemon check
   when: manual
+
+verifyJSONTestSuite:
+  tags:
+    - docker
+  image: gradle:4.10-jdk10
+  stage: test
+  script: gradle verifyJSONTestSuite
