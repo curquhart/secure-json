@@ -6,28 +6,28 @@ testJava7:
     - docker
   image: gradle:4.10-jdk7
   stage: test
-  script: gradle --no-daemon -b build.java7.gradle check
+  script: ./gradlew --no-daemon -b build.java7.gradle check
 
 testJava8:
   tags:
     - docker
   image: gradle:4.10-jdk8
   stage: test
-  script: gradle --no-daemon check
+  script: ./gradlew --no-daemon check
 
 testJava10:
   tags:
     - docker
   image: gradle:4.10-jdk10
   stage: test
-  script: gradle --no-daemon check
+  script: ./gradlew --no-daemon check
 
 testJava11:
   tags:
     - docker
   image: gradle:4.10-jdk11
   stage: test
-  script: gradle --no-daemon check
+  script: ./gradlew --no-daemon check
   when: manual
 
 verifyJSONTestSuite:
@@ -35,4 +35,4 @@ verifyJSONTestSuite:
     - docker
   image: gradle:4.10-jdk10
   stage: test
-  script: gradle verifyJSONTestSuite
+  script: ./gradlew --no-daemon verifyJSONTestSuite
