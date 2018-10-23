@@ -1,2 +1,5 @@
 rootProject.name = 'SecureJSON'
-enableFeaturePreview('STABLE_PUBLISHING')
+
+if (GradleVersion.current() >= GradleVersion.version('4.8')) {
+    enableFeaturePreview('STABLE_PUBLISHING')
+}
