@@ -9,6 +9,9 @@ been consumed.
 
 It is Java 7 and higher compatible (tests run against Java 7, Java 8, and Java 10).
 
+## Contributing
+I welcome pull requests and feature requests.
+
 ## Usage Examples
 ```
 import com.chelseaurquhart.securejson.SecureJSON;
