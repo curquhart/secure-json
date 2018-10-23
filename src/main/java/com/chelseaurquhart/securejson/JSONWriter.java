@@ -17,7 +17,7 @@ class JSONWriter implements Closeable, AutoCloseable {
         secureBuffers = new ArrayList<>();
     }
 
-    CharSequence write(final Object parInput) throws IOException {
+    ManagedSecureCharBuffer write(final Object parInput) throws IOException {
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(INITIAL_CAPACITY);
         secureBuffers.add(mySecureBuffer);
 

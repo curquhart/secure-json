@@ -3,12 +3,17 @@ package com.chelseaurquhart.securejson;
 import io.github.novacrypto.SecureCharBuffer;
 
 import java.io.Closeable;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
 
     private SecureCharBuffer secureBuffer;
     private int capacity;
+    private byte[] bytes;
 
     ManagedSecureCharBuffer() {
         this(0);
@@ -43,6 +48,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
     @Override
     public void close() {
         secureBuffer.close();
+        closeBytes();
     }
 
     private void checkSizeAndReallocate(final int parExtraDataLength, final int parMinAdditionalAllocationSize) {
@@ -55,6 +61,24 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
                 secureBuffer = mySecureBuffer;
             }
         }
+    }
+
+    byte[] getBytes() {
+        closeBytes();
+
+        final CharBuffer myCharBuffer = CharBuffer.wrap(secureBuffer);
+        final ByteBuffer myByteBuffer = StandardCharsets.UTF_8.encode(myCharBuffer);
+        if (myByteBuffer.limit() == myByteBuffer.capacity() && myByteBuffer.hasArray()) {
+            // it is more efficient to take the underlying array as-is, but we must check limit vs capacity because
+            // it may have some extra characters.
+            bytes = myByteBuffer.array();
+        } else {
+            bytes = new byte[secureBuffer.length()];
+            myByteBuffer.get(bytes, 0, myByteBuffer.limit());
+            Arrays.fill(myByteBuffer.array(), (byte) 0);
+        }
+
+        return bytes;
     }
 
     @Override
@@ -75,5 +99,12 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
     @Override
     public String toString() {
         return secureBuffer.toString();
+    }
+
+    private void closeBytes() {
+        if (bytes != null) {
+            Arrays.fill(bytes, (byte) 0);
+            bytes = null;
+        }
     }
 }
