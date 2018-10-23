@@ -1,8 +1,13 @@
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+def VERSION_SNAPSHOT = 'SNAPSHOT'
 
 repositories {
     jcenter()
@@ -71,6 +76,79 @@ jacocoTestCoverageVerification.mustRunAfter jacocoTestReport
 
 check.dependsOn jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
+
+group = 'com.chelseaurquhart'
+if (project.hasProperty('release')) {
+    version = '1.0'
+} else {
+    version = VERSION_SNAPSHOT
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'secure-json'
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'SecureJSON'
+                description = 'A secure JSON library.'
+                url = 'https://github.com/curquhart/secure-json/'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'chelsea'
+                        name = 'Chelsea Urquhart'
+                        email = 'chelsea.urquhart@rocketsimplicity.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/curquhart/secure-json.git'
+                    developerConnection = 'scm:git:ssh://github.com/curquhart/secure-json.git'
+                    url = 'https://github.com/curquhart/secure-json/'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            if (version == VERSION_SNAPSHOT) {
+                url 'https://oss.sonatype.org/content/repositories/snapshots/'
+            } else {
+                url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            }
+            credentials {
+                username = project.properties['sonatypeUsername']
+                password = project.properties['sonatypePassword']
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+javadoc {
+    options.addBooleanOption('html5', true)
+}
 
 clean {
     delete buildDir
