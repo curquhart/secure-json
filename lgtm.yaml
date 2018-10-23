@@ -1,0 +1,5 @@
+extraction:
+  java:
+    index:
+      build_command:
+        ./gradlew --no-daemon -b build.java7.gradle classes sharedClasses testClasses
