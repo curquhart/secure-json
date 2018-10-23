@@ -70,16 +70,16 @@ public final class SecureJSON {
      * destroyed.
      *
      * @param parInput The input character sequence to deserialize.
-     * @param parCustomer The consumer to call with our unserialized JSON value.
+     * @param parConsumer The consumer to call with our unserialized JSON value.
      * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
      *           (which will accept anything) is acceptable.
      * @throws JSONDecodeException On decode failure.
      */
     @SuppressWarnings("unchecked")
-    public static <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parCustomer)
+    public static <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer)
             throws JSONDecodeException {
         try (final JSONReader myJsonReader = new JSONReader()) {
-            parCustomer.accept((T) myJsonReader.read(parInput));
+            parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
             throw myException;
         } catch (final Exception myException) {
@@ -93,16 +93,16 @@ public final class SecureJSON {
      * destroyed.
      *
      * @param parInput The input character stream to deserialize.
-     * @param parCustomer The consumer to call with our unserialized JSON value.
+     * @param parConsumer The consumer to call with our unserialized JSON value.
      * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
      *           (which will accept anything) is acceptable.
      * @throws JSONDecodeException On decode failure.
      */
     @SuppressWarnings("unchecked")
-    public static <T> void fromJSON(final InputStream parInput, final IConsumer<T> parCustomer)
+    public static <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer)
             throws JSONDecodeException {
         try (final JSONReader myJsonReader = new JSONReader()) {
-            parCustomer.accept((T) myJsonReader.read(parInput));
+            parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
             throw myException;
         } catch (final Exception myException) {
