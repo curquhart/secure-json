@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -23,11 +24,7 @@ public final class SecureJSONTest {
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
         } catch (final Exception myException) {
-            Assert.assertNotNull(parParameters.getExpectedException());
-            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
-                parParameters.getExpectedException().getMessage());
-            Assert.assertEquals(Util.unwrapException(myException).getClass(),
-                parParameters.getExpectedException().getClass());
+            checkException(parParameters, myException);
         }
     }
 
@@ -46,12 +43,39 @@ public final class SecureJSONTest {
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
         } catch (final Exception myException) {
-            Assert.assertNotNull(parParameters.getExpectedException());
-            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
-                parParameters.getExpectedException().getMessage());
-            Assert.assertEquals(Util.unwrapException(myException).getClass(),
-                parParameters.getExpectedException().getClass());
+            checkException(parParameters, myException);
         }
+    }
+
+    @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
+    public void testReadBytes(final JSONReaderTest.Parameters parParameters) {
+        try {
+            final byte[] myBytes;
+            if (parParameters.getInputBytes() == null) {
+                myBytes = StringUtil.charSequenceToString(parParameters.getInputString()).getBytes(
+                    StandardCharsets.UTF_8);
+            } else {
+                myBytes = parParameters.getInputBytes();
+            }
+            SecureJSON.fromJSON(myBytes, new IConsumer<Object>() {
+                @Override
+                public void accept(final Object parInput) {
+                    Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
+                        StringUtil.deepCharSequenceToString(parInput));
+                }
+            });
+            Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
+        } catch (final Exception myException) {
+            checkException(parParameters, myException);
+        }
+    }
+
+    private void checkException(final JSONReaderTest.Parameters parParameters, final Exception parException) {
+        Assert.assertNotNull(parParameters.getExpectedException());
+        Assert.assertEquals(Util.unwrapException(parException).getMessage(),
+            parParameters.getExpectedException().getMessage());
+        Assert.assertEquals(Util.unwrapException(parException).getClass(),
+            parParameters.getExpectedException().getClass());
     }
 
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
@@ -72,6 +96,18 @@ public final class SecureJSONTest {
         SecureJSON.toJSON(parParameters.getInputObject(), myOutputStream);
         Assert.assertEquals(StringUtil.charSequenceToString(myOutputStream.toString(StandardCharsets.UTF_8.name())),
             StringUtil.charSequenceToString(parParameters.getExpected()));
+    }
+
+    @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
+    public void testWriteBytes(final JSONWriterTest.Parameters parParameters)
+            throws JSONEncodeException {
+        SecureJSON.toJSONBytes(parParameters.getInputObject(), new IConsumer<byte[]>() {
+            @Override
+            public void accept(final byte[] parInput) {
+                Assert.assertEquals(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(parInput)).toString(),
+                    StringUtil.charSequenceToString(parParameters.getExpected()));
+            }
+        });
     }
 
     @Test(expectedExceptions = JSONDecodeException.class)
