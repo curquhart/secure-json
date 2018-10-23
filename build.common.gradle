@@ -78,10 +78,11 @@ check.dependsOn jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
 
 group = 'com.chelseaurquhart'
+def versionNumber = '1.0'
 if (project.hasProperty('release')) {
-    version = '1.0'
+    version = versionNumber
 } else {
-    version = VERSION_SNAPSHOT
+    version = "${versionNumber}-${VERSION_SNAPSHOT}"
 }
 
 task sourcesJar(type: Jar) {
@@ -129,10 +130,10 @@ publishing {
 
     repositories {
         maven {
-            if (version == VERSION_SNAPSHOT) {
-                url 'https://oss.sonatype.org/content/repositories/snapshots/'
-            } else {
+            if (project.hasProperty('release')) {
                 url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            } else {
+                url 'https://oss.sonatype.org/content/repositories/snapshots/'
             }
             credentials {
                 username = project.properties['sonatypeUsername']
