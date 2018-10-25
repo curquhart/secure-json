@@ -39,8 +39,6 @@ sourceSets {
 }
 
 dependencies {
-    compile 'io.github.novacrypto:SecureString:0.1.8@jar'
-    cliCompile 'io.github.novacrypto:SecureString:0.1.8@jar'
     testCompile 'org.testng:testng:6.14.3'
     testRuntime 'org.testng:testng:6.14.3'
 }

@@ -9,8 +9,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * SecureJSON is a JSON serializer and deserializer with strict security in mind. It does not create strings due to
  * their inclusion in garbage collectible heap (which can make them potentially snoopable). See
- * https://medium.com/@_west_on/protecting-strings-in-jvm-memory-84c365f8f01c for the motivations around this. It
- * uses the excellent SecureString library (https://github.com/NovaCrypto/SecureString) for the secure data structures.
+ * https://medium.com/@_west_on/protecting-strings-in-jvm-memory-84c365f8f01c for the motivations around this.
  */
 public final class SecureJSON {
     private SecureJSON() {

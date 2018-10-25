@@ -13,6 +13,8 @@ final class JSONSymbolCollection {
     static final short UNICODE_DIGIT_THIRD = UNICODE_DIGITS;
     static final short HEX_MIN_ALPHA = 10;
     static final short HEX_MAX = 15;
+    static final short BITS_IN_BYTE = 8;
+    static final short TWO_BYTE = 255;
 
     static final Map<Character, Character> END_TOKENS = listToMap(
         Token.R_BRACE.getShortSymbol(),
