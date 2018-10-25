@@ -7,7 +7,6 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 
 import com.chelseaurquhart.securejson.util.StringUtil;
-import io.github.novacrypto.SecureCharBuffer;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -426,7 +425,7 @@ public final class JSONReaderTest {
         Parameters(final String parTestName, final CharSequence parInputString, final Object parExpected,
                    final Exception parExpectedException) {
             testName = parTestName;
-            final SecureCharBuffer mySecureBuffer = SecureCharBuffer.withCapacity(parInputString.length());
+            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length());
             mySecureBuffer.append(parInputString);
             inputString = mySecureBuffer;
             expected = parExpected;

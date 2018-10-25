@@ -2,7 +2,6 @@ package com.chelseaurquhart.securejson;
 
 import  com.chelseaurquhart.securejson.JSONDecodeException.MalformedNumberException;
 
-import io.github.novacrypto.SecureCharBuffer;
 import org.testng.annotations.DataProvider;
 
 import java.io.IOException;
@@ -522,7 +521,7 @@ public final class NumberProvider {
             return null;
         }
 
-        final SecureCharBuffer mySecureBuffer = SecureCharBuffer.withCapacity(parInput.length());
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length());
         mySecureBuffer.append(parInput);
 
         return mySecureBuffer;

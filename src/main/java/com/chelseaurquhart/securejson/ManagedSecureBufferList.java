@@ -1,6 +1,7 @@
 package com.chelseaurquhart.securejson;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ class ManagedSecureBufferList implements Closeable, AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         for (final ManagedSecureCharBuffer myBuffer : secureBuffers) {
             myBuffer.close();
         }

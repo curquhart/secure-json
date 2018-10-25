@@ -1,18 +1,18 @@
 package com.chelseaurquhart.securejson;
 
-import io.github.novacrypto.SecureCharBuffer;
-
 import java.io.Closeable;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
 
-    private SecureCharBuffer secureBuffer;
-    private int capacity;
+    private final int initialCapacity;
+    private LinkedList<CharSequence> buffers;
     private byte[] bytes;
 
     ManagedSecureCharBuffer() {
@@ -21,61 +21,94 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
 
     ManagedSecureCharBuffer(final int parInitialCapacity) {
         if (parInitialCapacity > 0) {
-            secureBuffer = SecureCharBuffer.withCapacity(parInitialCapacity);
-            capacity = parInitialCapacity;
+            initialCapacity = parInitialCapacity;
         } else {
-            secureBuffer = SecureCharBuffer.withCapacity(INITIAL_CAPACITY);
-            capacity = INITIAL_CAPACITY;
+            initialCapacity = INITIAL_CAPACITY;
         }
+        buffers = new LinkedList<>();
+    }
+
+    private ManagedSecureCharBuffer(final int parInitialCapacity, final LinkedList<CharSequence> parBuffers) {
+        initialCapacity = parInitialCapacity;
+        buffers = parBuffers;
     }
 
     @Override
     public void append(final char parChar) {
-        // allocation is expensive so if we're going char-by-char, double the capacity if we run out of space.
-        checkSizeAndReallocate(1, capacity / 2);
+        final int myMaxSize = initialCapacity + 1;
 
-        secureBuffer.append(parChar);
+        final CharSequence myHeadBuffer;
+        if (buffers.isEmpty()) {
+            myHeadBuffer = null;
+        } else {
+            myHeadBuffer = buffers.getLast();
+        }
+
+        final CharSequence myWriteBuffer;
+        if (!(myHeadBuffer instanceof ObfuscatedByteBuffer)
+                || myHeadBuffer.length() + 1 >= ((ObfuscatedByteBuffer) myHeadBuffer).capacity) {
+            myWriteBuffer = new ObfuscatedByteBuffer(myMaxSize);
+            buffers.add(myWriteBuffer);
+        } else {
+            myWriteBuffer = myHeadBuffer;
+        }
+        ((ObfuscatedByteBuffer) myWriteBuffer).append(parChar);
     }
 
     @Override
     public void append(final CharSequence parChars) {
-        // allocation is expensive so if we're going char-by-char, double the capacity if we run out of space.
-        checkSizeAndReallocate(parChars.length(), capacity / 2);
-
-        secureBuffer.append(parChars);
+        buffers.add(parChars);
     }
 
     @Override
-    public void close() {
-        secureBuffer.close();
-        closeBytes();
-    }
-
-    private void checkSizeAndReallocate(final int parExtraDataLength, final int parMinAdditionalAllocationSize) {
-        if (length() + parExtraDataLength > capacity) {
-            try (final SecureCharBuffer myOldSecureBuffer = secureBuffer) {
-                final int myNewCapacity = capacity + parMinAdditionalAllocationSize;
-                final SecureCharBuffer mySecureBuffer = SecureCharBuffer.withCapacity(myNewCapacity);
-                mySecureBuffer.append(myOldSecureBuffer);
-                capacity = myNewCapacity;
-                secureBuffer = mySecureBuffer;
+    public void close() throws IOException {
+        for (final CharSequence myBuffer : buffers) {
+            if (myBuffer instanceof Closeable) {
+                ((Closeable) myBuffer).close();
             }
         }
+        buffers.clear();
+        closeBytes();
     }
 
     byte[] getBytes() {
         closeBytes();
 
-        final CharBuffer myCharBuffer = CharBuffer.wrap(secureBuffer);
-        final ByteBuffer myByteBuffer = StandardCharsets.UTF_8.encode(myCharBuffer);
-        if (myByteBuffer.limit() == myByteBuffer.capacity() && myByteBuffer.hasArray()) {
-            // it is more efficient to take the underlying array as-is, but we must check limit vs capacity because
-            // it may have some extra characters.
-            bytes = myByteBuffer.array();
-        } else {
-            bytes = new byte[secureBuffer.length()];
-            myByteBuffer.get(bytes, 0, myByteBuffer.limit());
-            Arrays.fill(myByteBuffer.array(), (byte) 0);
+        CharBuffer myCharBuffer = null;
+        ByteBuffer myByteBuffer = null;
+        final int myLength = length();
+        try {
+            myCharBuffer = CharBuffer.allocate(myLength);
+            for (final CharSequence myBuffer : buffers) {
+                final int mySubLength = myBuffer.length();
+                for (int myIndex = 0; myIndex < mySubLength; myIndex++) {
+                    myCharBuffer.append(myBuffer.charAt(myIndex));
+                }
+            }
+            myCharBuffer.position(0);
+            myByteBuffer = StandardCharsets.UTF_8.encode(myCharBuffer);
+            if (myByteBuffer.limit() == myByteBuffer.capacity() && myByteBuffer.hasArray()) {
+                // it is more efficient to take the underlying array as-is, but we must check limit vs capacity because
+                // it may have some extra characters.
+                bytes = myByteBuffer.array();
+                // do not reset the buffer below because we're using the internal buffer!
+                myByteBuffer = null;
+            } else {
+                final int myLimit = myByteBuffer.limit();
+                bytes = new byte[myLimit];
+                myByteBuffer.get(bytes, 0, myByteBuffer.limit());
+            }
+        } finally {
+            if (myCharBuffer != null) {
+                final char[] myNulls = new char[myLength];
+                myCharBuffer.position(0);
+                myCharBuffer.put(myNulls);
+            }
+            if (myByteBuffer != null) {
+                final byte[] myNulls = new byte[myByteBuffer.limit()];
+                myByteBuffer.position(0);
+                myByteBuffer.put(myNulls);
+            }
         }
 
         return bytes;
@@ -83,28 +116,162 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
 
     @Override
     public int length() {
-        return secureBuffer.length();
+        int myLength = 0;
+
+        for (final CharSequence myBuffer : buffers) {
+            myLength += myBuffer.length();
+        }
+
+        return myLength;
     }
 
     @Override
     public char charAt(final int parIndex) {
-        return secureBuffer.charAt(parIndex);
+        int myOffset = 0;
+        for (final CharSequence myBuffer : buffers) {
+            final int myLength = myBuffer.length();
+            if (parIndex < myOffset + myLength) {
+                return myBuffer.charAt(parIndex - myOffset);
+            }
+            myOffset += myLength;
+        }
+
+        throw new ArrayIndexOutOfBoundsException();
     }
 
     @Override
     public CharSequence subSequence(final int parStart, final int parEnd) {
-        return secureBuffer.subSequence(parStart, parEnd);
+        int myOffset = 0;
+        int myStart = parStart;
+        int myRemainingLength = parEnd - parStart;
+        final LinkedList<CharSequence> myBuffers = new LinkedList<>();
+        if (parStart < 0 || parEnd < 0 || parEnd < parStart) {
+            final String myMessage;
+            try {
+                myMessage = Messages.get(Messages.Key.ERROR_BAD_SEQUENCE_ARGS);
+            } catch (final IOException myException) {
+                throw new RuntimeException(myException);
+            }
+            throw new ArrayIndexOutOfBoundsException(myMessage);
+        }
+
+        for (final CharSequence myBuffer : buffers) {
+            int myLength = myBuffer.length();
+            if (myLength < 0) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
+            final boolean myHasBuffers = !myBuffers.isEmpty();
+            final int myEnd = Math.min(myStart + myRemainingLength, myLength);
+            if (myHasBuffers || myOffset + myLength > parStart) {
+                myBuffers.add(myBuffer.subSequence(myStart, myEnd));
+                myRemainingLength -= myEnd - myStart;
+                myStart = 0;
+            }
+            myOffset += myLength;
+            if (myStart > 0) {
+                myStart -= myLength;
+            }
+            if (myRemainingLength < 1) {
+                break;
+            }
+        }
+
+        if (myRemainingLength > 0) {
+            final String myMessage;
+            try {
+                myMessage = Messages.get(Messages.Key.ERROR_BUFFER_OVERFLOW);
+            } catch (final IOException myException) {
+                throw new RuntimeException(myException);
+            }
+            throw new ArrayIndexOutOfBoundsException(myMessage);
+        }
+
+        return new ManagedSecureCharBuffer(initialCapacity, myBuffers);
     }
 
     @Override
     public String toString() {
-        return secureBuffer.toString();
+        throw new UnsupportedOperationException();
     }
 
     private void closeBytes() {
         if (bytes != null) {
             Arrays.fill(bytes, (byte) 0);
             bytes = null;
+        }
+    }
+
+    private static class ObfuscatedByteBuffer implements CharSequence, Closeable, AutoCloseable {
+        private final int offset;
+        private final int capacity;
+        private final Integer fixedLength;
+        private final ByteBuffer compositionFirst;
+        private final ByteBuffer compositionSecond;
+
+        ObfuscatedByteBuffer(final int parCapacity) {
+            offset = 0;
+            capacity = parCapacity;
+            compositionFirst = ByteBuffer.allocateDirect(parCapacity);
+            compositionSecond = ByteBuffer.allocateDirect(parCapacity);
+            fixedLength = null;
+        }
+
+        private ObfuscatedByteBuffer(final int parOffset, final int parCapacity, final int parLength,
+                                     final ByteBuffer parCompositionFirst, final ByteBuffer parCompositionSecond) {
+            offset = parOffset;
+            capacity = parCapacity;
+            compositionFirst = parCompositionFirst;
+            compositionSecond = parCompositionSecond;
+            fixedLength = parLength;
+        }
+
+        @Override
+        public int length() {
+            if (fixedLength == null) {
+                return compositionFirst.position() - offset;
+            } else {
+                return fixedLength - offset;
+            }
+        }
+
+        @Override
+        public char charAt(final int parIndex) {
+            final int myOffset = offset + parIndex;
+            if (myOffset > capacity) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
+
+            return (char) ((compositionFirst.get(myOffset) << JSONSymbolCollection.BITS_IN_BYTE)
+                | (compositionSecond.get(myOffset) & JSONSymbolCollection.TWO_BYTE));
+        }
+
+        public void append(final char parChar) {
+            if (fixedLength != null) {
+                throw new UnsupportedOperationException("attempt to append to a readonly buffer");
+            }
+            compositionFirst.put((byte) (parChar >> JSONSymbolCollection.BITS_IN_BYTE));
+            compositionSecond.put((byte) ((parChar & JSONSymbolCollection.TWO_BYTE)));
+        }
+
+        @Override
+        public CharSequence subSequence(final int parStart, final int parEnd) {
+            final int myLength = offset + parEnd;
+            if (myLength > length() || parStart < 0) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
+            return new ObfuscatedByteBuffer(offset + parStart, capacity, myLength, compositionFirst,
+                compositionSecond);
+        }
+
+        @Override
+        public void close() {
+            for (int myIndex = length() - 1; myIndex > 0; myIndex--) {
+                compositionFirst.put((byte) 0);
+                compositionSecond.put((byte) 0);
+                // reset position in case we want to re-use it.
+                compositionFirst.position(0);
+                compositionSecond.position(0);
+            }
         }
     }
 }

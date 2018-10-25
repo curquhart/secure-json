@@ -1,6 +1,5 @@
 package com.chelseaurquhart.securejson;
 
-import io.github.novacrypto.SecureCharBuffer;
 import org.testng.annotations.DataProvider;
 
 import java.lang.reflect.Method;
@@ -54,7 +53,7 @@ public final class StringProvider {
             return null;
         }
 
-        final SecureCharBuffer mySecureBuffer = SecureCharBuffer.withCapacity(parInput.length());
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length());
         mySecureBuffer.append(parInput);
 
         return mySecureBuffer;

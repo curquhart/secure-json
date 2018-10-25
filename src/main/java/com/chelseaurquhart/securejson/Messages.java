@@ -18,7 +18,9 @@ final class Messages {
         ERROR_MALFORMED_NUMBER,
         ERROR_EXTRA_CHARACTERS,
         ERROR_ITERATOR_REMOVE_NOT_ALLOWED,
-        ERROR_INVALID_TYPE
+        ERROR_INVALID_TYPE,
+        ERROR_BAD_SEQUENCE_ARGS,
+        ERROR_BUFFER_OVERFLOW
     }
 
     static String get(final Key parKey) throws IOException {
