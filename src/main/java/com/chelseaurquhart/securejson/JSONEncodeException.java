@@ -2,7 +2,7 @@ package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
 
-class JSONEncodeException extends IOException {
+class JSONEncodeException extends JSONException {
     JSONEncodeException(final Messages.Key parMessageKey)
             throws IOException {
         super(Messages.get(Messages.Key.ERROR_JSON_ENCODE)

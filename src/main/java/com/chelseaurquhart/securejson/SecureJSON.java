@@ -35,6 +35,27 @@ public final class SecureJSON {
     }
 
     /**
+     * Convert an object to a JSON character sequence. If it cannot be converted, throws JSONEncodeException. After the
+     * consumer returns, the buffer will be destroyed so it MUST be fully consumed.
+     *
+     * @param parInput The input object to toJSONAble to JSON.
+     * @param parConsumer The consumer to provide the JSON character sequence to when completed.
+     * @param parObjectMutator A mutator to apply to objects to convert them to a form we can serialize.
+     * @throws JSONEncodeException On encode failure.
+     */
+    public static void toJSON(final Object parInput, final IConsumer<CharSequence> parConsumer,
+                              final IObjectMutator parObjectMutator)
+            throws JSONEncodeException {
+        try (final JSONWriter myJsonWriter = new JSONWriter(parObjectMutator)) {
+            parConsumer.accept(myJsonWriter.write(parInput));
+        } catch (final JSONEncodeException myException) {
+            throw myException;
+        } catch (final Exception myException) {
+            throw new JSONEncodeException(myException);
+        }
+    }
+
+    /**
      * Convert an object to a JSON byte array. If it cannot be converted, throws JSONEncodeException. After the consumer
      * returns, the buffer will be destroyed so it MUST be fully consumed.
      *
@@ -45,6 +66,27 @@ public final class SecureJSON {
     public static void toJSONBytes(final Object parInput, final IConsumer<byte[]> parConsumer)
             throws JSONEncodeException {
         try (final JSONWriter myJsonWriter = new JSONWriter()) {
+            parConsumer.accept(myJsonWriter.write(parInput).getBytes());
+        } catch (final JSONEncodeException myException) {
+            throw myException;
+        } catch (final Exception myException) {
+            throw new JSONEncodeException(myException);
+        }
+    }
+
+    /**
+     * Convert an object to a JSON byte array. If it cannot be converted, throws JSONEncodeException. After the consumer
+     * returns, the buffer will be destroyed so it MUST be fully consumed.
+     *
+     * @param parInput The input object to toJSONAble to JSON.
+     * @param parConsumer The consumer to provide the JSON character sequence to when completed.
+     * @param parObjectMutator A mutator to apply to objects to convert them to a form we can serialize.
+     * @throws JSONEncodeException On encode failure.
+     */
+    public static void toJSONBytes(final Object parInput, final IConsumer<byte[]> parConsumer,
+                                   final IObjectMutator parObjectMutator)
+            throws JSONEncodeException {
+        try (final JSONWriter myJsonWriter = new JSONWriter(parObjectMutator)) {
             parConsumer.accept(myJsonWriter.write(parInput).getBytes());
         } catch (final JSONEncodeException myException) {
             throw myException;
@@ -75,6 +117,27 @@ public final class SecureJSON {
     public static void toJSON(final Object parInput, final OutputStream parOutputStream, final Charset parCharset)
             throws JSONEncodeException {
         try (final JSONWriter myJsonWriter = new JSONWriter()) {
+            myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, parCharset));
+        } catch (final JSONEncodeException myException) {
+            throw myException;
+        } catch (final Exception myException) {
+            throw new JSONEncodeException(myException);
+        }
+    }
+
+    /**
+     * Convert an object to a JSON string, writing to the provided stream.
+     *
+     * @param parInput The input object to toJSONAble to JSON.
+     * @param parOutputStream The stream to write to.
+     * @param parCharset The charset to use.
+     * @param parObjectMutator A mutator to apply to objects to convert them to a form we can serialize.
+     * @throws JSONEncodeException On encode failure.
+     */
+    public static void toJSON(final Object parInput, final OutputStream parOutputStream, final Charset parCharset,
+                              final IObjectMutator parObjectMutator)
+            throws JSONEncodeException {
+        try (final JSONWriter myJsonWriter = new JSONWriter(parObjectMutator)) {
             myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, parCharset));
         } catch (final JSONEncodeException myException) {
             throw myException;
