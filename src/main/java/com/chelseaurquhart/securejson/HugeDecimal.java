@@ -11,10 +11,10 @@ import java.util.Objects;
 /**
  * HugeDecimal is for numbers that are too big to parse with BigDecimal through normal means.
  */
-public class HugeDecimal extends Number {
+public final class HugeDecimal extends Number implements CharSequence {
     private static final long serialVersionUID = 1L;
 
-    private final CharSequence chars;
+    private CharSequence chars;
     private final transient NumberReader numberReader;
     private final Number number;
 
@@ -25,9 +25,16 @@ public class HugeDecimal extends Number {
     }
 
     HugeDecimal(final Number parValue) {
-        chars = null;
-        numberReader = null;
-        number = parValue;
+        if (parValue instanceof HugeDecimal) {
+            final HugeDecimal parValueHugeDecimal = (HugeDecimal) parValue;
+            chars = parValueHugeDecimal.chars;
+            numberReader = parValueHugeDecimal.numberReader;
+            number = parValueHugeDecimal.number;
+        } else {
+            chars = null;
+            numberReader = null;
+            number = parValue;
+        }
     }
 
     /**
@@ -188,5 +195,29 @@ public class HugeDecimal extends Number {
 
     private void readObject(final ObjectInputStream parObjectInputStream) throws ClassNotFoundException, IOException {
         throw new NotSerializableException();
+    }
+
+    @Override
+    public int length() {
+        if (number != null && chars == null) {
+            chars = number.toString();
+        }
+        return chars.length();
+    }
+
+    @Override
+    public char charAt(int index) {
+        if (number != null && chars == null) {
+            chars = number.toString();
+        }
+        return chars.charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        if (number != null && chars == null) {
+            chars = number.toString();
+        }
+        return chars.subSequence(start, end);
     }
 }
