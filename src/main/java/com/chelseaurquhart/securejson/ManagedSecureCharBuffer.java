@@ -336,5 +336,10 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         public int hashCode() {
             return ManagedSecureCharBuffer.hashCode(subSequence(0, length()));
         }
+
+        @Override
+        public String toString() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
