@@ -33,6 +33,7 @@ sourceSets {
             srcDirs 'src/objectserialization/java'
         }
         compileClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.shared.output
     }
 
     objectSerializationTest {
