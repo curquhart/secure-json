@@ -6,14 +6,78 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Serializer to/from Objects.
  */
 public class ObjectSerializer {
+    private final Class<? extends Map<CharSequence, Object>> MAP_TOKEN = (new Map<CharSequence, Object>() {
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return false;
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            return false;
+        }
+
+        @Override
+        public Object get(Object key) {
+            return null;
+        }
+
+        @Override
+        public Object put(CharSequence key, Object value) {
+            return null;
+        }
+
+        @Override
+        public Object remove(Object key) {
+            return null;
+        }
+
+        @Override
+        public void putAll(Map<? extends CharSequence, ?> m) {
+
+        }
+
+        @Override
+        public void clear() {
+
+        }
+
+        @Override
+        public Set<CharSequence> keySet() {
+            return null;
+        }
+
+        @Override
+        public Collection<Object> values() {
+            return null;
+        }
+
+        @Override
+        public Set<Entry<CharSequence, Object>> entrySet() {
+            return null;
+        }
+    }).getClass();
+
     /**
      * Convert an object to a JSON character sequence. If it cannot be converted, throws JSONEncodeException. After the
      * consumer returns, the buffer will be destroyed so it MUST be fully consumed.
@@ -102,23 +166,27 @@ public class ObjectSerializer {
         return parInput.isArray();
     }
 
-    final Field[] getFields(final Class parClass) {
-        final List<Field> myList = new LinkedList<>();
+    final Collection<Field> getFields(final Class parClass) {
+        final List<Field> myCollection = new LinkedList<>();
         for (final Field myField : parClass.getDeclaredFields()) {
             if (Modifier.isTransient(myField.getModifiers()) || myField.isSynthetic()) {
                 // ignore transient and synthetic fields.
                 continue;
             }
             myField.setAccessible(true);
-            myList.add(myField);
+            myCollection.add(myField);
+        }
+        final Class mySuperClass = parClass.getSuperclass();
+        if (mySuperClass != null) {
+            myCollection.addAll(getFields(mySuperClass));
         }
 
-        return myList.toArray(new Field[0]);
+        return Collections.unmodifiableCollection(myCollection);
     }
 
-    final Object getValue(final Field parField, final Object parInput) throws JSONException {
+    final Object getValue(final Field parField, final Object parInstance) throws JSONException {
         try {
-            return parField.get(parInput);
+            return parField.get(parInstance);
         } catch (final IllegalAccessException | ExceptionInInitializerError | IllegalArgumentException myException) {
             throw new JSONException(myException);
         }
@@ -135,10 +203,14 @@ public class ObjectSerializer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     final Map<CharSequence, Object> castToMap(final Object parValue) throws JSONException {
+        return castTo(parValue, MAP_TOKEN);
+    }
+
+    @SuppressWarnings("unchecked")
+    <U> U castTo(final Object parValue, final Class<U> parCastClass) throws JSONException {
         try {
-            return (Map) parValue;
+            return (U) parValue;
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
