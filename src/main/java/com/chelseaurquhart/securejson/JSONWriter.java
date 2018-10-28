@@ -49,14 +49,24 @@ class JSONWriter implements Closeable, AutoCloseable {
             parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
         } else if (myInput instanceof Collection) {
             parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
+            boolean myIsFirst = true;
             for (final Object myElement : ((Collection) myInput)) {
+                if (!myIsFirst) {
+                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+                }
+                myIsFirst = false;
                 write(myElement, parSecureBuffer);
             }
             parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
         } else if (myInput.getClass().isArray()) {
             parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
             final int myLength = Array.getLength(myInput);
+            boolean myIsFirst = true;
             for (int myIndex = 0; myIndex < myLength; myIndex++) {
+                if (!myIsFirst) {
+                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+                }
+                myIsFirst = false;
                 write(Array.get(myInput, myIndex), parSecureBuffer);
             }
             parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
