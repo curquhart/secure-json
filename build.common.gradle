@@ -25,9 +25,7 @@ sourceSets {
             srcDirs 'src/cli/java'
         }
         compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
         compileClasspath += sourceSets.shared.output
-        runtimeClasspath += sourceSets.shared.output
     }
 
     objectSerialization {
@@ -35,7 +33,6 @@ sourceSets {
             srcDirs 'src/objectserialization/java'
         }
         compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
     }
 
     objectSerializationTest {
@@ -43,11 +40,8 @@ sourceSets {
             srcDirs 'src/objectserializationtest/java'
         }
         compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
         compileClasspath += sourceSets.objectSerialization.output
-        runtimeClasspath += sourceSets.objectSerialization.output
         compileClasspath += sourceSets.shared.output
-        runtimeClasspath += sourceSets.shared.output
     }
 
     test {
@@ -60,10 +54,9 @@ sourceSets {
 
 dependencies {
     testCompile 'org.testng:testng:6.14.3'
-    testRuntime 'org.testng:testng:6.14.3'
     objectSerializationCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
     objectSerializationTestCompile 'org.testng:testng:6.14.3'
-    objectSerializationTestRuntime 'org.testng:testng:6.14.3'
+    objectSerializationTestCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
     objectSerializationTestCompileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.8'
 }
 
