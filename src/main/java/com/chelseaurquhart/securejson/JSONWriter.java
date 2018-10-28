@@ -4,6 +4,7 @@ import com.chelseaurquhart.securejson.JSONEncodeException.InvalidTypeException;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,10 +45,19 @@ class JSONWriter implements Closeable, AutoCloseable {
             return;
         }
 
-        if (myInput instanceof Collection) {
+        if (myInput == null) {
+            parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
+        } else if (myInput instanceof Collection) {
             parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
             for (final Object myElement : ((Collection) myInput)) {
                 write(myElement, parSecureBuffer);
+            }
+            parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
+        } else if (myInput.getClass().isArray()) {
+            parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
+            final int myLength = Array.getLength(myInput);
+            for (int myIndex = 0; myIndex < myLength; myIndex++) {
+                write(Array.get(myInput, myIndex), parSecureBuffer);
             }
             parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
         } else if (myInput instanceof Map) {
@@ -77,8 +87,6 @@ class JSONWriter implements Closeable, AutoCloseable {
         } else if (myInput instanceof Number) {
             // nothing we can do here, need to convert to string
             parSecureBuffer.append(myInput.toString());
-        } else if (myInput == null) {
-            parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
         } else if (myInput instanceof Boolean && (boolean) myInput) {
             parSecureBuffer.append(JSONSymbolCollection.Token.TRUE.getSymbol().toString());
         } else if (myInput instanceof Boolean && !(boolean) myInput) {
