@@ -1,6 +1,5 @@
 package com.chelseaurquhart.securejson;
 
-import com.chelseaurquhart.securejson.util.StringUtil;
 import net.jodah.typetools.TypeResolver;
 
 import java.lang.reflect.Array;
@@ -58,9 +57,13 @@ class ObjectReader<T> extends ObjectSerializer {
     ));
 
     private final Class<T> clazz;
+    private final boolean strictStrings;
+    private final boolean strictMapKeyTypes;
 
-    ObjectReader(final Class<T> parClazz) {
+    ObjectReader(final Class<T> parClazz, final boolean parStrictStrings, final boolean parStrictMapKeyTypes) {
         clazz = parClazz;
+        strictStrings = parStrictStrings;
+        strictMapKeyTypes = parStrictMapKeyTypes;
     }
 
     @SuppressWarnings("unchecked")
@@ -178,7 +181,8 @@ class ObjectReader<T> extends ObjectSerializer {
                 boolean myFoundSubData = false;
                 if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
                     if (myValue != null) {
-                        final Object myAcceptedValue = new ObjectReader<>(myField.getType()).accept(myValue);
+                        final Object myAcceptedValue = new ObjectReader<>(myField.getType(), strictStrings,
+                            strictMapKeyTypes).accept(myValue);
                         setValueIfNotNull(parField, mySubInstance, buildValue(myField.getGenericType(),
                             myField.getType(), myAcceptedValue, parAbsMap));
                         myFoundSubData = myAcceptedValue != null;
@@ -272,9 +276,9 @@ class ObjectReader<T> extends ObjectSerializer {
                 || myType == float.class || myType == double.class) {
             return buildNumberValue(myType, (Number) parValue);
         } else if (CharSequence.class.isAssignableFrom(myType)) {
-            return buildStringValue(myType, (CharSequence) parValue);
+            return buildStringValue(myType, (CharSequence) parValue, strictStrings);
         } else {
-            return new ObjectReader<>(myType).buildInstance(parValue, parAbsMap);
+            return new ObjectReader<>(myType, strictStrings, strictMapKeyTypes).buildInstance(parValue, parAbsMap);
         }
     }
 
@@ -288,9 +292,16 @@ class ObjectReader<T> extends ObjectSerializer {
         return parClass;
     }
 
-    private Object buildStringValue(final Class<?> parType, final CharSequence parValue) {
-        if (parType == String.class) {
-            return StringUtil.charSequenceToString(parValue);
+    private Object buildStringValue(final Class<?> parType, final CharSequence parValue, final boolean parStrict) {
+        if (parType == String.class && !(parValue instanceof String) && !parStrict) {
+            // if we expect a String, and the value isn't a string, and we're not in strict mode, convert.
+            final StringBuilder myStringBuilder = new StringBuilder();
+            final int myValueLength = parValue.length();
+            for (int myIndex = 0; myIndex < myValueLength; myIndex++) {
+                myStringBuilder.append(parValue.charAt(myIndex));
+            }
+
+            return myStringBuilder.toString();
         }
 
         return parValue;
@@ -314,7 +325,7 @@ class ObjectReader<T> extends ObjectSerializer {
             throw new JSONException(myException);
         }
         for (final Map.Entry<?, ?> myEntry : parValue.entrySet()) {
-            final Object myKey = buildStringValue(myClasses[0], (CharSequence) myEntry.getKey());
+            final Object myKey = buildStringValue(myClasses[0], (CharSequence) myEntry.getKey(), strictMapKeyTypes);
 
             myMap.put(myKey, buildValue(myArgs[1], myClasses[1], myEntry.getValue(), null));
         }

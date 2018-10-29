@@ -132,7 +132,7 @@ public final class Verify {
 
     private static boolean isValidJSON(final byte[] parValue, final boolean parEnableConsole) {
         try {
-            SecureJSON.fromJSON(new ByteArrayInputStream(parValue), new IConsumer<Object>() {
+            new SecureJSON().fromJSON(new ByteArrayInputStream(parValue), new IConsumer<Object>() {
                 @Override
                 public void accept(final Object parInput) {
                     if (parEnableConsole) {

@@ -28,23 +28,6 @@ sourceSets {
         compileClasspath += sourceSets.shared.output
     }
 
-    objectSerialization {
-        java {
-            srcDirs 'src/objectserialization/java'
-        }
-        compileClasspath += sourceSets.main.output
-        compileClasspath += sourceSets.shared.output
-    }
-
-    objectSerializationTest {
-        java {
-            srcDirs 'src/objectserializationtest/java'
-        }
-        compileClasspath += sourceSets.main.output
-        compileClasspath += sourceSets.objectSerialization.output
-        compileClasspath += sourceSets.shared.output
-    }
-
     test {
         java {
             compileClasspath += sourceSets.shared.output
@@ -55,10 +38,9 @@ sourceSets {
 
 dependencies {
     testCompile 'org.testng:testng:6.14.3'
-    objectSerializationCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
-    objectSerializationTestCompile 'org.testng:testng:6.14.3'
-    objectSerializationTestCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
-    objectSerializationTestCompileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.8'
+    compile group: 'net.jodah', name: 'typetools', version: '0.5.0'
+    testCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.8'
 }
 
 jacoco {
@@ -111,35 +93,6 @@ task javadocJar(type: Jar) {
     classifier = 'javadoc'
 }
 
-task sourcesJarObjectSerialization(type: Jar) {
-    from sourceSets.objectSerialization.allJava
-    classifier = 'object-sources'
-}
-
-task javaDocObjectSerialization(type: Javadoc) {
-    group = 'Documentation'
-    description = 'Generates Javadoc API documentation for the object serialization source code.'
-
-    source += sourceSets.objectSerialization.allJava.filter{
-        it.name != 'package-info.java'
-    }
-    classpath += sourceSets.objectSerialization.compileClasspath
-    source += sourceSets.main.allJava
-    classpath += sourceSets.main.compileClasspath
-    options.addBooleanOption('html5', true)
-    destinationDir = file("${buildDir}/javaDocObjectSerialization")
-}
-
-task javadocJarObjectSerialization(type: Jar) {
-    from javaDocObjectSerialization
-    classifier = 'object-javadoc'
-}
-
-task jarObjectSerialization(type: Jar) {
-    from sourceSets.objectSerialization.output
-    classifier = 'object'
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -147,9 +100,6 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-            artifact sourcesJarObjectSerialization
-            artifact javadocJarObjectSerialization
-            artifact jarObjectSerialization
             pom {
                 name = 'SecureJSON'
                 description = 'A secure JSON library.'
@@ -178,14 +128,18 @@ publishing {
 
     repositories {
         maven {
-            if (project.hasProperty('release')) {
-                url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            if (project.hasProperty('remote')) {
+                if (project.hasProperty('release')) {
+                    url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                } else {
+                    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+                }
+                credentials {
+                    username = project.properties['sonatypeUsername']
+                    password = project.properties['sonatypePassword']
+                }
             } else {
-                url 'https://oss.sonatype.org/content/repositories/snapshots/'
-            }
-            credentials {
-                username = project.properties['sonatypeUsername']
-                password = project.properties['sonatypePassword']
+                url = "${buildDir}/maven"
             }
         }
     }
@@ -215,18 +169,6 @@ task cloneJSONTestSuite(type: Exec) {
     outputs.files(cloneDir)
 }
 cloneJSONTestSuite.mustRunAfter clean
-
-task testObjectSerialization(type: Test) {
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = 'Runs the object serialization tests.'
-
-    useTestNG()
-
-    testClassesDirs = sourceSets.objectSerializationTest.output
-    classpath += sourceSets.objectSerializationTest.runtimeClasspath
-    classpath += sourceSets.objectSerialization.runtimeClasspath
-}
-check.dependsOn testObjectSerialization
 
 task verifyJSONTestSuite(dependsOn: [cloneJSONTestSuite, compileCliJava]) {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
