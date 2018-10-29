@@ -179,6 +179,7 @@ task verifyJSONTestSuite(dependsOn: [cloneJSONTestSuite, compileCliJava]) {
     doLast {
         javaexec {
             systemProperties['verifyRunMode'] = 'batch'
+            classpath sourceSets.main.runtimeClasspath
             classpath sourceSets.cli.runtimeClasspath
             main = 'com.chelseaurquhart.securejson.Verify'
             args = jsonFiles
