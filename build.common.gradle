@@ -4,6 +4,8 @@ apply plugin: 'checkstyle'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
+def versionNumber = '1.0.5'
+
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -76,7 +78,6 @@ check.dependsOn jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
 
 group = 'com.chelseaurquhart'
-def versionNumber = '1.0.4'
 if (project.hasProperty('release')) {
     version = versionNumber
 } else {

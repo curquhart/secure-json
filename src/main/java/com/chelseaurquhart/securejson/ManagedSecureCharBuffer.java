@@ -13,29 +13,33 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
     private static final int HASH_PRIME = 31;
 
     private final int initialCapacity;
-    private LinkedList<CharSequence> buffers;
+    private final LinkedList<CharSequence> buffers;
     private byte[] bytes;
+    private final Settings settings;
 
-    ManagedSecureCharBuffer() {
-        this(0);
+    ManagedSecureCharBuffer(final Settings parSettings) {
+        this(0, parSettings);
     }
 
-    ManagedSecureCharBuffer(final int parInitialCapacity) {
+    ManagedSecureCharBuffer(final int parInitialCapacity, final Settings parSettings) {
         if (parInitialCapacity > 0) {
             initialCapacity = parInitialCapacity;
         } else {
             initialCapacity = INITIAL_CAPACITY;
         }
         buffers = new LinkedList<>();
+        settings = parSettings;
     }
 
-    private ManagedSecureCharBuffer(final int parInitialCapacity, final LinkedList<CharSequence> parBuffers) {
+    private ManagedSecureCharBuffer(final int parInitialCapacity, final LinkedList<CharSequence> parBuffers,
+                                    final Settings parSettings) {
         initialCapacity = parInitialCapacity;
         buffers = parBuffers;
+        settings = parSettings;
     }
 
     @Override
-    public void append(final char parChar) {
+    public void append(final char parChar) throws IOException {
         final int myMaxSize = initialCapacity + 1;
 
         final CharSequence myHeadBuffer;
@@ -46,9 +50,18 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         }
 
         final CharSequence myWriteBuffer;
-        if (!(myHeadBuffer instanceof ObfuscatedByteBuffer)
-                || myHeadBuffer.length() + 1 >= ((ObfuscatedByteBuffer) myHeadBuffer).capacity) {
-            myWriteBuffer = new ObfuscatedByteBuffer(myMaxSize);
+        if (!(myHeadBuffer instanceof IWritableCharSequence)
+                || (myHeadBuffer.length() + 1 >= ((IWritableCharSequence) myHeadBuffer).getCapacity()
+                && ((IWritableCharSequence) myHeadBuffer).isRestrictedToCapacity())) {
+            try {
+                myWriteBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
+            } catch (final Exception myException) {
+                if (myException instanceof IOException) {
+                    throw (IOException) myException;
+                }
+
+                throw new JSONException(myException);
+            }
             buffers.add(myWriteBuffer);
         } else {
             myWriteBuffer = myHeadBuffer;
@@ -187,7 +200,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             throw new ArrayIndexOutOfBoundsException(myMessage);
         }
 
-        return new ManagedSecureCharBuffer(initialCapacity, myBuffers);
+        return new ManagedSecureCharBuffer(initialCapacity, myBuffers, settings);
     }
 
     @Override
@@ -247,7 +260,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         return myHashCode;
     }
 
-    private static class ObfuscatedByteBuffer implements CharSequence, Closeable, AutoCloseable {
+    static class ObfuscatedByteBuffer implements CharSequence, IWritableCharSequence {
         private final int offset;
         private final int capacity;
         private final Integer fixedLength;
@@ -340,6 +353,16 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         @Override
         public String toString() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isRestrictedToCapacity() {
+            return true;
+        }
+
+        @Override
+        public int getCapacity() {
+            return capacity;
         }
     }
 }

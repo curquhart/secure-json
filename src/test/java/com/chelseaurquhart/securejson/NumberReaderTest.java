@@ -36,7 +36,7 @@ public class NumberReaderTest {
         } else {
             myExponentSign = '+';
         }
-        return new NumberReader(parMathContext).charSequenceToNumber(parNumber, 0);
+        return new NumberReader(parMathContext, Settings.DEFAULTS).charSequenceToNumber(parNumber, 0);
     }
 
     private int getIndex(final CharSequence parInput, final char parSearchFor, final int parStartIndex) {

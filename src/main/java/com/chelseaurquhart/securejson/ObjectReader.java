@@ -57,13 +57,11 @@ class ObjectReader<T> extends ObjectSerializer {
     ));
 
     private final Class<T> clazz;
-    private final boolean strictStrings;
-    private final boolean strictMapKeyTypes;
+    private final Settings settings;
 
-    ObjectReader(final Class<T> parClazz, final boolean parStrictStrings, final boolean parStrictMapKeyTypes) {
+    ObjectReader(final Class<T> parClazz, final Settings parSettings) {
         clazz = parClazz;
-        strictStrings = parStrictStrings;
-        strictMapKeyTypes = parStrictMapKeyTypes;
+        settings = parSettings;
     }
 
     @SuppressWarnings("unchecked")
@@ -181,8 +179,7 @@ class ObjectReader<T> extends ObjectSerializer {
                 boolean myFoundSubData = false;
                 if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
                     if (myValue != null) {
-                        final Object myAcceptedValue = new ObjectReader<>(myField.getType(), strictStrings,
-                            strictMapKeyTypes).accept(myValue);
+                        final Object myAcceptedValue = new ObjectReader<>(myField.getType(), settings).accept(myValue);
                         setValueIfNotNull(parField, mySubInstance, buildValue(myField.getGenericType(),
                             myField.getType(), myAcceptedValue, parAbsMap));
                         myFoundSubData = myAcceptedValue != null;
@@ -276,9 +273,9 @@ class ObjectReader<T> extends ObjectSerializer {
                 || myType == float.class || myType == double.class) {
             return buildNumberValue(myType, (Number) parValue);
         } else if (CharSequence.class.isAssignableFrom(myType)) {
-            return buildStringValue(myType, (CharSequence) parValue, strictStrings);
+            return buildStringValue(myType, (CharSequence) parValue, settings.isStrictStrings());
         } else {
-            return new ObjectReader<>(myType, strictStrings, strictMapKeyTypes).buildInstance(parValue, parAbsMap);
+            return new ObjectReader<>(myType, settings).buildInstance(parValue, parAbsMap);
         }
     }
 
@@ -325,7 +322,8 @@ class ObjectReader<T> extends ObjectSerializer {
             throw new JSONException(myException);
         }
         for (final Map.Entry<?, ?> myEntry : parValue.entrySet()) {
-            final Object myKey = buildStringValue(myClasses[0], (CharSequence) myEntry.getKey(), strictMapKeyTypes);
+            final Object myKey = buildStringValue(myClasses[0], (CharSequence) myEntry.getKey(),
+                settings.isStrictMapKeyTypes());
 
             myMap.put(myKey, buildValue(myArgs[1], myClasses[1], myEntry.getValue(), null));
         }

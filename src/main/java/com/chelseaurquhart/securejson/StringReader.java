@@ -8,6 +8,12 @@ import java.io.IOException;
 class StringReader extends ManagedSecureBufferList implements IReader {
     private static final int TWO_DIGIT_MIN = 10;
 
+    private final Settings settings;
+
+    StringReader(final Settings parSettings) {
+        settings = parSettings;
+    }
+
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
         return parIterator.peek() == JSONSymbolCollection.Token.QUOTE.getShortSymbol();
@@ -26,7 +32,7 @@ class StringReader extends ManagedSecureBufferList implements IReader {
         }
         parInput.next();
 
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
         addSecureBuffer(mySecureBuffer);
 
         while (parInput.hasNext()) {

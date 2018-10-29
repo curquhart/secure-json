@@ -53,7 +53,8 @@ public final class StringProvider {
             return null;
         }
 
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length());
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length(),
+            Settings.DEFAULTS);
         mySecureBuffer.append(parInput);
 
         return mySecureBuffer;

@@ -19,8 +19,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
+                        append(parInput, 'a', 'b');
                     }
                 },
                 "a",
@@ -48,9 +47,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
+                        append(parInput, 'a', 'b', 'c');
                     }
                 },
                 "ab",
@@ -64,9 +61,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
+                        append(parInput, 'a', 'b', 'c');
                     }
                 },
                 "abc",
@@ -80,9 +75,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
+                        append(parInput, 'a', 'b', 'c');
                     }
                 },
                 "bc",
@@ -96,15 +89,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
-                        parInput.append('d');
-                        parInput.append('e');
-                        parInput.append('f');
-                        parInput.append('g');
-                        parInput.append('h');
-                        parInput.append('i');
+                        append(parInput, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     }
                 },
                 "def",
@@ -118,15 +103,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
-                        parInput.append('d');
-                        parInput.append('e');
-                        parInput.append('f');
-                        parInput.append('g');
-                        parInput.append('h');
-                        parInput.append('i');
+                        append(parInput, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     }
                 },
                 "de",
@@ -140,15 +117,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
-                        parInput.append('d');
-                        parInput.append('e');
-                        parInput.append('f');
-                        parInput.append('g');
-                        parInput.append('h');
-                        parInput.append('i');
+                        append(parInput, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     }
                 },
                 "f",
@@ -162,15 +131,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
-                        parInput.append('d');
-                        parInput.append('e');
-                        parInput.append('f');
-                        parInput.append('g');
-                        parInput.append('h');
-                        parInput.append('i');
+                        append(parInput, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     }
                 },
                 "fg",
@@ -184,15 +145,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
-                        parInput.append('d');
-                        parInput.append('e');
-                        parInput.append('f');
-                        parInput.append('g');
-                        parInput.append('h');
-                        parInput.append('i');
+                        append(parInput, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     }
                 },
                 "g",
@@ -206,15 +159,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                     @Override
                     public void accept(final ManagedSecureCharBuffer parInput) {
-                        parInput.append('a');
-                        parInput.append('b');
-                        parInput.append('c');
-                        parInput.append('d');
-                        parInput.append('e');
-                        parInput.append('f');
-                        parInput.append('g');
-                        parInput.append('h');
-                        parInput.append('i');
+                        append(parInput, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     }
                 },
                 "gh",
@@ -333,7 +278,8 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testFullBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4)) {
+        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+                Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
             myManagedSecureCharBuffer.append('s');
@@ -344,7 +290,8 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testOverflowBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4)) {
+        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+                Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
             myManagedSecureCharBuffer.append('s');
@@ -356,7 +303,8 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testUnderflowBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4)) {
+        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+                Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
             Assert.assertEquals("te", StringUtil.charSequenceToString(myManagedSecureCharBuffer));
@@ -365,7 +313,8 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testCharSequenceByReference() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4)) {
+        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+                Settings.DEFAULTS)) {
             final MutatableString myCharSequence = new MutatableString();
 
             myCharSequence.string = "TEST";
@@ -379,7 +328,8 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testCharSequenceAndBytesMixedClose() throws IOException {
-        final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4);
+        final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+                Settings.DEFAULTS);
 
         myManagedSecureCharBuffer.append('a');
         myManagedSecureCharBuffer.append('b');
@@ -396,7 +346,8 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testToStringException() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4)) {
+        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+                Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('a');
             myManagedSecureCharBuffer.append('b');
             myManagedSecureCharBuffer.toString();
@@ -414,6 +365,16 @@ public final class ManagedSecureCharBufferTest {
             } catch (final Exception myException) {
                 Assert.assertNotNull(parParameters.expectedException);
                 Assert.assertEquals(myException.getMessage(), parParameters.expectedException);
+            }
+        }
+    }
+
+    private static void append(final ManagedSecureCharBuffer parInput, final char... parChars) {
+        for (final char myChar : parChars) {
+            try {
+                parInput.append(myChar);
+            } catch (final IOException myException) {
+                throw new RuntimeException(myException);
             }
         }
     }
@@ -450,7 +411,7 @@ public final class ManagedSecureCharBufferTest {
                            final CharSequence parExpected, final int parStart, final int parEnd,
                            final String parExpectedException) {
             testName = parTestName;
-            managedSecureCharBuffer = new ManagedSecureCharBuffer(parCapacity);
+            managedSecureCharBuffer = new ManagedSecureCharBuffer(parCapacity, Settings.DEFAULTS);
             parManagedSecureCharBufferConsumer.accept(managedSecureCharBuffer);
             expected = parExpected;
             start = parStart;

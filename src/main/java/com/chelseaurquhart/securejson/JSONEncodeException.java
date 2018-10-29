@@ -2,7 +2,10 @@ package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
 
-class JSONEncodeException extends JSONException {
+/**
+ * Base class for JSON encode-specific errors.
+ */
+public class JSONEncodeException extends JSONException {
     JSONEncodeException(final Messages.Key parMessageKey)
             throws IOException {
         super(Messages.get(Messages.Key.ERROR_JSON_ENCODE)
@@ -35,7 +38,10 @@ class JSONEncodeException extends JSONException {
         }
     }
 
-    static class InvalidTypeException extends JSONEncodeException {
+    /**
+     * Exception representing an invalid data type.
+     */
+    public static class InvalidTypeException extends JSONEncodeException {
         InvalidTypeException() throws IOException {
             super(Messages.Key.ERROR_INVALID_TYPE);
         }

@@ -84,7 +84,7 @@ public final class JSONWriterTest {
 
     @Test(dataProvider = DATA_PROVIDER_NAME)
     public void testWrite(final Parameters parParameters) throws IOException {
-        try (final JSONWriter myWriter = new JSONWriter()) {
+        try (final JSONWriter myWriter = new JSONWriter(Settings.DEFAULTS)) {
             Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
                 StringUtil.deepCharSequenceToString(parParameters.expected));
         }

@@ -12,23 +12,17 @@ import java.nio.charset.StandardCharsets;
  * https://medium.com/@_west_on/protecting-strings-in-jvm-memory-84c365f8f01c for the motivations around this.
  */
 public final class SecureJSON {
-    private static final boolean DEFAULT_STRICT_STRINGS = true;
-    private static final boolean DEFAULT_STRICT_MAP_KEY_TYPES = true;
-
-    private final boolean strictStrings;
-    private final boolean strictMapKeyTypes;
+    private final Settings settings;
 
     /**
      * Build a SecureJSON instance with default settings.
      */
     public SecureJSON() {
-        strictStrings = DEFAULT_STRICT_STRINGS;
-        strictMapKeyTypes = DEFAULT_STRICT_MAP_KEY_TYPES;
+        settings = new Settings();
     }
 
     private SecureJSON(final Builder parBuilder) {
-        strictStrings = parBuilder.strictStrings;
-        strictMapKeyTypes = parBuilder.strictMapKeyTypes;
+        settings = new Settings(parBuilder);
     }
 
     /**
@@ -41,7 +35,7 @@ public final class SecureJSON {
      */
     public void toJSON(final Object parInput, final IConsumer<CharSequence> parConsumer)
             throws JSONEncodeException {
-        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter())) {
+        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput));
         } catch (final JSONEncodeException myException) {
             throw myException;
@@ -60,7 +54,7 @@ public final class SecureJSON {
      */
     public void toJSONBytes(final Object parInput, final IConsumer<byte[]> parConsumer)
             throws JSONEncodeException {
-        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter())) {
+        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput).getBytes());
         } catch (final JSONEncodeException myException) {
             throw myException;
@@ -90,7 +84,7 @@ public final class SecureJSON {
      */
     public void toJSON(final Object parInput, final OutputStream parOutputStream, final Charset parCharset)
             throws JSONEncodeException {
-        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter())) {
+        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, parCharset));
         } catch (final JSONEncodeException myException) {
             throw myException;
@@ -113,7 +107,7 @@ public final class SecureJSON {
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer)
             throws JSONDecodeException {
-        try (final JSONReader myJsonReader = new JSONReader()) {
+        try (final JSONReader myJsonReader = new JSONReader(settings)) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
             throw myException;
@@ -159,7 +153,7 @@ public final class SecureJSON {
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer)
             throws JSONDecodeException {
-        try (final JSONReader myJsonReader = new JSONReader()) {
+        try (final JSONReader myJsonReader = new JSONReader(settings)) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
         } catch (final JSONDecodeException myException) {
             throw myException;
@@ -203,7 +197,7 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
-        try (final JSONReader myJsonReader = new JSONReader()) {
+        try (final JSONReader myJsonReader = new JSONReader(settings)) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
             throw myException;
@@ -239,7 +233,7 @@ public final class SecureJSON {
             @Override
             public void accept(final Object parOutput) {
                 try {
-                    parConsumer.accept(new ObjectReader<>(parClass, strictStrings, strictMapKeyTypes)
+                    parConsumer.accept(new ObjectReader<>(parClass, settings)
                         .accept(parOutput));
                 } catch (final JSONException myException) {
                     throw new JSONException.JSONRuntimeException(myException);
@@ -252,8 +246,10 @@ public final class SecureJSON {
      * Builder for SecureJSON, to allow specifying custom arguments.
      */
     public static final class Builder {
-        private boolean strictStrings = DEFAULT_STRICT_STRINGS;
-        private boolean strictMapKeyTypes = DEFAULT_STRICT_MAP_KEY_TYPES;
+        private boolean strictStrings = Settings.DEFAULT_STRICT_STRINGS;
+        private boolean strictMapKeyTypes = Settings.DEFAULT_STRICT_MAP_KEY_TYPES;
+        private IFunction<Integer, IWritableCharSequence> writableCharBufferFactory =
+            Settings.DEFAULT_WRITABLE_CHAR_BUFFER_FACTORY;
 
         /**
          * Set the strictStrings option. If strictStrings is true, we will never convert CharSequence to string. If it
@@ -289,6 +285,20 @@ public final class SecureJSON {
         }
 
         /**
+         * Set the factory to use for building secure buffers. By default we will use our own implementation, but this
+         * can be used to provide a custom one.
+         *
+         * @param parWritableCharBufferFactory The factory to use for building secure buffers.
+         * @return A reference to this object.
+         */
+        public Builder writableCharBufferFactory(
+                final IFunction<Integer, IWritableCharSequence> parWritableCharBufferFactory) {
+            writableCharBufferFactory = parWritableCharBufferFactory;
+
+            return this;
+        }
+
+        /**
          * Build a SecureJSON instance using our settings.
          *
          * @return A SecureJSON instance.
@@ -296,5 +306,18 @@ public final class SecureJSON {
         public SecureJSON build() {
             return new SecureJSON(this);
         }
+
+        boolean isStrictStrings() {
+            return strictStrings;
+        }
+
+        boolean isStrictMapKeyTypes() {
+            return strictMapKeyTypes;
+        }
+
+        IFunction<Integer, IWritableCharSequence> getWritableCharBufferFactory() {
+            return writableCharBufferFactory;
+        }
     }
+
 }

@@ -478,7 +478,7 @@ public final class NumberProvider {
                 "overflow",
                 new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT).toString(),
                 new HugeDecimal(new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT)
-                    .toString(), new NumberReader()),
+                    .toString(), new NumberReader(Settings.DEFAULTS)),
                 HugeDecimal.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
@@ -521,7 +521,8 @@ public final class NumberProvider {
             return null;
         }
 
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length());
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length(),
+            Settings.DEFAULTS);
         mySecureBuffer.append(parInput);
 
         return mySecureBuffer;
