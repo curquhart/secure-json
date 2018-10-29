@@ -1,6 +1,7 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.util.StringUtil;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -295,6 +296,7 @@ public final class ObjectReaderTest {
             @Serialize(name = "3", relativeTo = Relativity.ABSOLUTE)
             private int level3;
             private int rel;
+            @SuppressFBWarnings(value = "UwF")
             private Level4 level4;
         }
 
