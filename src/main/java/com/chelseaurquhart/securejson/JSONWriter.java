@@ -4,6 +4,7 @@ import com.chelseaurquhart.securejson.JSONEncodeException.InvalidTypeException;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,9 +13,15 @@ import java.util.Map;
 class JSONWriter implements Closeable, AutoCloseable {
     private static final int INITIAL_CAPACITY = 512;
     private final List<ManagedSecureCharBuffer> secureBuffers;
+    private final IObjectMutator objectMutator;
 
     JSONWriter() {
+        this(null);
+    }
+
+    JSONWriter(final IObjectMutator parObjectMutator) {
         secureBuffers = new ArrayList<>();
+        objectMutator = parObjectMutator;
     }
 
     ManagedSecureCharBuffer write(final Object parInput) throws IOException {
@@ -26,21 +33,47 @@ class JSONWriter implements Closeable, AutoCloseable {
     }
 
     void write(final Object parInput, final ICharacterWriter parSecureBuffer) throws IOException {
-        if (parInput instanceof IJSONAware) {
-            write(((IJSONAware) parInput).toJSONable(), parSecureBuffer);
+        final Object myInput;
+        if (objectMutator != null) {
+            myInput = objectMutator.accept(parInput);
+        } else {
+            myInput = parInput;
+        }
+
+        if (myInput instanceof IJSONAware) {
+            write(((IJSONAware) myInput).toJSONable(), parSecureBuffer);
             return;
         }
 
-        if (parInput instanceof Collection) {
+        if (myInput == null) {
+            parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
+        } else if (myInput instanceof Collection) {
             parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
-            for (final Object myElement : ((Collection) parInput)) {
+            boolean myIsFirst = true;
+            for (final Object myElement : ((Collection) myInput)) {
+                if (!myIsFirst) {
+                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+                }
+                myIsFirst = false;
                 write(myElement, parSecureBuffer);
             }
             parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
-        } else if (parInput instanceof Map) {
+        } else if (myInput.getClass().isArray()) {
+            parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
+            final int myLength = Array.getLength(myInput);
+            boolean myIsFirst = true;
+            for (int myIndex = 0; myIndex < myLength; myIndex++) {
+                if (!myIsFirst) {
+                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+                }
+                myIsFirst = false;
+                write(Array.get(myInput, myIndex), parSecureBuffer);
+            }
+            parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
+        } else if (myInput instanceof Map) {
             parSecureBuffer.append(JSONSymbolCollection.Token.L_CURLY.getShortSymbol());
             boolean myIsFirst = true;
-            for (final Object myObject : ((Map) parInput).entrySet()) {
+            for (final Object myObject : ((Map) myInput).entrySet()) {
                 final Map.Entry myEntry = (Map.Entry) myObject;
                 final Object myKey = myEntry.getKey();
                 if (!(myKey instanceof CharSequence)) {
@@ -59,20 +92,18 @@ class JSONWriter implements Closeable, AutoCloseable {
                 write(myEntry.getValue(), parSecureBuffer);
             }
             parSecureBuffer.append(JSONSymbolCollection.Token.R_CURLY.getShortSymbol());
-        } else if (parInput instanceof Number && parInput instanceof CharSequence) {
-                parSecureBuffer.append((CharSequence) parInput);
-        } else if (parInput instanceof Number) {
+        } else if (myInput instanceof Number && myInput instanceof CharSequence) {
+            parSecureBuffer.append((CharSequence) myInput);
+        } else if (myInput instanceof Number) {
             // nothing we can do here, need to convert to string
-            parSecureBuffer.append(parInput.toString());
-        } else if (parInput == null) {
-            parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
-        } else if (parInput instanceof Boolean && (boolean) parInput) {
+            parSecureBuffer.append(myInput.toString());
+        } else if (myInput instanceof Boolean && (boolean) myInput) {
             parSecureBuffer.append(JSONSymbolCollection.Token.TRUE.getSymbol().toString());
-        } else if (parInput instanceof Boolean && !(boolean) parInput) {
+        } else if (myInput instanceof Boolean && !(boolean) myInput) {
             parSecureBuffer.append(JSONSymbolCollection.Token.FALSE.getSymbol().toString());
-        } else if (parInput instanceof CharSequence) {
+        } else if (myInput instanceof CharSequence) {
             parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
-            writeQuoted((CharSequence) parInput, parSecureBuffer);
+            writeQuoted((CharSequence) myInput, parSecureBuffer);
             parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
         } else {
             throw new InvalidTypeException();

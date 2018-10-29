@@ -59,6 +59,10 @@ public final class StringUtil {
      * @return A character sequence with no strings.
      */
     public static String charSequenceToString(final CharSequence parInput) {
+        if (parInput instanceof String) {
+            return (String) parInput;
+        }
+
         final char[] myChars = new char[parInput.length()];
         CharBuffer.wrap(parInput).get(myChars);
 

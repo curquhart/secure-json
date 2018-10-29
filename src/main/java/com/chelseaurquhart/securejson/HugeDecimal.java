@@ -11,15 +11,30 @@ import java.util.Objects;
 /**
  * HugeDecimal is for numbers that are too big to parse with BigDecimal through normal means.
  */
-public class HugeDecimal extends Number {
+public class HugeDecimal extends Number implements CharSequence {
     private static final long serialVersionUID = 1L;
 
-    private final CharSequence chars;
+    private CharSequence chars;
     private final transient NumberReader numberReader;
+    private final Number number;
 
     HugeDecimal(final CharSequence parChars, final NumberReader parNumberReader) {
         chars = parChars;
         numberReader = parNumberReader;
+        number = null;
+    }
+
+    HugeDecimal(final Number parValue) {
+        if (parValue instanceof HugeDecimal) {
+            final HugeDecimal myValueHugeDecimal = (HugeDecimal) parValue;
+            chars = myValueHugeDecimal.chars;
+            numberReader = myValueHugeDecimal.numberReader;
+            number = myValueHugeDecimal.number;
+        } else {
+            chars = null;
+            numberReader = null;
+            number = parValue;
+        }
     }
 
     /**
@@ -29,6 +44,10 @@ public class HugeDecimal extends Number {
      */
     @Override
     public final int intValue() {
+        if (number != null) {
+            return number.intValue();
+        }
+
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().intValue();
         } catch (final IOException myException) {
@@ -43,6 +62,10 @@ public class HugeDecimal extends Number {
      */
     @Override
     public final long longValue() {
+        if (number != null) {
+            return number.longValue();
+        }
+
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().longValue();
         } catch (final IOException myException) {
@@ -57,6 +80,10 @@ public class HugeDecimal extends Number {
      */
     @Override
     public final float floatValue() {
+        if (number != null) {
+            return number.floatValue();
+        }
+
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().floatValue();
         } catch (final IOException myException) {
@@ -71,6 +98,10 @@ public class HugeDecimal extends Number {
      */
     @Override
     public final double doubleValue() {
+        if (number != null) {
+            return number.doubleValue();
+        }
+
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().doubleValue();
         } catch (final IOException myException) {
@@ -91,18 +122,38 @@ public class HugeDecimal extends Number {
      * Get our value converted to a BigInteger.
      *
      * @return a BigInteger representation of our character sequence.
+     * @throws IOException On error.
      */
-    public final BigInteger bigIntegerValue() {
-        return BigInteger.valueOf(0L);
+    public final BigInteger bigIntegerValue() throws IOException {
+        if (number != null) {
+            if (number instanceof BigInteger) {
+                return (BigInteger) number;
+            }
+            if (number instanceof BigDecimal) {
+                return ((BigDecimal) number).toBigInteger();
+            }
+        }
+
+        return numberReader.charSequenceToBigDecimal(chars, 0).getKey().toBigIntegerExact();
     }
 
     /**
      * Get our value converted to a BigDecimal.
      *
      * @return a BigDecimal representation of our character sequence.
+     * @throws IOException On error.
      */
-    public final BigDecimal bigDecimalValue() {
-        return new BigDecimal(0);
+    public final BigDecimal bigDecimalValue() throws IOException {
+        if (number != null) {
+            if (number instanceof BigDecimal) {
+                return (BigDecimal) number;
+            }
+            if (number instanceof BigInteger) {
+                return new BigDecimal((BigInteger) number);
+            }
+        }
+
+        return numberReader.charSequenceToBigDecimal(chars, 0).getKey();
     }
 
     @Override
@@ -114,22 +165,54 @@ public class HugeDecimal extends Number {
             return false;
         }
         final HugeDecimal myThat = (HugeDecimal) parObject;
-        if (chars.length() != myThat.chars.length()) {
-            return false;
-        }
-
-        for (int myIndex = chars.length() - 1; myIndex >= 0; myIndex--) {
-            if (chars.charAt(myIndex) != myThat.chars.charAt(myIndex)) {
+        if (chars != null && myThat.chars != null) {
+            if (chars.length() != myThat.chars.length()) {
                 return false;
             }
-        }
 
-        return true;
+            for (int myIndex = chars.length() - 1; myIndex >= 0; myIndex--) {
+                if (chars.charAt(myIndex) != myThat.chars.charAt(myIndex)) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            try {
+                return bigDecimalValue().equals(myThat.bigDecimalValue());
+            } catch (final IOException myException) {
+                throw new RuntimeException(myException);
+            }
+        }
     }
 
     @Override
     public final int hashCode() {
         return Objects.hash(chars);
+    }
+
+    @Override
+    public final int length() {
+        if (number != null && chars == null) {
+            chars = number.toString();
+        }
+        return chars.length();
+    }
+
+    @Override
+    public final char charAt(final int parIndex) {
+        if (number != null && chars == null) {
+            chars = number.toString();
+        }
+        return chars.charAt(parIndex);
+    }
+
+    @Override
+    public final CharSequence subSequence(final int parStart, final int parEnd) {
+        if (number != null && chars == null) {
+            chars = number.toString();
+        }
+        return chars.subSequence(parStart, parEnd);
     }
 
     private void writeObject(final ObjectOutputStream parObjectOutputStream) throws IOException {

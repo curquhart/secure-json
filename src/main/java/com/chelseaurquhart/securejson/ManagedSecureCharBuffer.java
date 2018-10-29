@@ -10,6 +10,7 @@ import java.util.LinkedList;
 
 final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
+    private static final int HASH_PRIME = 31;
 
     private final int initialCapacity;
     private LinkedList<CharSequence> buffers;
@@ -201,6 +202,51 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         }
     }
 
+    @Override
+    public boolean equals(final Object parObject) {
+        if (this == parObject) {
+            return true;
+        }
+        if (!(parObject instanceof CharSequence)) {
+            return false;
+        }
+
+        return isEqual(subSequence(0, length()), (CharSequence) parObject);
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode(subSequence(0, length()));
+    }
+
+    private static boolean isEqual(final CharSequence parLhs, final CharSequence parRhs) {
+        if (parLhs == null || parRhs == null) {
+            return parLhs == parRhs;
+        }
+
+        final int myLength = parLhs.length();
+        if (parRhs.length() != myLength) {
+            return false;
+        }
+
+        for (int myIndex = 0; myIndex < myLength; myIndex++) {
+            if (parLhs.charAt(myIndex) != parRhs.charAt(myIndex)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static int hashCode(final CharSequence parSubSequence) {
+        int myHashCode = 0;
+        for (int myIndex = parSubSequence.length() - 1; myIndex > 0; myIndex--) {
+            myHashCode += HASH_PRIME * (int) parSubSequence.charAt(myIndex);
+        }
+
+        return myHashCode;
+    }
+
     private static class ObfuscatedByteBuffer implements CharSequence, Closeable, AutoCloseable {
         private final int offset;
         private final int capacity;
@@ -272,6 +318,28 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
                 compositionFirst.position(0);
                 compositionSecond.position(0);
             }
+        }
+
+        @Override
+        public boolean equals(final Object parObject) {
+            if (this == parObject) {
+                return true;
+            }
+            if (!(parObject instanceof CharSequence)) {
+                return false;
+            }
+
+            return isEqual(subSequence(0, length()), (CharSequence) parObject);
+        }
+
+        @Override
+        public int hashCode() {
+            return ManagedSecureCharBuffer.hashCode(subSequence(0, length()));
+        }
+
+        @Override
+        public String toString() {
+            throw new UnsupportedOperationException();
         }
     }
 }

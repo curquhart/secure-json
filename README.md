@@ -17,7 +17,7 @@ I welcome pull requests and feature requests.
 import com.chelseaurquhart.securejson.SecureJSON;
 
 // consume a string
-SecureJSON.fromJSON("\"json string\"", new IConsumer<CharSequence>() {
+new SecureJSON().fromJSON("\"json string\"", new IConsumer<CharSequence>() {
     @Override
     public void accept(final CharSequence input) {
         // do something with input
@@ -26,7 +26,7 @@ SecureJSON.fromJSON("\"json string\"", new IConsumer<CharSequence>() {
 
 // consume a stream
 final InputStream inputStream = ...;
-SecureJSON.fromJSON(inputStream, new IConsumer<CharSequence>() {
+new SecureJSON().fromJSON(inputStream, new IConsumer<CharSequence>() {
     @Override
     public void accept(final CharSequence input) {
         // do something with input
@@ -34,7 +34,7 @@ SecureJSON.fromJSON(inputStream, new IConsumer<CharSequence>() {
 });
 
 // provide a CharSequence
-SecureJSON.toJSON("a string", new IConsumer<CharSequence>() {
+new SecureJSON().toJSON("a string", new IConsumer<CharSequence>() {
     @Override
     public void accept(final CharSequence output) {
         // do something with output
@@ -43,5 +43,5 @@ SecureJSON.toJSON("a string", new IConsumer<CharSequence>() {
 
 // write to a stream
 final OutputStream outputStream = ...;
-SecureJSON.toJSON("a string", outputStream);
+new SecureJSON().toJSON("a string", outputStream);
 ```

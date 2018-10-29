@@ -15,7 +15,7 @@ public final class SecureJSONTest {
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
     public void testReadString(final JSONReaderTest.Parameters parParameters) {
         try {
-            SecureJSON.fromJSON(parParameters.getInputString(), new IConsumer<Object>() {
+            new SecureJSON().fromJSON(parParameters.getInputString(), new IConsumer<Object>() {
                 @Override
                 public void accept(final Object parInput) {
                     Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
@@ -34,7 +34,7 @@ public final class SecureJSONTest {
             parParameters.getInputString(), parParameters.getInputBytes());
 
         try {
-            SecureJSON.fromJSON(myInputStream, new IConsumer<Object>() {
+            new SecureJSON().fromJSON(myInputStream, new IConsumer<Object>() {
                 @Override
                 public void accept(final Object parInput) {
                     Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
@@ -57,7 +57,7 @@ public final class SecureJSONTest {
             } else {
                 myBytes = parParameters.getInputBytes();
             }
-            SecureJSON.fromJSON(myBytes, new IConsumer<Object>() {
+            new SecureJSON().fromJSON(myBytes, new IConsumer<Object>() {
                 @Override
                 public void accept(final Object parInput) {
                     Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
@@ -80,7 +80,7 @@ public final class SecureJSONTest {
 
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
     public void testWriteString(final JSONWriterTest.Parameters parParameters) throws JSONEncodeException {
-        SecureJSON.toJSON(parParameters.getInputObject(), new IConsumer<CharSequence>() {
+        new SecureJSON().toJSON(parParameters.getInputObject(), new IConsumer<CharSequence>() {
             @Override
             public void accept(final CharSequence parInput) {
                 Assert.assertEquals(StringUtil.charSequenceToString(parInput),
@@ -93,7 +93,7 @@ public final class SecureJSONTest {
     public void testWriteStream(final JSONWriterTest.Parameters parParameters)
             throws JSONEncodeException, UnsupportedEncodingException {
         final ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-        SecureJSON.toJSON(parParameters.getInputObject(), myOutputStream);
+        new SecureJSON().toJSON(parParameters.getInputObject(), myOutputStream);
         Assert.assertEquals(StringUtil.charSequenceToString(myOutputStream.toString(StandardCharsets.UTF_8.name())),
             StringUtil.charSequenceToString(parParameters.getExpected()));
     }
@@ -101,7 +101,7 @@ public final class SecureJSONTest {
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
     public void testWriteBytes(final JSONWriterTest.Parameters parParameters)
             throws JSONEncodeException {
-        SecureJSON.toJSONBytes(parParameters.getInputObject(), new IConsumer<byte[]>() {
+        new SecureJSON().toJSONBytes(parParameters.getInputObject(), new IConsumer<byte[]>() {
             @Override
             public void accept(final byte[] parInput) {
                 Assert.assertEquals(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(parInput)).toString(),
@@ -114,7 +114,7 @@ public final class SecureJSONTest {
     public void testReadIncorrectType() throws JSONDecodeException {
         final CharSequence myInput = "\"test\"";
         // read correct type to test for general functionality
-        SecureJSON.fromJSON(myInput, new IConsumer<CharSequence>() {
+        new SecureJSON().fromJSON(myInput, new IConsumer<CharSequence>() {
             @Override
             public void accept(final CharSequence parInput) {
                 Assert.assertEquals(StringUtil.charSequenceToString(parInput), "test");
@@ -122,7 +122,7 @@ public final class SecureJSONTest {
         });
 
         // Bad cast
-        SecureJSON.fromJSON(myInput, new IConsumer<Map>() {
+        new SecureJSON().fromJSON(myInput, new IConsumer<Map>() {
             @Override
             public void accept(final Map parInput) {
                 Assert.fail("invalid type");

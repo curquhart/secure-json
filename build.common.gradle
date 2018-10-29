@@ -25,9 +25,7 @@ sourceSets {
             srcDirs 'src/cli/java'
         }
         compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
         compileClasspath += sourceSets.shared.output
-        runtimeClasspath += sourceSets.shared.output
     }
 
     test {
@@ -40,7 +38,9 @@ sourceSets {
 
 dependencies {
     testCompile 'org.testng:testng:6.14.3'
-    testRuntime 'org.testng:testng:6.14.3'
+    compile group: 'net.jodah', name: 'typetools', version: '0.5.0'
+    testCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.8'
 }
 
 jacoco {
@@ -76,7 +76,7 @@ check.dependsOn jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
 
 group = 'com.chelseaurquhart'
-def versionNumber = '1.0.3'
+def versionNumber = '1.0.4'
 if (project.hasProperty('release')) {
     version = versionNumber
 } else {
@@ -128,14 +128,18 @@ publishing {
 
     repositories {
         maven {
-            if (project.hasProperty('release')) {
-                url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            if (project.hasProperty('remote')) {
+                if (project.hasProperty('release')) {
+                    url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                } else {
+                    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+                }
+                credentials {
+                    username = project.properties['sonatypeUsername']
+                    password = project.properties['sonatypePassword']
+                }
             } else {
-                url 'https://oss.sonatype.org/content/repositories/snapshots/'
-            }
-            credentials {
-                username = project.properties['sonatypeUsername']
-                password = project.properties['sonatypePassword']
+                url = "${buildDir}/maven"
             }
         }
     }
@@ -154,6 +158,9 @@ clean {
 }
 
 task cloneJSONTestSuite(type: Exec) {
+    group = LifecycleBasePlugin.BUILD_GROUP
+    description = 'Clones the JSONTestSuite repository.'
+
     ext {
         cloneDir = "${buildDir}/JSONTestSuite"
     }
@@ -164,11 +171,15 @@ task cloneJSONTestSuite(type: Exec) {
 cloneJSONTestSuite.mustRunAfter clean
 
 task verifyJSONTestSuite(dependsOn: [cloneJSONTestSuite, compileCliJava]) {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs the JSONTestSuite test suite against SecureJSON.'
+
     def jsonFiles = fileTree("${cloneJSONTestSuite.ext.cloneDir}/test_parsing/")
     inputs.files jsonFiles
     doLast {
         javaexec {
             systemProperties['verifyRunMode'] = 'batch'
+            classpath sourceSets.main.runtimeClasspath
             classpath sourceSets.cli.runtimeClasspath
             main = 'com.chelseaurquhart.securejson.Verify'
             args = jsonFiles
