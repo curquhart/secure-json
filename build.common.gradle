@@ -111,6 +111,28 @@ task javadocJar(type: Jar) {
     classifier = 'javadoc'
 }
 
+task sourcesJarObjectSerialization(type: Jar) {
+    from sourceSets.objectSerialization.allJava
+    classifier = 'object-sources'
+}
+
+task javaDocObjectSerialization(type: Javadoc) {
+    group = 'Documentation'
+    description = 'Generates Javadoc API documentation for the object serialization source code.'
+
+    source += sourceSets.objectSerialization.allJava
+    classpath += sourceSets.objectSerialization.compileClasspath
+    source += sourceSets.main.allJava
+    classpath += sourceSets.main.compileClasspath
+    options.addBooleanOption('html5', true)
+    destinationDir = file("${buildDir}/javaDocObjectSerialization")
+}
+
+task javadocJarObjectSerialization(type: Jar) {
+    from javaDocObjectSerialization
+    classifier = 'object-javadoc'
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -118,6 +140,8 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+            artifact sourcesJarObjectSerialization
+            artifact javadocJarObjectSerialization
             pom {
                 name = 'SecureJSON'
                 description = 'A secure JSON library.'
