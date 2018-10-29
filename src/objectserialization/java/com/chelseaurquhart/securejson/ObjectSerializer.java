@@ -1,5 +1,6 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -52,6 +53,73 @@ public class ObjectSerializer {
     public static void toJSON(final Object parInput, final OutputStream parOutputStream, final Charset parCharset)
             throws JSONEncodeException {
         SecureJSON.toJSON(parInput, parOutputStream, parCharset, new ObjectWriter());
+    }
+
+    /**
+     * Convert a JSON character sequence to an object that consumer will accept. Throws JSONDecodeException on
+     * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
+     * destroyed.
+     *
+     * @param parInput The input character sequence to deserialize.
+     * @param parConsumer The consumer to call with our unserialized JSON value.
+     * @param parClass The class we will be building.
+     * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
+     *           (which will accept anything) is acceptable.
+     * @throws JSONException On decode failure.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer,
+                                    final Class<T> parClass)
+            throws JSONException {
+        try {
+            SecureJSON.fromJSON(parInput, getConsumer(parConsumer, parClass));
+        } catch (final JSONException.JSONRuntimeException myException) {
+            throw myException.getCause();
+        }
+    }
+
+    /**
+     * Convert a JSON byte array to an object that consumer will accept. Throws JSONDecodeException on
+     * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
+     * destroyed.
+     *
+     * @param parInput The input character sequence to deserialize.
+     * @param parConsumer The consumer to call with our unserialized JSON value.
+     * @param parClass The class we will be building.
+     * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
+     *           (which will accept anything) is acceptable.
+     * @throws JSONException On decode failure.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
+            throws JSONException {
+        try {
+            SecureJSON.fromJSON(parInput, getConsumer(parConsumer, parClass));
+        } catch (final JSONException.JSONRuntimeException myException) {
+            throw myException.getCause();
+        }
+    }
+
+    /**
+     * Read a JSON character sequence stream to an object that consumer will accept. Throws JSONDecodeException on
+     * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
+     * destroyed.
+     *
+     * @param parInput The input character stream to deserialize.
+     * @param parConsumer The consumer to call with our unserialized JSON value.
+     * @param parClass The class we will be building.
+     * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
+     *           (which will accept anything) is acceptable.
+     * @throws JSONException On decode failure.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
+            throws JSONException {
+        try {
+            SecureJSON.fromJSON(parInput, getConsumer(parConsumer, parClass));
+        } catch (final JSONException.JSONRuntimeException myException) {
+            throw myException.getCause();
+        }
     }
 
     final SerializationSettings getSerializationSettings(final Field parField) {
@@ -174,5 +242,18 @@ public class ObjectSerializer {
         public int hashCode() {
             return Arrays.hashCode(target);
         }
+    }
+
+    private static <T> IConsumer<Object> getConsumer(final IConsumer<T> parConsumer, final Class<T> parClass) {
+        return new IConsumer<Object>() {
+            @Override
+            public void accept(final Object parOutput) {
+                try {
+                    parConsumer.accept(new ObjectReader<>(parClass).accept(parOutput));
+                } catch (final JSONException myException) {
+                    throw new JSONException.JSONRuntimeException(myException);
+                }
+            }
+        };
     }
 }
