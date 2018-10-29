@@ -116,16 +116,16 @@ public class ObjectSerializer {
     }
 
     final SerializationSettings getSerializationSettings(final Field parField) {
-        final SerializeTo myAnnotation = parField.getAnnotation(SerializeTo.class);
+        final Serialize myAnnotation = parField.getAnnotation(Serialize.class);
         String[] mySerializationTarget = null;
         Relativity mySerializationTargetStrategy = Relativity.RELATIVE;
 
         if (myAnnotation != null) {
-            final String[] myValue = myAnnotation.value();
+            final String[] myValue = myAnnotation.name();
             if (myValue.length > 0) {
                 mySerializationTarget = myValue;
             }
-            mySerializationTargetStrategy = myAnnotation.relativity();
+            mySerializationTargetStrategy = myAnnotation.relativeTo();
         }
 
         if (mySerializationTarget == null) {

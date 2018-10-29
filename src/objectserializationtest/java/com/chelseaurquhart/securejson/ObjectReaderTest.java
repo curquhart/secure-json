@@ -247,7 +247,7 @@ public final class ObjectReaderTest {
         private CharSequence charSeqVal;
         private int[] ints;
         private List<Integer> intList;
-        @SerializeTo(value = "root1", relativity = Relativity.ABSOLUTE)
+        @Serialize(name = "root1", relativeTo = Relativity.ABSOLUTE)
         private boolean absPosition;
     }
 
@@ -278,21 +278,21 @@ public final class ObjectReaderTest {
         private NestingAbsClass() {
         }
 
-        @SerializeTo(value = "1", relativity = Relativity.ABSOLUTE)
+        @Serialize(name = "1", relativeTo = Relativity.ABSOLUTE)
         private int level1;
         private Level2 level2;
 
         private static final class Level2 {
-            @SerializeTo(value = "2", relativity = Relativity.ABSOLUTE)
+            @Serialize(name = "2", relativeTo = Relativity.ABSOLUTE)
             private int level2;
-            @SerializeTo(value = "l3")
+            @Serialize(name = {"l3"})
             private Level3 level3;
             private int rel;
 
         }
 
         private static final class Level3 {
-            @SerializeTo(value = "3", relativity = Relativity.ABSOLUTE)
+            @Serialize(name = "3", relativeTo = Relativity.ABSOLUTE)
             private int level3;
             private int rel;
             private Level4 level4;

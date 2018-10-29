@@ -6,20 +6,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a location to serialize to/from.
+ * Represents a name to serialize to/from.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SerializeTo {
+public @interface Serialize {
     /**
      * The target to serialize to. To allow nesting, this supports an array.
      * @return An array of Strings.
      */
-    String[] value() default "";
+    String[] name() default {};
 
     /**
-     * The relativity setting. This changes the location that fields are serialized relative to their siblings.
-     * @return A Relativity value.
+     * The relativeTo setting. This changes the name that fields are serialized relative to their siblings.
+     * @return A Relativity name.
      */
-    Relativity relativity() default Relativity.RELATIVE;
+    Relativity relativeTo() default Relativity.RELATIVE;
 }

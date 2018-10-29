@@ -1,11 +1,11 @@
 package com.chelseaurquhart.securejson;
 
 /**
- * Specifies the relativity state of a serialization target.
+ * Specifies the relativeTo state of a serialization target.
  */
 public enum Relativity {
     /**
-     * Absolute relativity state means that all fields are serialized relative to the root JSON. In the case of fields
+     * Absolute relativeTo state means that all fields are serialized relative to the root JSON. In the case of fields
      * that are nested within arrays/sets, the root becomes that array/set.
      */
     ABSOLUTE,
