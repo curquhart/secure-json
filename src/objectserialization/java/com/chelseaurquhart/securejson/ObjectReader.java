@@ -31,7 +31,7 @@ import java.util.Set;
  * Class for reading a map (from JSON) into an object.
  * @param <T> The Class of the object to be read.
  */
-public class ObjectReader<T> extends ObjectSerializer {
+class ObjectReader<T> extends ObjectSerializer {
     /**
      * A collection of types that we can ignore when we're recursively resolving targets.
      */
