@@ -16,7 +16,7 @@ import java.util.Set;
  * Serializer to/from Objects.
  */
 public class ObjectSerializer {
-    private final Class<? extends Map<CharSequence, Object>> MAP_TOKEN = (new Map<CharSequence, Object>() {
+    private static final Class<? extends Map<CharSequence, Object>> MAP_TOKEN = (new Map<CharSequence, Object>() {
         @Override
         public int size() {
             return 0;
@@ -28,38 +28,36 @@ public class ObjectSerializer {
         }
 
         @Override
-        public boolean containsKey(Object key) {
+        public boolean containsKey(final Object parKey) {
             return false;
         }
 
         @Override
-        public boolean containsValue(Object value) {
+        public boolean containsValue(final Object parValue) {
             return false;
         }
 
         @Override
-        public Object get(Object key) {
+        public Object get(final Object parKey) {
             return null;
         }
 
         @Override
-        public Object put(CharSequence key, Object value) {
+        public Object put(final CharSequence parKey, final Object parValue) {
             return null;
         }
 
         @Override
-        public Object remove(Object key) {
+        public Object remove(final Object parKey) {
             return null;
         }
 
         @Override
-        public void putAll(Map<? extends CharSequence, ?> m) {
-
+        public void putAll(final Map<? extends CharSequence, ?> parMap) {
         }
 
         @Override
         public void clear() {
-
         }
 
         @Override
@@ -146,16 +144,8 @@ public class ObjectSerializer {
         return parInput instanceof Collection;
     }
 
-    final boolean isCollectionType(final Class<?> parInput) {
-        return parInput.isAssignableFrom(Collection.class);
-    }
-
     final boolean isMapType(final Object parInput) {
         return parInput instanceof Map;
-    }
-
-    final boolean isMapType(final Class<?> parInput) {
-        return parInput.isAssignableFrom(Map.class);
     }
 
     final boolean isArrayType(final Object parInput) {
@@ -208,7 +198,7 @@ public class ObjectSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    <U> U castTo(final Object parValue, final Class<U> parCastClass) throws JSONException {
+    final <U> U castTo(final Object parValue, final Class<U> parCastClass) throws JSONException {
         try {
             return (U) parValue;
         } catch (final ClassCastException myException) {

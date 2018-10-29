@@ -172,6 +172,9 @@ clean {
 }
 
 task cloneJSONTestSuite(type: Exec) {
+    group = LifecycleBasePlugin.BUILD_GROUP
+    description = 'Clones the JSONTestSuite repository.'
+
     ext {
         cloneDir = "${buildDir}/JSONTestSuite"
     }
@@ -181,7 +184,22 @@ task cloneJSONTestSuite(type: Exec) {
 }
 cloneJSONTestSuite.mustRunAfter clean
 
+task testObjectSerialization(type: Test) {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs the object serialization tests.'
+
+    useTestNG()
+
+    testClassesDirs = sourceSets.objectSerializationTest.output
+    classpath += sourceSets.objectSerializationTest.runtimeClasspath
+    classpath += sourceSets.objectSerialization.runtimeClasspath
+}
+check.dependsOn testObjectSerialization
+
 task verifyJSONTestSuite(dependsOn: [cloneJSONTestSuite, compileCliJava]) {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs the JSONTestSuite test suite against SecureJSON.'
+
     def jsonFiles = fileTree("${cloneJSONTestSuite.ext.cloneDir}/test_parsing/")
     inputs.files jsonFiles
     doLast {
