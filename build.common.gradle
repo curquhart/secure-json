@@ -120,7 +120,9 @@ task javaDocObjectSerialization(type: Javadoc) {
     group = 'Documentation'
     description = 'Generates Javadoc API documentation for the object serialization source code.'
 
-    source += sourceSets.objectSerialization.allJava
+    source += sourceSets.objectSerialization.allJava.filter{
+        it.name != 'package-info.java'
+    }
     classpath += sourceSets.objectSerialization.compileClasspath
     source += sourceSets.main.allJava
     classpath += sourceSets.main.compileClasspath
@@ -133,6 +135,11 @@ task javadocJarObjectSerialization(type: Jar) {
     classifier = 'object-javadoc'
 }
 
+task jarObjectSerialization(type: Jar) {
+    from sourceSets.objectSerialization.output
+    classifier = 'object'
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -142,6 +149,7 @@ publishing {
             artifact javadocJar
             artifact sourcesJarObjectSerialization
             artifact javadocJarObjectSerialization
+            artifact jarObjectSerialization
             pom {
                 name = 'SecureJSON'
                 description = 'A secure JSON library.'
