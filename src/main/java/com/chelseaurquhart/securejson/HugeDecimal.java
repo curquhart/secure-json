@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * HugeDecimal is for numbers that are too big to parse with BigDecimal through normal means.
  */
-public final class HugeDecimal extends Number implements CharSequence {
+public class HugeDecimal extends Number implements CharSequence {
     private static final long serialVersionUID = 1L;
 
     private CharSequence chars;
@@ -26,10 +26,10 @@ public final class HugeDecimal extends Number implements CharSequence {
 
     HugeDecimal(final Number parValue) {
         if (parValue instanceof HugeDecimal) {
-            final HugeDecimal parValueHugeDecimal = (HugeDecimal) parValue;
-            chars = parValueHugeDecimal.chars;
-            numberReader = parValueHugeDecimal.numberReader;
-            number = parValueHugeDecimal.number;
+            final HugeDecimal myValueHugeDecimal = (HugeDecimal) parValue;
+            chars = myValueHugeDecimal.chars;
+            numberReader = myValueHugeDecimal.numberReader;
+            number = myValueHugeDecimal.number;
         } else {
             chars = null;
             numberReader = null;
@@ -122,6 +122,7 @@ public final class HugeDecimal extends Number implements CharSequence {
      * Get our value converted to a BigInteger.
      *
      * @return a BigInteger representation of our character sequence.
+     * @throws IOException On error.
      */
     public final BigInteger bigIntegerValue() throws IOException {
         if (number != null) {
@@ -140,6 +141,7 @@ public final class HugeDecimal extends Number implements CharSequence {
      * Get our value converted to a BigDecimal.
      *
      * @return a BigDecimal representation of our character sequence.
+     * @throws IOException On error.
      */
     public final BigDecimal bigDecimalValue() throws IOException {
         if (number != null) {
@@ -189,16 +191,8 @@ public final class HugeDecimal extends Number implements CharSequence {
         return Objects.hash(chars);
     }
 
-    private void writeObject(final ObjectOutputStream parObjectOutputStream) throws IOException {
-        throw new NotSerializableException();
-    }
-
-    private void readObject(final ObjectInputStream parObjectInputStream) throws ClassNotFoundException, IOException {
-        throw new NotSerializableException();
-    }
-
     @Override
-    public int length() {
+    public final int length() {
         if (number != null && chars == null) {
             chars = number.toString();
         }
@@ -206,18 +200,26 @@ public final class HugeDecimal extends Number implements CharSequence {
     }
 
     @Override
-    public char charAt(int index) {
+    public final char charAt(final int parIndex) {
         if (number != null && chars == null) {
             chars = number.toString();
         }
-        return chars.charAt(index);
+        return chars.charAt(parIndex);
     }
 
     @Override
-    public CharSequence subSequence(int start, int end) {
+    public final CharSequence subSequence(final int parStart, final int parEnd) {
         if (number != null && chars == null) {
             chars = number.toString();
         }
-        return chars.subSequence(start, end);
+        return chars.subSequence(parStart, parEnd);
+    }
+
+    private void writeObject(final ObjectOutputStream parObjectOutputStream) throws IOException {
+        throw new NotSerializableException();
+    }
+
+    private void readObject(final ObjectInputStream parObjectInputStream) throws ClassNotFoundException, IOException {
+        throw new NotSerializableException();
     }
 }
