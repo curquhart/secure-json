@@ -16,66 +16,6 @@ import java.util.Set;
  * Serializer to/from Objects.
  */
 public class ObjectSerializer {
-    private static final Class<? extends Map<CharSequence, Object>> MAP_TOKEN = (new Map<CharSequence, Object>() {
-        @Override
-        public int size() {
-            return 0;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public boolean containsKey(final Object parKey) {
-            return false;
-        }
-
-        @Override
-        public boolean containsValue(final Object parValue) {
-            return false;
-        }
-
-        @Override
-        public Object get(final Object parKey) {
-            return null;
-        }
-
-        @Override
-        public Object put(final CharSequence parKey, final Object parValue) {
-            return null;
-        }
-
-        @Override
-        public Object remove(final Object parKey) {
-            return null;
-        }
-
-        @Override
-        public void putAll(final Map<? extends CharSequence, ?> parMap) {
-        }
-
-        @Override
-        public void clear() {
-        }
-
-        @Override
-        public Set<CharSequence> keySet() {
-            return null;
-        }
-
-        @Override
-        public Collection<Object> values() {
-            return null;
-        }
-
-        @Override
-        public Set<Entry<CharSequence, Object>> entrySet() {
-            return null;
-        }
-    }).getClass();
-
     /**
      * Convert an object to a JSON character sequence. If it cannot be converted, throws JSONEncodeException. After the
      * consumer returns, the buffer will be destroyed so it MUST be fully consumed.
@@ -193,14 +133,10 @@ public class ObjectSerializer {
         }
     }
 
-    final Map<CharSequence, Object> castToMap(final Object parValue) throws JSONException {
-        return castTo(parValue, MAP_TOKEN);
-    }
-
     @SuppressWarnings("unchecked")
-    final <U> U castTo(final Object parValue, final Class<U> parCastClass) throws JSONException {
+    final Map<CharSequence, Object> castToMap(final Object parValue) throws JSONException {
         try {
-            return (U) parValue;
+            return (Map) parValue;
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
