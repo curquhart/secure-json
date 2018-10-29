@@ -76,7 +76,7 @@ check.dependsOn jacocoTestReport
 check.dependsOn jacocoTestCoverageVerification
 
 group = 'com.chelseaurquhart'
-def versionNumber = '1.0.3'
+def versionNumber = '1.0.4'
 if (project.hasProperty('release')) {
     version = versionNumber
 } else {
