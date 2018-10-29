@@ -23,27 +23,29 @@ import java.util.HashMap;
 public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromString(final NumberProvider.Parameters parParameters) throws IOException {
-        final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext));
+        final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext, Settings.DEFAULTS),
+            Settings.DEFAULTS);
 
         runTest(myReader, parParameters.number, parParameters.expected, parParameters.expectedException);
     }
 
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromStream(final NumberProvider.Parameters parParameters) throws IOException {
-        final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext));
+        final JSONReader myReader = new JSONReader(new NumberReader(parParameters.mathContext, Settings.DEFAULTS),
+            Settings.DEFAULTS);
         runTest(myReader, inputToStream(parParameters.number, null), parParameters.expected,
             parParameters.expectedException);
     }
 
     @Test(dataProviderClass = StringProvider.class, dataProvider = StringProvider.DATA_PROVIDER_NAME)
     public void testReadStringFromString(final StringProvider.Parameters parParameters) throws IOException {
-        final JSONReader myReader = new JSONReader(new StringReader());
+        final JSONReader myReader = new JSONReader(new StringReader(Settings.DEFAULTS), Settings.DEFAULTS);
         runTest(myReader, parParameters.inputString, parParameters.expected, parParameters.expectedException);
     }
 
     @Test(dataProviderClass = StringProvider.class, dataProvider = StringProvider.DATA_PROVIDER_NAME)
     public void testReadStringFromStream(final StringProvider.Parameters parParameters) throws IOException {
-        final JSONReader myReader = new JSONReader(new StringReader());
+        final JSONReader myReader = new JSONReader(new StringReader(Settings.DEFAULTS), Settings.DEFAULTS);
         runTest(myReader, inputToStream(parParameters.inputString, null), parParameters.expected,
             parParameters.expectedException);
     }
@@ -365,14 +367,14 @@ public final class JSONReaderTest {
             parParameters.inputString = new String(myChars);
         }
 
-        final JSONReader myReader = new JSONReader();
+        final JSONReader myReader = new JSONReader(Settings.DEFAULTS);
         runTest(myReader, parParameters.inputString, parParameters.expected,
             parParameters.expectedException);
     }
 
     @Test(dataProvider = DATA_PROVIDER_NAME)
     public void testReadGenericFromStream(final Parameters parParameters) throws IOException {
-        final JSONReader myReader = new JSONReader();
+        final JSONReader myReader = new JSONReader(Settings.DEFAULTS);
 
         runTest(myReader, inputToStream(parParameters.inputString, parParameters.inputBytes), parParameters.expected,
             parParameters.expectedException);
@@ -425,7 +427,8 @@ public final class JSONReaderTest {
         Parameters(final String parTestName, final CharSequence parInputString, final Object parExpected,
                    final Exception parExpectedException) {
             testName = parTestName;
-            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length());
+            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length(),
+                Settings.DEFAULTS);
             mySecureBuffer.append(parInputString);
             inputString = mySecureBuffer;
             expected = parExpected;

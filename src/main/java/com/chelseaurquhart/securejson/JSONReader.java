@@ -19,39 +19,40 @@ class JSONReader implements Closeable, AutoCloseable {
     private final WordReader wordReader;
     private final MapReader mapReader;
 
-    JSONReader() {
-        this(null, null, null, null, null);
+    JSONReader(final Settings parSettings) {
+        this(null, null, null, null, null, parSettings);
     }
 
-    JSONReader(final NumberReader parNumberReader) {
-        this(parNumberReader, null, null, null, null);
+    JSONReader(final NumberReader parNumberReader, final Settings parSettings) {
+        this(parNumberReader, null, null, null, null, parSettings);
     }
 
-    JSONReader(final StringReader parStringReader) {
-        this(null, parStringReader, null, null, null);
+    JSONReader(final StringReader parStringReader, final Settings parSettings) {
+        this(null, parStringReader, null, null, null, parSettings);
     }
 
-    JSONReader(final ListReader parListReader) {
-        this(null, null, parListReader, null, null);
+    JSONReader(final ListReader parListReader, final Settings parSettings) {
+        this(null, null, parListReader, null, null, parSettings);
     }
 
-    JSONReader(final WordReader parWordReader) {
-        this(null, null, null, parWordReader, null);
+    JSONReader(final WordReader parWordReader, final Settings parSettings) {
+        this(null, null, null, parWordReader, null, parSettings);
     }
 
-    JSONReader(final MapReader parMapReader) {
-        this(null, null, null, null, parMapReader);
+    JSONReader(final MapReader parMapReader, final Settings parSettings) {
+        this(null, null, null, null, parMapReader, parSettings);
     }
 
     private JSONReader(final NumberReader parNumberReader, final StringReader parStringReader,
-                       final ListReader parListReader, final WordReader parWordReader, final MapReader parMapReader) {
+                       final ListReader parListReader, final WordReader parWordReader, final MapReader parMapReader,
+                       final Settings parSettings) {
         if (parNumberReader == null) {
-            numberReader = new NumberReader();
+            numberReader = new NumberReader(parSettings);
         } else {
             numberReader = parNumberReader;
         }
         if (parStringReader == null) {
-            stringReader = new StringReader();
+            stringReader = new StringReader(parSettings);
         } else {
             stringReader = parStringReader;
         }

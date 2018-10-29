@@ -17,13 +17,15 @@ class NumberReader extends ManagedSecureBufferList implements IReader {
     private static final BigDecimal MIN_VALUE = new BigDecimal(Double.MIN_VALUE);
     private static final BigDecimal MAX_VALUE = new BigDecimal(Double.MAX_VALUE);
     private final MathContext mathContext;
+    private final Settings settings;
 
-    NumberReader() {
-        this(DEFAULT_MATH_CONTEXT);
+    NumberReader(final Settings parSettings) {
+        this(DEFAULT_MATH_CONTEXT, parSettings);
     }
 
-    NumberReader(final MathContext parMathContext) {
+    NumberReader(final MathContext parMathContext, final Settings parSettings) {
         this.mathContext = parMathContext;
+        settings = parSettings;
     }
 
     @Override
@@ -38,7 +40,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader {
 
     @Override
     public Number read(final ICharacterIterator parIterator) throws IOException {
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer();
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
         addSecureBuffer(mySecureBuffer);
 
         final int myOffset = parIterator.getOffset();

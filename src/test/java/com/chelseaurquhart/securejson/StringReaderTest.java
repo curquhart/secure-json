@@ -12,7 +12,7 @@ public final class StringReaderTest {
     @Test(dataProviderClass = StringProvider.class, dataProvider = StringProvider.DATA_PROVIDER_NAME)
     public void testConvert(final StringProvider.Parameters parParameters) {
         try {
-            final CharSequence myResult = new StringReader()
+            final CharSequence myResult = new StringReader(Settings.DEFAULTS)
                 .read(new IterableCharSequence(parParameters.inputString));
             Assert.assertNull(parParameters.expectedException);
             // need to convert in sort of a roundabout way (or loop) as SecureCharBuffer cannot be string-converted.

@@ -14,18 +14,20 @@ class JSONWriter implements Closeable, AutoCloseable {
     private static final int INITIAL_CAPACITY = 512;
     private final List<ManagedSecureCharBuffer> secureBuffers;
     private final IObjectMutator objectMutator;
+    private final Settings settings;
 
-    JSONWriter() {
-        this(null);
+    JSONWriter(final Settings parSettings) {
+        this(null, parSettings);
     }
 
-    JSONWriter(final IObjectMutator parObjectMutator) {
+    JSONWriter(final IObjectMutator parObjectMutator, final Settings parSettings) {
         secureBuffers = new ArrayList<>();
         objectMutator = parObjectMutator;
+        settings = parSettings;
     }
 
     ManagedSecureCharBuffer write(final Object parInput) throws IOException {
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(INITIAL_CAPACITY);
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(INITIAL_CAPACITY, settings);
         secureBuffers.add(mySecureBuffer);
 
         write(parInput, mySecureBuffer);
@@ -110,7 +112,7 @@ class JSONWriter implements Closeable, AutoCloseable {
         }
     }
 
-    private void writeQuoted(final CharSequence parInput, final ICharacterWriter parSecureBuffer) {
+    private void writeQuoted(final CharSequence parInput, final ICharacterWriter parSecureBuffer) throws IOException {
         final int myInputLength = parInput.length();
         for (int myIndex = 0; myIndex < myInputLength; myIndex++) {
             final char myNextChar = parInput.charAt(myIndex);
