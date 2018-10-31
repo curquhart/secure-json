@@ -2,9 +2,15 @@ package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
 
+/**
+ * @exclude
+ */
 interface IReader {
     Object normalizeCollection(Object parValue);
 
+    /**
+     * @exclude
+     */
     enum SymbolType {
         END,
         SEPARATOR,

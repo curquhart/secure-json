@@ -4,7 +4,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-def versionNumber = '1.0.5'
+def versionNumber = rootProject.file('version.txt').text.trim()
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -157,6 +157,15 @@ javadoc {
 clean {
     delete buildDir
 }
+
+task updateSphinxJavaDocs(type: Exec) {
+    group = LifecycleBasePlugin.BUILD_GROUP
+    description = 'Updates the Sphinx JavaDocs from sources.'
+
+    commandLine 'javasphinx-apidoc', '-u', '-o', 'docs/source/_javadocs/', 'src/main/java'
+    outputs.files('docs/source/_javadocs/')
+}
+publish.dependsOn updateSphinxJavaDocs
 
 task cloneJSONTestSuite(type: Exec) {
     group = LifecycleBasePlugin.BUILD_GROUP

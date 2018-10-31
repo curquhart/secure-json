@@ -4,6 +4,9 @@ import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 
 import java.io.IOException;
 
+/**
+ * @exclude
+ */
 class WordReader implements IReader {
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {

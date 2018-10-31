@@ -1,7 +1,9 @@
 package com.chelseaurquhart.securejson;
 
 /**
- * Specifies the relativeTo state of a serialization target.
+ * Specifies the relativeTo state of a serialization target. Absolute means relative to the root of the JSON map. Note
+ * that the absolute position whenever we are inside a collection-like entity (collection, array, or map.) Relative is
+ * the default setting and usually makes the most sense.
  */
 public enum Relativity {
     /**

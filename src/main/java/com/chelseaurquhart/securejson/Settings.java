@@ -1,5 +1,8 @@
 package com.chelseaurquhart.securejson;
 
+/**
+ * @exclude
+ */
 class Settings {
     static final boolean DEFAULT_STRICT_STRINGS = true;
     static final boolean DEFAULT_STRICT_MAP_KEY_TYPES = true;

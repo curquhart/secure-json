@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @exclude
+ */
 class JSONWriter implements Closeable, AutoCloseable {
     private static final int INITIAL_CAPACITY = 512;
     private final List<ManagedSecureCharBuffer> secureBuffers;

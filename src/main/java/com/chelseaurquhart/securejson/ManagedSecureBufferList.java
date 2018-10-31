@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @exclude
+ */
 class ManagedSecureBufferList implements Closeable, AutoCloseable {
     private final List<ManagedSecureCharBuffer> secureBuffers;
 

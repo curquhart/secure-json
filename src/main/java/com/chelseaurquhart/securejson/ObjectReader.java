@@ -29,6 +29,7 @@ import java.util.Set;
 /**
  * Class for reading a map (from JSON) into an object.
  * @param <T> The Class of the object to be read.
+ * @exclude
  */
 class ObjectReader<T> extends ObjectSerializer {
     /**

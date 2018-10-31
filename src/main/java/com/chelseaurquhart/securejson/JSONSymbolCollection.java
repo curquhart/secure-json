@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @exclude
+ */
 final class JSONSymbolCollection {
     static final int MIN_ALLOWED_ASCII_CODE = 32;
     static final int MAX_ALLOWED_ASCII_CODE = 126;
@@ -73,6 +76,9 @@ final class JSONSymbolCollection {
     private JSONSymbolCollection() {
     }
 
+    /**
+     * @exclude
+     */
     enum Token {
         NULL("null", null),
         FALSE("false", false),

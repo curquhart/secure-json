@@ -2,6 +2,9 @@ package com.chelseaurquhart.securejson;
 
 import java.io.IOException;
 
+/**
+ * @exclude
+ */
 class IterableCharSequence extends EncodingAwareCharacterIterator implements ICharacterIterator {
     private final CharSequence chars;
     private int offset;

@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @exclude
+ */
 class MapReader implements IReader {
     private final JSONReader jsonReader;
     private final StringReader stringReader;
