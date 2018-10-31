@@ -6,9 +6,6 @@ from setuptools import setup, find_packages
 
 scriptDir=os.path.join(os.getcwd(), os.path.dirname(__file__))
 
-# Build javadocs
-call(['javasphinx-apidoc', '-f', '-o', os.path.join(scriptDir, 'docs/source/_javadocs/'), os.path.join(scriptDir, 'src/main/java')])
-
 with open(os.path.realpath(os.path.join(scriptDir, 'version.txt')), 'r') as fh:
     version = fh.readline()
 
@@ -22,3 +19,6 @@ setup(name='SecureJSON',
         'javasphinx==0.9.15'
     ]
 )
+
+# Build javadocs
+call(['javasphinx-apidoc', '-f', '-o', os.path.join(scriptDir, 'docs/source/_javadocs/'), os.path.join(scriptDir, 'src/main/java')])
