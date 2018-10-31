@@ -4,8 +4,6 @@
 
 .. java:import:: java.io OutputStream
 
-.. java:import:: java.nio.charset Charset
-
 .. java:import:: java.nio.charset StandardCharsets
 
 SecureJSON
@@ -35,10 +33,10 @@ Methods
 fromJSON
 ^^^^^^^^
 
-.. java:method:: public <T> void fromJSON(CharSequence parInput, IConsumer<T> parConsumer) throws JSONException
+.. java:method:: @SuppressWarnings public <T> void fromJSON(CharSequence parInput, IConsumer<T> parConsumer) throws JSONDecodeException
    :outertype: SecureJSON
 
-   Convert a JSON character sequence to an object that consumer will accept. Throws JSONException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
+   Convert a JSON character sequence to an object that consumer will accept. Throws JSONDecodeException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
 
    Example:
 
@@ -47,13 +45,13 @@ fromJSON
           import com.chelseaurquhart.securejson.SecureJSON;
           final SecureJSON secureJSON = new SecureJSON();
           try {
-              secureJSON.fromJSON("{}", new IConsumer>() {
+              secureJSON.fromJSON("{}", new IConsumer<Map<CharSequence, Object>>() {
                   @Override
-                  public void accept(final Map input) {
+                  public void accept(final Map<CharSequence, Object> input) {
                       // do something with input
                   }
               });
-          } catch (final JSONException e) {
+          } catch (final JSONDecodeException e) {
           }
           // Warning: Any buffers we created for the Map above will be destroyed at this point, so they should
           // be either consumed in accept, or converted to strings (if they do not contain sensitive information.)
@@ -61,15 +59,15 @@ fromJSON
    :param parInput: The input character sequence to deserialize.
    :param parConsumer: The consumer to call with our unserialized JSON value.
    :param <T>: The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object (which will accept anything) is acceptable.
-   :throws JSONException: On decode failure.
+   :throws JSONDecodeException: On decode failure.
 
 fromJSON
 ^^^^^^^^
 
-.. java:method:: public <T> void fromJSON(CharSequence parInput, IConsumer<T> parConsumer, Class<T> parClass) throws JSONException
+.. java:method:: public <T> void fromJSON(CharSequence parInput, IConsumer<T> parConsumer, Class<T> parClass) throws JSONDecodeException
    :outertype: SecureJSON
 
-   Convert a JSON character sequence to an object that consumer will accept. Throws JSONException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed. This is very similar to its counterpart that doesn't take a class argument, but this supports encoding into that class instead of into java types.
+   Convert a JSON character sequence to an object that consumer will accept. Throws JSONDecodeException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed. This is very similar to its counterpart that doesn't take a class argument, but this supports encoding into that class instead of into java types.
 
    Example:
 
@@ -84,13 +82,13 @@ fromJSON
               private CharSequence myString;
           }
           try {
-              secureJSON.fromJSON("{}", new IConsumer() {
+              secureJSON.fromJSON("{}", new IConsumer<MyCustomClass>() {
                   @Override
                   public void accept(final MyCustomClass input) {
                       // do something with input
                   }
               }, MyCustomClass.class);
-          } catch (final JSONException e) {
+          } catch (final JSONDecodeException e) {
           }
           // Warning: Any buffers we created for the MyCustomClass instance above will be destroyed at this point,
           // so they should be either consumed in accept, or converted to strings (if they do not contain sensitive
@@ -100,15 +98,15 @@ fromJSON
    :param parConsumer: The consumer to call with our unserialized JSON value.
    :param parClass: The class we will be building.
    :param <T>: The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object (which will accept anything) is acceptable.
-   :throws JSONException: On decode failure.
+   :throws JSONDecodeException: On decode failure.
 
 fromJSON
 ^^^^^^^^
 
-.. java:method:: public <T> void fromJSON(byte[] parInput, IConsumer<T> parConsumer) throws JSONException
+.. java:method:: @SuppressWarnings public <T> void fromJSON(byte[] parInput, IConsumer<T> parConsumer) throws JSONDecodeException
    :outertype: SecureJSON
 
-   Convert a JSON byte array to an object that consumer will accept. Throws JSONException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
+   Convert a JSON byte array to an object that consumer will accept. Throws JSONDecodeException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
 
    Example:
 
@@ -117,13 +115,13 @@ fromJSON
           import com.chelseaurquhart.securejson.SecureJSON;
           final SecureJSON secureJSON = new SecureJSON();
           try {
-              secureJSON.fromJSON("{}".getBytes(), new IConsumer>() {
+              secureJSON.fromJSON("{}".getBytes(), new IConsumer<Map<CharSequence, Object>>() {
                   @Override
-                  public void accept(final Map input) {
+                  public void accept(final Map<CharSequence, Object> input) {
                       // do something with input
                   }
               });
-          } catch (final JSONException e) {
+          } catch (final JSONDecodeException e) {
           }
           // Warning: Any buffers we created for the Map above will be destroyed at this point, so they should
           // be either consumed in accept, or converted to strings (if they do not contain sensitive information.)
@@ -131,15 +129,15 @@ fromJSON
    :param parInput: The input character sequence to deserialize.
    :param parConsumer: The consumer to call with our unserialized JSON value.
    :param <T>: The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object (which will accept anything) is acceptable.
-   :throws JSONException: On decode failure.
+   :throws JSONDecodeException: On decode failure.
 
 fromJSON
 ^^^^^^^^
 
-.. java:method:: public <T> void fromJSON(byte[] parInput, IConsumer<T> parConsumer, Class<T> parClass) throws JSONException
+.. java:method:: public <T> void fromJSON(byte[] parInput, IConsumer<T> parConsumer, Class<T> parClass) throws JSONDecodeException
    :outertype: SecureJSON
 
-   Convert a JSON byte array to an object that consumer will accept. Throws JSONException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed. Of special note here, even though we can erase the byte[] array, we will not. That is up to the caller to do so.
+   Convert a JSON byte array to an object that consumer will accept. Throws JSONDecodeException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed. Of special note here, even though we can erase the byte[] array, we will not. That is up to the caller to do so.
 
    Example:
 
@@ -154,13 +152,13 @@ fromJSON
               private CharSequence myString;
           }
           try {
-              secureJSON.fromJSON("{}", new IConsumer() {
+              secureJSON.fromJSON("{}", new IConsumer<MyCustomClass>() {
                   @Override
                   public void accept(final MyCustomClass input) {
                       // do something with input
                   }
               }, MyCustomClass.class);
-          } catch (final JSONException e) {
+          } catch (final JSONDecodeException e) {
           }
           // Warning: Any buffers we created for the MyCustomClass instance above will be destroyed at this point,
           // so they should be either consumed in accept, or converted to strings (if they do not contain sensitive
@@ -170,15 +168,15 @@ fromJSON
    :param parConsumer: The consumer to call with our unserialized JSON value.
    :param parClass: The class we will be building.
    :param <T>: The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object (which will accept anything) is acceptable.
-   :throws JSONException: On decode failure.
+   :throws JSONDecodeException: On decode failure.
 
 fromJSON
 ^^^^^^^^
 
-.. java:method:: public <T> void fromJSON(InputStream parInput, IConsumer<T> parConsumer) throws JSONException
+.. java:method:: @SuppressWarnings public <T> void fromJSON(InputStream parInput, IConsumer<T> parConsumer) throws JSONDecodeException
    :outertype: SecureJSON
 
-   Read a JSON character sequence stream to an object that consumer will accept. Throws JSONException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
+   Read a JSON character sequence stream to an object that consumer will accept. Throws JSONDecodeException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
 
    Example:
 
@@ -188,13 +186,13 @@ fromJSON
           final SecureJSON secureJSON = new SecureJSON();
           final InputStream inputStream = new ByteArrayInputStream("{}".getBytes());
           try {
-              secureJSON.fromJSON(inputStream, new IConsumer>() {
+              secureJSON.fromJSON(inputStream, new IConsumer<Map<CharSequence, Object>>() {
                   @Override
-                  public void accept(final Map input) {
+                  public void accept(final Map<CharSequence, Object> input) {
                       // do something with input
                   }
               });
-          } catch (final JSONException e) {
+          } catch (final JSONDecodeException e) {
           }
           // Warning: Any buffers we created for the Map above will be destroyed at this point, so they should
           // be either consumed in accept, or converted to strings (if they do not contain sensitive information.)
@@ -202,15 +200,15 @@ fromJSON
    :param parInput: The input character stream to deserialize.
    :param parConsumer: The consumer to call with our unserialized JSON value.
    :param <T>: The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object (which will accept anything) is acceptable.
-   :throws JSONException: On decode failure.
+   :throws JSONDecodeException: On decode failure.
 
 fromJSON
 ^^^^^^^^
 
-.. java:method:: public <T> void fromJSON(InputStream parInput, IConsumer<T> parConsumer, Class<T> parClass) throws JSONException
+.. java:method:: public <T> void fromJSON(InputStream parInput, IConsumer<T> parConsumer, Class<T> parClass) throws JSONDecodeException
    :outertype: SecureJSON
 
-   Read a JSON character sequence stream to an object that consumer will accept. Throws JSONException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
+   Read a JSON character sequence stream to an object that consumer will accept. Throws JSONDecodeException on failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be destroyed.
 
    Example:
 
@@ -226,13 +224,13 @@ fromJSON
               private CharSequence myString;
           }
           try {
-              secureJSON.fromJSON(inputStream, new IConsumer() {
+              secureJSON.fromJSON(inputStream, new IConsumer<MyCustomClass>() {
                   @Override
                   public void accept(final MyCustomClass input) {
                       // do something with input
                   }
               }, MyCustomClass.class);
-          } catch (final JSONException e) {
+          } catch (final JSONDecodeException e) {
           }
           // Warning: Any buffers we created for the MyCustomClass instance above will be destroyed at this point,
           // so they should be either consumed in accept, or converted to strings (if they do not contain sensitive
@@ -242,7 +240,7 @@ fromJSON
    :param parConsumer: The consumer to call with our unserialized JSON value.
    :param parClass: The class we will be building.
    :param <T>: The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object (which will accept anything) is acceptable.
-   :throws JSONException: On decode failure.
+   :throws JSONDecodeException: On decode failure.
 
 toJSON
 ^^^^^^
@@ -260,7 +258,7 @@ toJSON
           import java.util.Arrays;
           final SecureJSON secureJSON = new SecureJSON();
           try {
-              secureJSON.toJSON(Arrays.asList("1", 2, "three"), new IConsumer() {
+              secureJSON.toJSON(Arrays.asList("1", 2, "three"), new IConsumer<CharSequence>() {
                   @Override
                   public void accept(final CharSequence input) {
                       // do something with input
@@ -313,7 +311,7 @@ toJSONBytes
           import com.chelseaurquhart.securejson.SecureJSON;
           final SecureJSON secureJSON = new SecureJSON();
           try {
-              secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer() {
+              secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer<byte[]>() {
                   @Override
                   public void accept(final byte[] input) {
                       // do something with input

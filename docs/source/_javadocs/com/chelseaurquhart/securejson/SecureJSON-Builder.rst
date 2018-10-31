@@ -4,8 +4,6 @@
 
 .. java:import:: java.io OutputStream
 
-.. java:import:: java.nio.charset Charset
-
 .. java:import:: java.nio.charset StandardCharsets
 
 SecureJSON.Builder

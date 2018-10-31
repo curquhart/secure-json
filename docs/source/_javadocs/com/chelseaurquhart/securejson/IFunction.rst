@@ -23,4 +23,5 @@ accept
 
    :param parInput: The input argument.
    :throws Exception: On error.
+   :return: The processed value.
 

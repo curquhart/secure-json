@@ -43,7 +43,7 @@ public final class SecureJSON {
      *        import java.util.Arrays;
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
-     *            secureJSON.toJSON(Arrays.asList("1", 2, "three"), new IConsumer<CharSequence>() {
+     *            secureJSON.toJSON(Arrays.asList("1", 2, "three"), new IConsumer&lt;CharSequence&gt;() {
      *                <pre>@Override</pre>
      *                public void accept(final CharSequence input) {
      *                    // do something with input
@@ -80,7 +80,7 @@ public final class SecureJSON {
      *        import com.chelseaurquhart.securejson.SecureJSON;
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
-     *            secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer<byte[]>() {
+     *            secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer&lt;byte[]&gt;() {
      *                <pre>@Override</pre>
      *                public void accept(final byte[] input) {
      *                    // do something with input
@@ -147,9 +147,9 @@ public final class SecureJSON {
      *        import com.chelseaurquhart.securejson.SecureJSON;
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
-     *            secureJSON.fromJSON("{}", new IConsumer<Map<CharSequence, Object>>() {
+     *            secureJSON.fromJSON("{}", new IConsumer&lt;Map&lt;CharSequence, Object&gt;&gt;() {
      *                <pre>@Override</pre>
-     *                public void accept(final Map<CharSequence, Object> input) {
+     *                public void accept(final Map&lt;CharSequence, Object&gt; input) {
      *                    // do something with input
      *                }
      *            });
@@ -194,7 +194,7 @@ public final class SecureJSON {
      *            private CharSequence myString;
      *        }
      *        try {
-     *            secureJSON.fromJSON("{}", new IConsumer<MyCustomClass>() {
+     *            secureJSON.fromJSON("{}", new IConsumer&lt;MyCustomClass&gt;() {
      *                <pre>@Override</pre>
      *                public void accept(final MyCustomClass input) {
      *                    // do something with input
@@ -230,9 +230,9 @@ public final class SecureJSON {
      *        import com.chelseaurquhart.securejson.SecureJSON;
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
-     *            secureJSON.fromJSON("{}".getBytes(), new IConsumer<Map<CharSequence, Object>>() {
+     *            secureJSON.fromJSON("{}".getBytes(), new IConsumer&lt;Map&lt;CharSequence, Object&gt;&gt;() {
      *                <pre>@Override</pre>
-     *                public void accept(final Map<CharSequence, Object> input) {
+     *                public void accept(final Map&lt;CharSequence, Object&gt; input) {
      *                    // do something with input
      *                }
      *            });
@@ -277,7 +277,7 @@ public final class SecureJSON {
      *            private CharSequence myString;
      *        }
      *        try {
-     *            secureJSON.fromJSON("{}", new IConsumer<MyCustomClass>() {
+     *            secureJSON.fromJSON("{}", new IConsumer&lt;MyCustomClass&gt;() {
      *                <pre>@Override</pre>
      *                public void accept(final MyCustomClass input) {
      *                    // do something with input
@@ -314,9 +314,9 @@ public final class SecureJSON {
      *        final SecureJSON secureJSON = new SecureJSON();
      *        final InputStream inputStream = new ByteArrayInputStream("{}".getBytes());
      *        try {
-     *            secureJSON.fromJSON(inputStream, new IConsumer<Map<CharSequence, Object>>() {
+     *            secureJSON.fromJSON(inputStream, new IConsumer&lt;Map&lt;CharSequence, Object&gt;&gt;() {
      *                <pre>@Override</pre>
-     *                public void accept(final Map<CharSequence, Object> input) {
+     *                public void accept(final Map&lt;CharSequence, Object&gt; input) {
      *                    // do something with input
      *                }
      *            });
@@ -361,7 +361,7 @@ public final class SecureJSON {
      *            private CharSequence myString;
      *        }
      *        try {
-     *            secureJSON.fromJSON(inputStream, new IConsumer<MyCustomClass>() {
+     *            secureJSON.fromJSON(inputStream, new IConsumer&lt;MyCustomClass&gt;() {
      *                <pre>@Override</pre>
      *                public void accept(final MyCustomClass input) {
      *                    // do something with input
