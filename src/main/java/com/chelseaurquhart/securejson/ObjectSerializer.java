@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * Serializer to/from Objects.
+ * @exclude
  */
 class ObjectSerializer {
     final SerializationSettings getSerializationSettings(final Field parField) {
@@ -100,6 +101,9 @@ class ObjectSerializer {
         }
     }
 
+    /**
+     * @exclude
+     */
     static final class SerializationSettings {
         private final CharSequence[] target;
         private final Relativity strategy;

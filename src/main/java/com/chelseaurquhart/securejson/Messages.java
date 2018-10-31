@@ -4,7 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * @exclude
+ */
 final class Messages {
+    /**
+     * @exclude
+     */
     enum Key {
         ERROR_JSON_DECODE,
         ERROR_JSON_ENCODE,

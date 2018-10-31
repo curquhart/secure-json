@@ -12,6 +12,9 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Stack;
 
+/**
+ * @exclude
+ */
 class JSONReader implements Closeable, AutoCloseable {
     private final NumberReader numberReader;
     private final StringReader stringReader;

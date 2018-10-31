@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+/**
+ * @exclude
+ */
 final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
     private static final int HASH_PRIME = 31;
@@ -260,6 +263,9 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         return myHashCode;
     }
 
+    /**
+     * @exclude
+     */
     static class ObfuscatedByteBuffer implements CharSequence, IWritableCharSequence {
         private final int offset;
         private final int capacity;

@@ -6,7 +6,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a name to serialize to/from.
+ * The Serialize annotation provides settings for JSON serialization.
+ *
+ * <p>
+ *     name can take a String or Array of Strings. It defines where the value is read/written from. Using an array will
+ *     use nested values.
+ * </p>
+ *
+ * <p>
+ *     relativeTo takes a <a href="Relativity.html">Relativity</a> value. It can be either RELATIVE or ABSOLUTE. Note
+ *     that the specific meaning of ABSOLUTE changes when working with collection-like entities (Array, Collection, Map)
+ *     in that the root becomes that collection when fields are contained within.
+ * </p>
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

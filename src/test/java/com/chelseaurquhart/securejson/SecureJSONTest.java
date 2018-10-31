@@ -111,7 +111,7 @@ public final class SecureJSONTest {
     }
 
     @Test(expectedExceptions = JSONDecodeException.class)
-    public void testReadIncorrectType() throws JSONDecodeException {
+    public void testReadIncorrectType() throws JSONException {
         final CharSequence myInput = "\"test\"";
         // read correct type to test for general functionality
         new SecureJSON().fromJSON(myInput, new IConsumer<CharSequence>() {

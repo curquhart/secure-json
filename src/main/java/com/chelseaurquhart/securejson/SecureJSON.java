@@ -3,13 +3,20 @@ package com.chelseaurquhart.securejson;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
  * SecureJSON is a JSON serializer and deserializer with strict security in mind. It does not create strings due to
  * their inclusion in garbage collectible heap (which can make them potentially snoopable). See
  * https://medium.com/@_west_on/protecting-strings-in-jvm-memory-84c365f8f01c for the motivations around this.
+ *
+ * <p>
+ * .. DANGER::
+ *     Please note that this is not a substitution for secure coding practices or maintaining a secure environment. If
+ *     an attacker has access to your JVM's memory, there isn't really anything you can do to guarantee that they can't
+ *     see sensitive data, but the fleeting nature of data managed in this manner helps ensure that sensitive
+ *     information is not kept in memory any longer than is necessary and as such helps to mitigate the risks.
+ * </p>
  */
 public final class SecureJSON {
     private final Settings settings;
@@ -28,6 +35,25 @@ public final class SecureJSON {
     /**
      * Convert an object to a JSON character sequence. If it cannot be converted, throws JSONEncodeException. After the
      * consumer returns, the buffer will be destroyed so it MUST be fully consumed.
+     *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        import java.util.Arrays;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        try {
+     *            secureJSON.toJSON(Arrays.asList("1", 2, "three"), new IConsumer<CharSequence>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final CharSequence input) {
+     *                    // do something with input
+     *                }
+     *            });
+     *        } catch (final JSONEncodeException e) {
+     *        }
+     *        // Warning: even if you copied input to a local variable above, it is destroyed before this
+     *        // line and you will no longer be able to access it.
+     *     </code>
      *
      * @param parInput The input object to toJSONAble to JSON.
      * @param parConsumer The consumer to provide the JSON character sequence to when completed.
@@ -48,6 +74,24 @@ public final class SecureJSON {
      * Convert an object to a JSON byte array. If it cannot be converted, throws JSONEncodeException. After the consumer
      * returns, the buffer will be destroyed so it MUST be fully consumed.
      *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        try {
+     *            secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer<byte[]>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final byte[] input) {
+     *                    // do something with input
+     *                }
+     *            });
+     *        } catch (final JSONEncodeException e) {
+     *        }
+     *        // Warning: even if you copied input to a local variable above, it is destroyed before this
+     *        // line and you will no longer be able to access it.
+     *     </code>
+     *
      * @param parInput The input object to toJSONAble to JSON.
      * @param parConsumer The consumer to provide the JSON character sequence to when completed.
      * @throws JSONEncodeException On encode failure.
@@ -64,28 +108,27 @@ public final class SecureJSON {
     }
 
     /**
-     * Convert an object to a JSON string, writing to the provided stream.
+     * Convert an object to a JSON string, writing to the provided stream and specifying the character set.
+     *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        try (final OutputStream outputStream = new FileOutputStream("file.json")) {
+     *            secureJSON.toJSON(Arrays.asList("1", 2, "three"), outputStream);
+     *        } catch (final JSONEncodeException e) {
+     *        }
+     *     </code>
      *
      * @param parInput The input object to toJSONAble to JSON.
      * @param parOutputStream The stream to write to.
      * @throws JSONEncodeException On encode failure.
      */
-    public void toJSON(final Object parInput, final OutputStream parOutputStream) throws JSONEncodeException {
-        toJSON(parInput, parOutputStream, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Convert an object to a JSON string, writing to the provided stream.
-     *
-     * @param parInput The input object to toJSONAble to JSON.
-     * @param parOutputStream The stream to write to.
-     * @param parCharset The charset to use.
-     * @throws JSONEncodeException On encode failure.
-     */
-    public void toJSON(final Object parInput, final OutputStream parOutputStream, final Charset parCharset)
+    public void toJSON(final Object parInput, final OutputStream parOutputStream)
             throws JSONEncodeException {
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
-            myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, parCharset));
+            myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, StandardCharsets.UTF_8));
         } catch (final JSONEncodeException myException) {
             throw myException;
         } catch (final Exception myException) {
@@ -98,6 +141,24 @@ public final class SecureJSON {
      * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
      * destroyed.
      *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        try {
+     *            secureJSON.fromJSON("{}", new IConsumer<Map<CharSequence, Object>>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final Map<CharSequence, Object> input) {
+     *                    // do something with input
+     *                }
+     *            });
+     *        } catch (final JSONDecodeException e) {
+     *        }
+     *        // Warning: Any buffers we created for the Map above will be destroyed at this point, so they should
+     *        // be either consumed in accept, or converted to strings (if they do not contain sensitive information.)
+     *     </code>
+     *
      * @param parInput The input character sequence to deserialize.
      * @param parConsumer The consumer to call with our unserialized JSON value.
      * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
@@ -105,8 +166,7 @@ public final class SecureJSON {
      * @throws JSONDecodeException On decode failure.
      */
     @SuppressWarnings("unchecked")
-    public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer)
-            throws JSONDecodeException {
+    public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
         try (final JSONReader myJsonReader = new JSONReader(settings)) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
@@ -119,30 +179,68 @@ public final class SecureJSON {
     /**
      * Convert a JSON character sequence to an object that consumer will accept. Throws JSONDecodeException on
      * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
-     * destroyed.
+     * destroyed. This is very similar to its counterpart that doesn't take a class argument, but this supports
+     * encoding into that class instead of into java types.
+     *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *
+     *        // This class will be read into.
+     *        class MyCustomClass {
+     *            private int myNumber;
+     *            private CharSequence myString;
+     *        }
+     *        try {
+     *            secureJSON.fromJSON("{}", new IConsumer<MyCustomClass>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final MyCustomClass input) {
+     *                    // do something with input
+     *                }
+     *            }, MyCustomClass.class);
+     *        } catch (final JSONDecodeException e) {
+     *        }
+     *        // Warning: Any buffers we created for the MyCustomClass instance above will be destroyed at this point,
+     *        // so they should be either consumed in accept, or converted to strings (if they do not contain sensitive
+     *        // information.)
+     *     </code>
      *
      * @param parInput The input character sequence to deserialize.
      * @param parConsumer The consumer to call with our unserialized JSON value.
      * @param parClass The class we will be building.
      * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
      *           (which will accept anything) is acceptable.
-     * @throws JSONException On decode failure.
+     * @throws JSONDecodeException On decode failure.
      */
-    @SuppressWarnings("unchecked")
-    public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer,
-                             final Class<T> parClass)
-            throws JSONException {
-        try {
-            fromJSON(parInput, getConsumer(parConsumer, parClass));
-        } catch (final JSONException.JSONRuntimeException myException) {
-            throw myException.getCause();
-        }
+    public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
+            throws JSONDecodeException {
+        fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
 
     /**
      * Convert a JSON byte array to an object that consumer will accept. Throws JSONDecodeException on
      * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
      * destroyed.
+     *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        try {
+     *            secureJSON.fromJSON("{}".getBytes(), new IConsumer<Map<CharSequence, Object>>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final Map<CharSequence, Object> input) {
+     *                    // do something with input
+     *                }
+     *            });
+     *        } catch (final JSONDecodeException e) {
+     *        }
+     *        // Warning: Any buffers we created for the Map above will be destroyed at this point, so they should
+     *        // be either consumed in accept, or converted to strings (if they do not contain sensitive information.)
+     *     </code>
      *
      * @param parInput The input character sequence to deserialize.
      * @param parConsumer The consumer to call with our unserialized JSON value.
@@ -151,8 +249,7 @@ public final class SecureJSON {
      * @throws JSONDecodeException On decode failure.
      */
     @SuppressWarnings("unchecked")
-    public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer)
-            throws JSONDecodeException {
+    public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
         try (final JSONReader myJsonReader = new JSONReader(settings)) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
         } catch (final JSONDecodeException myException) {
@@ -165,29 +262,69 @@ public final class SecureJSON {
     /**
      * Convert a JSON byte array to an object that consumer will accept. Throws JSONDecodeException on
      * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
-     * destroyed.
+     * destroyed. Of special note here, even though we can erase the byte[] array, we will not. That is up to the caller
+     * to do so.
+     *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *
+     *        // This class will be read into.
+     *        class MyCustomClass {
+     *            private int myNumber;
+     *            private CharSequence myString;
+     *        }
+     *        try {
+     *            secureJSON.fromJSON("{}", new IConsumer<MyCustomClass>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final MyCustomClass input) {
+     *                    // do something with input
+     *                }
+     *            }, MyCustomClass.class);
+     *        } catch (final JSONDecodeException e) {
+     *        }
+     *        // Warning: Any buffers we created for the MyCustomClass instance above will be destroyed at this point,
+     *        // so they should be either consumed in accept, or converted to strings (if they do not contain sensitive
+     *        // information.)
+     *     </code>
      *
      * @param parInput The input character sequence to deserialize.
      * @param parConsumer The consumer to call with our unserialized JSON value.
      * @param parClass The class we will be building.
      * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
      *           (which will accept anything) is acceptable.
-     * @throws JSONException On decode failure.
+     * @throws JSONDecodeException On decode failure.
      */
-    @SuppressWarnings("unchecked")
     public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
-            throws JSONException {
-        try {
-            fromJSON(parInput, getConsumer(parConsumer, parClass));
-        } catch (final JSONException.JSONRuntimeException myException) {
-            throw myException.getCause();
-        }
+            throws JSONDecodeException {
+        fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
 
     /**
      * Read a JSON character sequence stream to an object that consumer will accept. Throws JSONDecodeException on
      * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
      * destroyed.
+     *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        final InputStream inputStream = new ByteArrayInputStream("{}".getBytes());
+     *        try {
+     *            secureJSON.fromJSON(inputStream, new IConsumer<Map<CharSequence, Object>>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final Map<CharSequence, Object> input) {
+     *                    // do something with input
+     *                }
+     *            });
+     *        } catch (final JSONDecodeException e) {
+     *        }
+     *        // Warning: Any buffers we created for the Map above will be destroyed at this point, so they should
+     *        // be either consumed in accept, or converted to strings (if they do not contain sensitive information.)
+     *     </code>
      *
      * @param parInput The input character stream to deserialize.
      * @param parConsumer The consumer to call with our unserialized JSON value.
@@ -211,24 +348,49 @@ public final class SecureJSON {
      * failure. After the consumer returns, all buffers we created while parsing the JSON character sequence will be
      * destroyed.
      *
+     * <p>Example:</p>::
+     *     <code>
+     *
+     *        import com.chelseaurquhart.securejson.SecureJSON;
+     *        final SecureJSON secureJSON = new SecureJSON();
+     *        final InputStream inputStream = new ByteArrayInputStream("{}".getBytes());
+     *
+     *        // This class will be read into.
+     *        class MyCustomClass {
+     *            private int myNumber;
+     *            private CharSequence myString;
+     *        }
+     *        try {
+     *            secureJSON.fromJSON(inputStream, new IConsumer<MyCustomClass>() {
+     *                <pre>@Override</pre>
+     *                public void accept(final MyCustomClass input) {
+     *                    // do something with input
+     *                }
+     *            }, MyCustomClass.class);
+     *        } catch (final JSONDecodeException e) {
+     *        }
+     *        // Warning: Any buffers we created for the MyCustomClass instance above will be destroyed at this point,
+     *        // so they should be either consumed in accept, or converted to strings (if they do not contain sensitive
+     *        // information.)
+     *     </code>
+     *
      * @param parInput The input character stream to deserialize.
      * @param parConsumer The consumer to call with our unserialized JSON value.
      * @param parClass The class we will be building.
      * @param <T> The type of object we expect. JSONDecodeException will be thrown if this is wrong. Note that Object
      *           (which will accept anything) is acceptable.
-     * @throws JSONException On decode failure.
+     * @throws JSONDecodeException On decode failure.
      */
-    @SuppressWarnings("unchecked")
     public <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
-            throws JSONException {
-        try {
-            fromJSON(parInput, getConsumer(parConsumer, parClass));
-        } catch (final JSONException.JSONRuntimeException myException) {
-            throw myException.getCause();
-        }
+            throws JSONDecodeException {
+        fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
 
-    private <T> IConsumer<Object> getConsumer(final IConsumer<T> parConsumer, final Class<T> parClass) {
+    private <T> IConsumer<?> getConsumer(final IConsumer<T> parConsumer, final Class<T> parClass) {
+        if (parClass == null) {
+            return parConsumer;
+        }
+
         return new IConsumer<Object>() {
             @Override
             public void accept(final Object parOutput) {
@@ -243,7 +405,7 @@ public final class SecureJSON {
     }
 
     /**
-     * Builder for SecureJSON, to allow specifying custom arguments.
+     * Builder for SecureJSON. This allows specifying options for the encoder and decoder to use.
      */
     public static final class Builder {
         private boolean strictStrings = Settings.DEFAULT_STRICT_STRINGS;
@@ -257,6 +419,19 @@ public final class SecureJSON {
          *
          * This should be used with caution, and certainly not for sensitive data as strings may stay in memory much
          * longer than desired.
+         *
+         * <p>
+         *     **Default**: true
+         * </p>
+         *
+         * <p>Example (disable strict strings in order to allow Strings to be populated for non-sensitive fields):</p>::
+         *     <code>
+         *
+         *        import com.chelseaurquhart.securejson.SecureJSON;
+         *        final SecureJSON secureJSON = new SecureJSON.Builder()
+         *            .strictStrings(false)
+         *            .build();
+         *     </code>
          *
          * @param parStrictStrings The value to use for our strict strings setting.
          * @return A reference to this object.
@@ -275,6 +450,19 @@ public final class SecureJSON {
          * This should be used with caution, and certainly not for sensitive data as strings may stay in memory much
          * longer than desired.
          *
+         * <p>
+         *     **Default**: true
+         * </p>
+         *
+         * <p>Example (disable strict map key types in order to allow Strings to be populated for Map keys):</p>::
+         *     <code>
+         *
+         *        import com.chelseaurquhart.securejson.SecureJSON;
+         *        final SecureJSON secureJSON = new SecureJSON.Builder()
+         *            .strictMapKeyTypes(false)
+         *            .build();
+         *     </code>
+         *
          * @param parStrictMapKeyTypes The value to use for our strict map keys setting.
          * @return A reference to this object.
          */
@@ -287,6 +475,66 @@ public final class SecureJSON {
         /**
          * Set the factory to use for building secure buffers. By default we will use our own implementation, but this
          * can be used to provide a custom one.
+         *
+         * <p>
+         *     **Default**: &lt;internally managed factory&gt;
+         * </p>
+         *
+         * <p>Example (use a custom IWritableCharSequence factory):</p>
+         * <p>
+         * .. DANGER::
+         *   This sample implementation is by no means secure! The default, however, is.
+         *
+         * </p>::
+         *    <code>
+         *
+         *        import com.chelseaurquhart.securejson.SecureJSON;
+         *        final SecureJSON secureJSON = new SecureJSON.Builder()
+         *            .writableCharBufferFactory(new IFunction<Integer, IWritableCharSequence>() {
+         *                <pre>@Override</pre>
+         *                public IWritableCharSequence accept(final Integer parCapacity) {
+         *                    return new IWritableCharSequence() {
+         *                        private final StringBuilder builder = new StringBuilder(parCapacity);
+         *
+         *                        <pre>@Override</pre>
+         *                        public void append(char parChar) {
+         *                            builder.append(parCapacity);
+         *                        }
+         *
+         *                        <pre>@Override</pre>
+         *                        public boolean isRestrictedToCapacity() {
+         *                            return false;
+         *                        }
+         *
+         *                        <pre>@Override</pre>
+         *                        public int getCapacity() {
+         *                            return builder.capacity();
+         *                        }
+         *
+         *                        <pre>@Override</pre>
+         *                        public void close() {
+         *                            builder.setLength(0);
+         *                        }
+         *
+         *                        <pre>@Override</pre>
+         *                        public int length() {
+         *                            return builder.length();
+         *                        }
+         *
+         *                        <pre>@Override</pre>
+         *                        public char charAt(final int parIndex) {
+         *                            return builder.charAt(parIndex);
+         *                        }
+         *
+         *                        <pre>@Override</pre>
+         *                        public CharSequence subSequence(final int parStart, final int parEnd) {
+         *                            return builder.subSequence(parStart, parEnd);
+         *                        }
+         *                    };
+         *                }
+         *            })
+         *            .build();
+         *     </code>
          *
          * @param parWritableCharBufferFactory The factory to use for building secure buffers.
          * @return A reference to this object.
@@ -301,20 +549,43 @@ public final class SecureJSON {
         /**
          * Build a SecureJSON instance using our settings.
          *
+         * <p>Example:</p>::
+         *     <code>
+         *
+         *        import com.chelseaurquhart.securejson.SecureJSON;
+         *        final SecureJSON secureJSON = new SecureJSON.Builder().build();
+         *     </code>
+         *
+         * <p>The above example is functionally equivalent to:</p>::
+         *     <code>
+         *
+         *        import com.chelseaurquhart.securejson.SecureJSON;
+         *        final SecureJSON secureJSON = new SecureJSON();
+         *     </code>
+         *
          * @return A SecureJSON instance.
          */
         public SecureJSON build() {
             return new SecureJSON(this);
         }
 
+        /**
+         * @exclude
+         */
         boolean isStrictStrings() {
             return strictStrings;
         }
 
+        /**
+         * @exclude
+         */
         boolean isStrictMapKeyTypes() {
             return strictMapKeyTypes;
         }
 
+        /**
+         * @exclude
+         */
         IFunction<Integer, IWritableCharSequence> getWritableCharBufferFactory() {
             return writableCharBufferFactory;
         }

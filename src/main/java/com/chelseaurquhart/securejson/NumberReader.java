@@ -10,6 +10,9 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
 
+/**
+ * @exclude
+ */
 class NumberReader extends ManagedSecureBufferList implements IReader {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);

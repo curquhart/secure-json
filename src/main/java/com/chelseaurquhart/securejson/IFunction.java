@@ -1,9 +1,16 @@
 package com.chelseaurquhart.securejson;
 
-interface IFunction<T, R> {
+/**
+ * Functional interface that takes one parameter and returns a value.
+ *
+ * @param <T> The parameter type.
+ * @param <R> The return type.
+ */
+public interface IFunction<T, R> {
     /**
      * Performs this operation on the given argument and returns the result.
      * @param parInput The input argument.
+     * @return The processed value.
      * @throws Exception On error.
      */
     R accept(T parInput) throws Exception;

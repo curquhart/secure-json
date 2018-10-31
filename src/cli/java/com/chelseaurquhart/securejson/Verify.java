@@ -145,7 +145,7 @@ public final class Verify {
             });
 
             return true;
-        } catch (final JSONDecodeException myException) {
+        } catch (final JSONException myException) {
             return false;
         }
     }

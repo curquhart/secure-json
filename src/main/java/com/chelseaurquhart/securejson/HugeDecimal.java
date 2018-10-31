@@ -18,12 +18,18 @@ public class HugeDecimal extends Number implements CharSequence {
     private final transient NumberReader numberReader;
     private final Number number;
 
+    /**
+     * @exclude
+     */
     HugeDecimal(final CharSequence parChars, final NumberReader parNumberReader) {
         chars = parChars;
         numberReader = parNumberReader;
         number = null;
     }
 
+    /**
+     * @exclude
+     */
     HugeDecimal(final Number parValue) {
         if (parValue instanceof HugeDecimal) {
             final HugeDecimal myValueHugeDecimal = (HugeDecimal) parValue;

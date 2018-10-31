@@ -5,6 +5,9 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedUnicodeValueE
 
 import java.io.IOException;
 
+/**
+ * @exclude
+ */
 class StringReader extends ManagedSecureBufferList implements IReader {
     private static final int TWO_DIGIT_MIN = 10;
 

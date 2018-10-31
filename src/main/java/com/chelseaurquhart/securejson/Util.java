@@ -1,5 +1,8 @@
 package com.chelseaurquhart.securejson;
 
+/**
+ * @exclude
+ */
 final class Util {
     private Util() {
     }

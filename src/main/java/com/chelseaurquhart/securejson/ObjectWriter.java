@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @exclude
+ */
 class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     @Override
     public Object accept(final Object parInput) throws JSONException {

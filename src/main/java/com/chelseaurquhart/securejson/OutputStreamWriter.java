@@ -6,6 +6,9 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
+/**
+ * @exclude
+ */
 class OutputStreamWriter implements ICharacterWriter, Closeable, AutoCloseable {
     private final PrintStream outputStream;
 

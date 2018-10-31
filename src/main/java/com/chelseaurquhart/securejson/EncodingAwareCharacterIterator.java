@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ * @exclude
+ */
 abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final int UTF16_BYTES = 2;
     private static final int UTF32_BYTES = 4;

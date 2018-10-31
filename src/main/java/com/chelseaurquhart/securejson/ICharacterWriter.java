@@ -3,6 +3,9 @@ package com.chelseaurquhart.securejson;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * @exclude
+ */
 interface ICharacterWriter extends Closeable {
     void append(final char parChar) throws IOException;
 
