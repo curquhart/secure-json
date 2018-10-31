@@ -152,6 +152,7 @@ signing {
 
 javadoc {
     options.addBooleanOption('html5', true)
+    options.addStringOption('tag', 'exclude')
 }
 
 clean {

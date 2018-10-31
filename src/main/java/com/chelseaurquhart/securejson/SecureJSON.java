@@ -44,7 +44,7 @@ public final class SecureJSON {
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
      *            secureJSON.toJSON(Arrays.asList("1", 2, "three"), new IConsumer&lt;CharSequence&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final CharSequence input) {
      *                    // do something with input
      *                }
@@ -81,7 +81,7 @@ public final class SecureJSON {
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
      *            secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer&lt;byte[]&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final byte[] input) {
      *                    // do something with input
      *                }
@@ -148,7 +148,7 @@ public final class SecureJSON {
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
      *            secureJSON.fromJSON("{}", new IConsumer&lt;Map&lt;CharSequence, Object&gt;&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final Map&lt;CharSequence, Object&gt; input) {
      *                    // do something with input
      *                }
@@ -195,7 +195,7 @@ public final class SecureJSON {
      *        }
      *        try {
      *            secureJSON.fromJSON("{}", new IConsumer&lt;MyCustomClass&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final MyCustomClass input) {
      *                    // do something with input
      *                }
@@ -231,7 +231,7 @@ public final class SecureJSON {
      *        final SecureJSON secureJSON = new SecureJSON();
      *        try {
      *            secureJSON.fromJSON("{}".getBytes(), new IConsumer&lt;Map&lt;CharSequence, Object&gt;&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final Map&lt;CharSequence, Object&gt; input) {
      *                    // do something with input
      *                }
@@ -278,7 +278,7 @@ public final class SecureJSON {
      *        }
      *        try {
      *            secureJSON.fromJSON("{}", new IConsumer&lt;MyCustomClass&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final MyCustomClass input) {
      *                    // do something with input
      *                }
@@ -315,7 +315,7 @@ public final class SecureJSON {
      *        final InputStream inputStream = new ByteArrayInputStream("{}".getBytes());
      *        try {
      *            secureJSON.fromJSON(inputStream, new IConsumer&lt;Map&lt;CharSequence, Object&gt;&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final Map&lt;CharSequence, Object&gt; input) {
      *                    // do something with input
      *                }
@@ -362,7 +362,7 @@ public final class SecureJSON {
      *        }
      *        try {
      *            secureJSON.fromJSON(inputStream, new IConsumer&lt;MyCustomClass&gt;() {
-     *                <pre>@Override</pre>
+     *                &#64;Override
      *                public void accept(final MyCustomClass input) {
      *                    // do something with input
      *                }
@@ -490,43 +490,43 @@ public final class SecureJSON {
          *
          *        import com.chelseaurquhart.securejson.SecureJSON;
          *        final SecureJSON secureJSON = new SecureJSON.Builder()
-         *            .writableCharBufferFactory(new IFunction<Integer, IWritableCharSequence>() {
-         *                <pre>@Override</pre>
+         *            .writableCharBufferFactory(new IFunction&lt;Integer, IWritableCharSequence&gt;() {
+         *                &#64;Override
          *                public IWritableCharSequence accept(final Integer parCapacity) {
          *                    return new IWritableCharSequence() {
          *                        private final StringBuilder builder = new StringBuilder(parCapacity);
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public void append(char parChar) {
          *                            builder.append(parCapacity);
          *                        }
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public boolean isRestrictedToCapacity() {
          *                            return false;
          *                        }
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public int getCapacity() {
          *                            return builder.capacity();
          *                        }
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public void close() {
          *                            builder.setLength(0);
          *                        }
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public int length() {
          *                            return builder.length();
          *                        }
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public char charAt(final int parIndex) {
          *                            return builder.charAt(parIndex);
          *                        }
          *
-         *                        <pre>@Override</pre>
+         *                        &#64;Override
          *                        public CharSequence subSequence(final int parStart, final int parEnd) {
          *                            return builder.subSequence(parStart, parEnd);
          *                        }
