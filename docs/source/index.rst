@@ -7,4 +7,4 @@ Welcome to SecureJSON's documentation!
    introduction
    license
    contributing
-   _javadocs/packages
+   packages

@@ -21,4 +21,4 @@ setup(name='SecureJSON',
 )
 
 # Build javadocs
-call(['javasphinx-apidoc', '-f', '-o', os.path.join(scriptDir, 'docs/source/_javadocs/'), os.path.join(scriptDir, 'src/main/java')])
+call(['javasphinx-apidoc', '-f', '-o', os.path.join(scriptDir, 'docs/source/'), os.path.join(scriptDir, 'src/main/java')])
