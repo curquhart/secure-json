@@ -22,6 +22,15 @@ testJava10:
   stage: test
   script: gradle --no-daemon check
 
+javadocs:
+  # we aren't doing anything with these here, but we use them in the Maven releases, so we want the pipeline to run them
+  # to verify no errors on a regular basis.
+  tags:
+  - docker
+  image: gradle:4.10-jdk10
+  stage: test
+  script: gradle --no-daemon javadoc
+
 testJava11:
   tags:
     - docker
