@@ -158,15 +158,6 @@ clean {
     delete buildDir
 }
 
-task updateSphinxJavaDocs(type: Exec) {
-    group = LifecycleBasePlugin.BUILD_GROUP
-    description = 'Updates the Sphinx JavaDocs from sources.'
-
-    commandLine 'javasphinx-apidoc', '-u', '-o', 'docs/source/_javadocs/', 'src/main/java'
-    outputs.files('docs/source/_javadocs/')
-}
-publish.dependsOn updateSphinxJavaDocs
-
 task cloneJSONTestSuite(type: Exec) {
     group = LifecycleBasePlugin.BUILD_GROUP
     description = 'Clones the JSONTestSuite repository.'

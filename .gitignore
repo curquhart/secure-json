@@ -4,3 +4,4 @@ build
 secure-json.iml
 .DS_Store
 .idea
+docs/source/_javadocs/
