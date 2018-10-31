@@ -7,15 +7,13 @@ the minimal amount of time.
 Strings stick around in the JVM much longer than one would like when they contain sensitive information (please see
 https://medium.com/@_west_on/protecting-strings-in-jvm-memory-84c365f8f01c for information about this.)
 
-Originally, SecureJSON used the SecureString implementation referenced in the above article, but due to that it copies
-any input CharSequences, I decided to build a new implementation which only creates buffers for input characters. This
-is backed by a directly allocated ByteBuffer and:
+.. DANGER:: Please note that this is not a substitution for secure coding practices or maintaining a secure environment.
+   If an attacker has access to your JVM’s memory, there isn’t really anything you can do to guarantee that they can’t
+   see sensitive data, but the fleeting nature of data managed in this manner helps ensure that sensitive information is
+   not kept in memory any longer than is necessary and as such helps to mitigate the risks.
 
-    * CharSequence inputs are never copied. We keep the originals by reference, which means if the original is wiped,
-      we won't be retaining information from them.
-    * We allocate more memory as needed, so we're not restricted by whatever initial capacity we use. This applies
-      both to our internal buffers and custom (optional) overrides.
-    * The buffer(s) are cleared immediately after they have been consumed.
+SecureJSON uses something similar to what SecureString does (direct byte buffers), but unlike SecureString, it does not
+copy any input CharSequences but rather just maintains all of the original references until it is closed.
 
 Having seen the results of `JSONTestSuite <https://github.com/nst/JSONTestSuite>`_, and being maybe a little bit
 competitive, my second goal was to have the most thorough JSON deserializer of all of the tested libraries. SecureJSON
