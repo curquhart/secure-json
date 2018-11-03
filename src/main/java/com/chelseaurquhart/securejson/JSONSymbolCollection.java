@@ -19,11 +19,17 @@ final class JSONSymbolCollection {
     static final short BITS_IN_BYTE = 8;
     static final short TWO_BYTE = 255;
 
-    static final Map<Character, Character> END_TOKENS = listToMap(
-        Token.R_BRACE.getShortSymbol(),
-        Token.R_CURLY.getShortSymbol(),
-        Token.QUOTE.getShortSymbol(),
-        Token.COMMA.getShortSymbol()
+    static final Map<Character, Token> END_TOKENS = listToMap(
+        Token.R_BRACE,
+        Token.R_CURLY,
+        Token.QUOTE,
+        Token.COMMA
+    );
+
+    static final Map<Character, Token> WORD_TOKENS = listToMap(
+        Token.NULL,
+        Token.TRUE,
+        Token.FALSE
     );
 
     static final Map<Character, Character> WHITESPACES = listToMap(
@@ -34,35 +40,44 @@ final class JSONSymbolCollection {
         '\u0009'
     );
 
-    static final Map<Character, Character> TOKENS = listToMap(
-        Token.L_BRACE.getShortSymbol(),
-        Token.R_BRACE.getShortSymbol(),
-        Token.L_CURLY.getShortSymbol(),
-        Token.R_CURLY.getShortSymbol(),
-        Token.COLON.getShortSymbol(),
-        Token.QUOTE.getShortSymbol(),
-        Token.COMMA.getShortSymbol(),
-        Token.NULL.getShortSymbol(),
-        Token.FALSE.getShortSymbol(),
-        Token.TRUE.getShortSymbol()
+    static final Map<Character, Token> TOKENS = listToMap(
+        Token.L_BRACE,
+        Token.R_BRACE,
+        Token.L_CURLY,
+        Token.R_CURLY,
+        Token.COLON,
+        Token.QUOTE,
+        Token.COMMA,
+        Token.NULL,
+        Token.FALSE,
+        Token.TRUE
     );
 
-    static final Map<Character, Character> NUMBERS = listToMap(
-        Token.ZERO.getShortSymbol(),
-        Token.ONE.getShortSymbol(),
-        Token.TWO.getShortSymbol(),
-        Token.THREE.getShortSymbol(),
-        Token.FOUR.getShortSymbol(),
-        Token.FIVE.getShortSymbol(),
-        Token.SIX.getShortSymbol(),
-        Token.SEVEN.getShortSymbol(),
-        Token.EIGHT.getShortSymbol(),
-        Token.NINE.getShortSymbol(),
-        Token.DECIMAL.getShortSymbol(),
-        Token.MINUS.getShortSymbol(),
-        Token.PLUS.getShortSymbol(),
-        Token.EXPONENT.getShortSymbol()
+    static final Map<Character, Token> NUMBERS = listToMap(
+        Token.ZERO,
+        Token.ONE,
+        Token.TWO,
+        Token.THREE,
+        Token.FOUR,
+        Token.FIVE,
+        Token.SIX,
+        Token.SEVEN,
+        Token.EIGHT,
+        Token.NINE,
+        Token.DECIMAL,
+        Token.MINUS,
+        Token.PLUS,
+        Token.EXPONENT
     );
+
+    private static Map<Character, Token> listToMap(final Token... parElements) {
+        final Map<Character, Token> myMap = new HashMap<>();
+        for (final Token myElement : parElements) {
+            myMap.put(myElement.getShortSymbol(), myElement);
+        }
+
+        return Collections.unmodifiableMap(myMap);
+    }
 
     private static Map<Character, Character> listToMap(final Character... parElements) {
         final Map<Character, Character> myMap = new HashMap<>();

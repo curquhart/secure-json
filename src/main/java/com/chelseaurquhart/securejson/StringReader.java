@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * @exclude
  */
-class StringReader extends ManagedSecureBufferList implements IReader {
+class StringReader extends ManagedSecureBufferList implements IReader<CharSequence> {
     private static final int TWO_DIGIT_MIN = 10;
 
     private final Settings settings;
@@ -82,6 +82,11 @@ class StringReader extends ManagedSecureBufferList implements IReader {
     @Override
     public Object normalizeCollection(final Object parValue) {
         return parValue;
+    }
+
+    @Override
+    public boolean isContainerType() {
+        return false;
     }
 
     private char readUnicode(final ICharacterIterator parInput) throws IOException {

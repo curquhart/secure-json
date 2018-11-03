@@ -7,14 +7,10 @@ import java.io.IOException;
 /**
  * @exclude
  */
-class WordReader implements IReader {
+class WordReader implements IReader<Object> {
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        final char myChar = parIterator.peek();
-
-        return myChar == JSONSymbolCollection.Token.NULL.getShortSymbol()
-            || myChar == JSONSymbolCollection.Token.FALSE.getShortSymbol()
-            || myChar == JSONSymbolCollection.Token.TRUE.getShortSymbol();
+        return JSONSymbolCollection.WORD_TOKENS.get(parIterator.peek()) != null;
     }
 
     @Override
@@ -26,16 +22,10 @@ class WordReader implements IReader {
     public Object read(final ICharacterIterator parIterator)
             throws IOException {
 
-        final char myChar = parIterator.peek();
-
-        if (myChar == JSONSymbolCollection.Token.NULL.getShortSymbol()) {
-            return readWord(parIterator, JSONSymbolCollection.Token.NULL);
-        }
-        if (myChar == JSONSymbolCollection.Token.FALSE.getShortSymbol()) {
-            return readWord(parIterator, JSONSymbolCollection.Token.FALSE);
-        }
-        if (myChar == JSONSymbolCollection.Token.TRUE.getShortSymbol()) {
-            return readWord(parIterator, JSONSymbolCollection.Token.TRUE);
+        final JSONSymbolCollection.Token myWordToken = JSONSymbolCollection.WORD_TOKENS.get(parIterator.peek());
+        if (myWordToken != null) {
+            readAndValidateWord(parIterator, myWordToken);
+            return myWordToken.getValue();
         }
 
         throw new InvalidTokenException(parIterator);
@@ -50,7 +40,7 @@ class WordReader implements IReader {
         return parValue;
     }
 
-    private Object readWord(final ICharacterIterator parIterator, final JSONSymbolCollection.Token parToken)
+    private void readAndValidateWord(final ICharacterIterator parIterator, final JSONSymbolCollection.Token parToken)
             throws IOException {
         final CharSequence myWord = parToken.toString().toLowerCase();
         final int myCheckingLength = myWord.length();
@@ -65,14 +55,23 @@ class WordReader implements IReader {
         }
 
         if (!parIterator.hasNext()) {
-            return parToken.getValue();
+            return;
         }
 
         final char myChar = parIterator.peek();
         if (JSONSymbolCollection.TOKENS.containsKey(myChar) || JSONSymbolCollection.WHITESPACES.containsKey(myChar)) {
-            return parToken.getValue();
+            return;
         }
 
         throw new InvalidTokenException(parIterator);
+    }
+
+    @Override
+    public boolean isContainerType() {
+        return false;
+    }
+
+    @Override
+    public void close() {
     }
 }
