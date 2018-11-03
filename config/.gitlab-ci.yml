@@ -51,6 +51,8 @@ sonarqube:
     - docker
   image: gradle:4.10-jdk9
   stage: test
+  only:
+    - master
   script: gradle sonarqube \
     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
     -Dsonar.organization=${SONAR_ORGANIZATION} \
