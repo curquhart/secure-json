@@ -51,6 +51,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
         // the only special characters we need to handle.
 
+        if (!hasNext()) {
+            throw new JSONException(Messages.get(Messages.Key.ERROR_MALFORMED_JSON));
+        }
         final char myNextChar = peek();
         switch (myNextChar) {
             case UTF8_BOM_CHAR0:

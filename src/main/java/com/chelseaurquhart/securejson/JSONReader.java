@@ -128,7 +128,7 @@ final class JSONReader implements Closeable, AutoCloseable {
                 parData.isFinished = false;
                 parData.separatorForObject = myHead;
                 break;
-            } else if (isValidToken(parIterator.peek())) {
+            } else if (parIterator.hasNext() && isValidToken(parIterator.peek())) {
                 parData.isFinished = false;
                 break;
             } else {
