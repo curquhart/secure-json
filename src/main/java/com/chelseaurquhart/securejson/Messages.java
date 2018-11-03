@@ -33,7 +33,7 @@ final class Messages {
         return getInstance().properties.getProperty(parKey.toString());
     }
 
-    private static final String RESOURCE_NAME = "messages.properties";
+    private static final String RESOURCE_NAME = "com/chelseaurquhart/securejson/messages.properties";
 
     private static Messages INSTANCE;
 
