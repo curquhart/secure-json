@@ -49,7 +49,7 @@ verifyJSONTestSuite:
 sonarqube:
   tags:
     - docker
-  image: gradle:4.10-jdk9
+  image: gradle:4.10-jdk10
   stage: test
   only:
     - master
