@@ -9,11 +9,11 @@ import java.util.Map;
 /**
  * @exclude
  */
-class MapReader implements IReader {
+class MapReader implements IReader<MapReader.Container> {
     private final JSONReader jsonReader;
-    private final StringReader stringReader;
+    private final IReader<CharSequence> stringReader;
 
-    MapReader(final JSONReader parJsonReader, final StringReader parStringReader) {
+    MapReader(final JSONReader parJsonReader, final IReader<CharSequence> parStringReader) {
         jsonReader = parJsonReader;
         stringReader = parStringReader;
     }
@@ -43,7 +43,7 @@ class MapReader implements IReader {
     }
 
     @Override
-    public MapReader.Container read(final ICharacterIterator parIterator) throws IOException {
+    public Container read(final ICharacterIterator parIterator) throws IOException {
         if (parIterator.peek() != JSONSymbolCollection.Token.L_CURLY.getShortSymbol()) {
             throw new MalformedMapException(parIterator);
         }
@@ -87,6 +87,16 @@ class MapReader implements IReader {
         return parValue;
     }
 
+    @Override
+    public boolean isContainerType() {
+        return true;
+    }
+
+    @Override
+    public void close() throws IOException {
+        stringReader.close();
+    }
+
     private CharSequence readKey(final ICharacterIterator parIterator) throws IOException {
         final CharSequence myKey = stringReader.read(parIterator);
         jsonReader.moveToNextToken(parIterator);
@@ -107,7 +117,7 @@ class MapReader implements IReader {
         return (Container) parValue;
     }
 
-    private static final class Container {
+    static final class Container {
         private Map<CharSequence, Object> map;
         private CharSequence key;
 

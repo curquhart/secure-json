@@ -1,11 +1,12 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * @exclude
  */
-interface IReader {
+interface IReader<T> extends Closeable {
     Object normalizeCollection(Object parValue);
 
     /**
@@ -18,11 +19,13 @@ interface IReader {
         RESERVED
     }
 
-    Object read(ICharacterIterator parIterator) throws IOException;
+    T read(ICharacterIterator parIterator) throws IOException;
 
     void addValue(ICharacterIterator parIterator, Object parCollection, Object parValue) throws IOException;
 
     boolean isStart(ICharacterIterator parIterator) throws IOException;
+
+    boolean isContainerType();
 
     SymbolType getSymbolType(ICharacterIterator parIterator) throws IOException;
 }

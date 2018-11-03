@@ -167,7 +167,7 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
-        try (final JSONReader myJsonReader = new JSONReader(settings)) {
+        try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
             throw myException;
@@ -250,7 +250,7 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
-        try (final JSONReader myJsonReader = new JSONReader(settings)) {
+        try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
         } catch (final JSONDecodeException myException) {
             throw myException;
@@ -334,7 +334,7 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
-        try (final JSONReader myJsonReader = new JSONReader(settings)) {
+        try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
             throw myException;

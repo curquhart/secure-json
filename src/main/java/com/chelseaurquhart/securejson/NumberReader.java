@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @exclude
  */
-class NumberReader extends ManagedSecureBufferList implements IReader {
+class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);
 
@@ -117,6 +117,11 @@ class NumberReader extends ManagedSecureBufferList implements IReader {
     @Override
     public Object normalizeCollection(final Object parValue) {
         return parValue;
+    }
+
+    @Override
+    public boolean isContainerType() {
+        return false;
     }
 
     Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset)

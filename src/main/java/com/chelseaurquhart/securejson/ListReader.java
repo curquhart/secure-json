@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @exclude
  */
-class ListReader implements IReader {
+class ListReader implements IReader<ListReader.Container> {
     private final JSONReader jsonReader;
 
     ListReader(final JSONReader parJsonReader) {
@@ -76,11 +76,20 @@ class ListReader implements IReader {
         return parValue;
     }
 
+    @Override
+    public boolean isContainerType() {
+        return true;
+    }
+
+    @Override
+    public void close() {
+    }
+
     private Container objectToContainer(final Object parValue) {
         return (Container) parValue;
     }
 
-    private static final class Container {
+    static final class Container {
         private List<Object> list;
 
         private Container() {
@@ -98,5 +107,4 @@ class ListReader implements IReader {
             return list;
         }
     }
-
 }

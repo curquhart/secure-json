@@ -10,70 +10,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 
 /**
  * @exclude
  */
-class JSONReader implements Closeable, AutoCloseable {
-    private final NumberReader numberReader;
-    private final StringReader stringReader;
-    private final ListReader listReader;
-    private final WordReader wordReader;
-    private final MapReader mapReader;
+final class JSONReader implements Closeable, AutoCloseable {
+    private final IReader[] readers;
 
-    JSONReader(final Settings parSettings) {
-        this(null, null, null, null, null, parSettings);
-    }
+    private JSONReader(final Builder parBuilder) {
+        final IReader<CharSequence> myStringReader;
+        final IReader<Number> myNumberReader;
 
-    JSONReader(final NumberReader parNumberReader, final Settings parSettings) {
-        this(parNumberReader, null, null, null, null, parSettings);
-    }
-
-    JSONReader(final StringReader parStringReader, final Settings parSettings) {
-        this(null, parStringReader, null, null, null, parSettings);
-    }
-
-    JSONReader(final ListReader parListReader, final Settings parSettings) {
-        this(null, null, parListReader, null, null, parSettings);
-    }
-
-    JSONReader(final WordReader parWordReader, final Settings parSettings) {
-        this(null, null, null, parWordReader, null, parSettings);
-    }
-
-    JSONReader(final MapReader parMapReader, final Settings parSettings) {
-        this(null, null, null, null, parMapReader, parSettings);
-    }
-
-    private JSONReader(final NumberReader parNumberReader, final StringReader parStringReader,
-                       final ListReader parListReader, final WordReader parWordReader, final MapReader parMapReader,
-                       final Settings parSettings) {
-        if (parNumberReader == null) {
-            numberReader = new NumberReader(parSettings);
+        if (parBuilder.stringReader == null) {
+            myStringReader = new StringReader(parBuilder.settings);
         } else {
-            numberReader = parNumberReader;
+            myStringReader = parBuilder.stringReader;
         }
-        if (parStringReader == null) {
-            stringReader = new StringReader(parSettings);
+        if (parBuilder.numberReader == null) {
+            myNumberReader = new NumberReader(parBuilder.settings);
         } else {
-            stringReader = parStringReader;
+            myNumberReader = parBuilder.numberReader;
         }
-        if (parListReader == null) {
-            listReader = new ListReader(this);
-        } else {
-            listReader = parListReader;
-        }
-        if (parWordReader == null) {
-            wordReader = new WordReader();
-        } else {
-            wordReader = parWordReader;
-        }
-        if (parMapReader == null) {
-            mapReader = new MapReader(this, stringReader);
-        } else {
-            mapReader = parMapReader;
-        }
+
+        readers = new IReader[] {
+            myNumberReader,
+            myStringReader,
+            new WordReader(),
+            new ListReader(this),
+            new MapReader(this, myStringReader),
+        };
     }
 
     Object read(final CharSequence parJson) throws IOException {
@@ -92,21 +59,17 @@ class JSONReader implements Closeable, AutoCloseable {
             moveToNextToken(parIterator);
 
             Object myResult = null;
-            boolean myHasResult = true;
-            if (wordReader.isStart(parIterator)) {
-                myResult = wordReader.read(parIterator);
-            } else if (listReader.isStart(parIterator)) {
-                myStack.push(new AbstractMap.SimpleImmutableEntry<IReader, Object>(
-                    listReader, listReader.read(parIterator)));
-                continue;
-            } else if (mapReader.isStart(parIterator)) {
-                myStack.push(new AbstractMap.SimpleImmutableEntry<IReader, Object>(
-                    mapReader, mapReader.read(parIterator)));
-                continue;
-            } else if (numberReader.isStart(parIterator)) {
-                myResult = numberReader.read(parIterator);
-            } else if (stringReader.isStart(parIterator)) {
-                myResult = stringReader.read(parIterator);
+            boolean myHasResult;
+
+            final IReader myReader = isStart(parIterator);
+            if (myReader != null) {
+                myResult = myReader.read(parIterator);
+                if (myReader.isContainerType()) {
+                    myStack.push(new AbstractMap.SimpleImmutableEntry<>(myReader, myResult));
+                    continue;
+                }
+
+                myHasResult = true;
             } else if (myStack.empty()) {
                 throw new InvalidTokenException(parIterator);
             } else {
@@ -170,10 +133,30 @@ class JSONReader implements Closeable, AutoCloseable {
         throw new EmptyJSONException(parIterator);
     }
 
+    private IReader isStart(final ICharacterIterator parIterator) throws IOException {
+        for (final IReader myReader : readers) {
+            if (myReader.isStart(parIterator)) {
+                return myReader;
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public void close() throws IOException {
-        numberReader.close();
-        stringReader.close();
+        IOException myException = null;
+        for (final IReader myReader : readers) {
+            try {
+                myReader.close();
+            } catch (final IOException myIoException) {
+                myException = myIoException;
+            }
+        }
+
+        if (myException != null) {
+            throw myException;
+        }
     }
 
     void moveToNextToken(final ICharacterIterator parIterator) throws IOException {
@@ -191,5 +174,31 @@ class JSONReader implements Closeable, AutoCloseable {
 
     private boolean isValidToken(final char parChar) {
         return JSONSymbolCollection.TOKENS.containsKey(parChar) || JSONSymbolCollection.NUMBERS.containsKey(parChar);
+    }
+
+    static class Builder {
+        private final Settings settings;
+        private IReader<CharSequence> stringReader;
+        private IReader<Number> numberReader;
+
+        Builder(final Settings parSettings) {
+            settings = Objects.requireNonNull(parSettings);
+        }
+
+        Builder stringReader(final IReader<CharSequence> parStringReader) {
+            stringReader = Objects.requireNonNull(parStringReader);
+
+            return this;
+        }
+
+        Builder numberReader(final IReader<Number> parNumberReader) {
+            numberReader = Objects.requireNonNull(parNumberReader);
+
+            return this;
+        }
+
+        JSONReader build() {
+            return new JSONReader(this);
+        }
     }
 }
