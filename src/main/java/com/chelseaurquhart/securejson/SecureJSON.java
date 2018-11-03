@@ -418,13 +418,8 @@ public final class SecureJSON {
 
         return new IConsumer<Object>() {
             @Override
-            public void accept(final Object parOutput) {
-                try {
-                    parConsumer.accept(new ObjectReader<>(parClass, settings)
-                        .accept(parOutput));
-                } catch (final JSONException myException) {
-                    throw new JSONException.JSONRuntimeException(myException);
-                }
+            public void accept(final Object parOutput) throws Exception {
+                parConsumer.accept(new ObjectReader<>(parClass, settings).accept(parOutput));
             }
         };
     }

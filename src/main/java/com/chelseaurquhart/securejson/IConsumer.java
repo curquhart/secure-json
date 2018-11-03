@@ -9,6 +9,7 @@ public interface IConsumer<T> {
     /**
      * Performs this operation on the given argument.
      * @param parInput The input argument.
+     * @throws Exception on error.
      */
-    void accept(T parInput);
+    void accept(T parInput) throws Exception;
 }

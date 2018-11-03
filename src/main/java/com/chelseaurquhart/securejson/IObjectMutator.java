@@ -1,5 +1,7 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.IOException;
+
 /**
  * @exclude
  */
@@ -9,5 +11,5 @@ interface IObjectMutator extends IFunction<Object, Object> {
      * @param parInput The input argument.
      * @return The processed object.
      */
-    Object accept(Object parInput) throws JSONException;
+    Object accept(Object parInput) throws IOException;
 }

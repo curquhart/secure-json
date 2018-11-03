@@ -310,9 +310,9 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
                 | (compositionSecond.get(myOffset) & JSONSymbolCollection.TWO_BYTE));
         }
 
-        public void append(final char parChar) {
+        public void append(final char parChar) throws IOException {
             if (fixedLength != null) {
-                throw new UnsupportedOperationException("attempt to append to a readonly buffer");
+                throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_WRITE_TO_READONLY_BUFFER));
             }
             compositionFirst.put((byte) (parChar >> JSONSymbolCollection.BITS_IN_BYTE));
             compositionSecond.put((byte) ((parChar & JSONSymbolCollection.TWO_BYTE)));

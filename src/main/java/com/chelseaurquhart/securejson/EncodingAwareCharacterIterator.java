@@ -214,7 +214,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 myChar = readNextChar();
                 break;
             default:
-                throw new IOException("Invalid encoding");
+                throw new JSONDecodeException(this, Messages.Key.ERROR_INVALID_ENCODING);
         }
 
         return myChar;

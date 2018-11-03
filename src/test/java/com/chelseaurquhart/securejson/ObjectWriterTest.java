@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -12,7 +13,7 @@ public final class ObjectWriterTest {
     }
 
     @Test
-    void testSimpleObject() throws JSONException {
+    void testSimpleObject() throws IOException {
         final ObjectWriter myObjectWriter = new ObjectWriter();
         Assert.assertEquals(myObjectWriter.accept(new Object() {
             @SuppressFBWarnings(value = "UrF")
@@ -25,7 +26,7 @@ public final class ObjectWriterTest {
     }
 
     @Test
-    void testJSONAwareList() throws JSONException {
+    void testJSONAwareList() throws IOException {
         final ObjectWriter myObjectWriter = new ObjectWriter();
         Assert.assertEquals(myObjectWriter.accept(new IJSONSerializeAware() {
             @SuppressFBWarnings(value = "Se")

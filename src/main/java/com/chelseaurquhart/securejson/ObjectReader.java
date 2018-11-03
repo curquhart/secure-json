@@ -2,6 +2,7 @@ package com.chelseaurquhart.securejson;
 
 import net.jodah.typetools.TypeResolver;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -35,7 +36,7 @@ class ObjectReader<T> extends ObjectSerializer {
     /**
      * A collection of types that we can ignore when we're recursively resolving targets.
      */
-    private static List<? extends Class<?>> IGNORE_RECURSION_TYPES = Collections.unmodifiableList(Arrays.asList(
+    private static final List<? extends Class<?>> IGNORE_RECURSION_TYPES = Collections.unmodifiableList(Arrays.asList(
         boolean.class,
         Boolean.class,
         byte.class,
@@ -66,11 +67,11 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    final T accept(final Object parInput) throws JSONException {
+    final T accept(final Object parInput) throws IOException {
         return buildInstance(parInput, null);
     }
 
-    private T buildInstance(final Object parInput, final Map<CharSequence, Object> parAbsMap) throws JSONException {
+    private T buildInstance(final Object parInput, final Map<CharSequence, Object> parAbsMap) throws IOException {
         final T myInstance = construct(clazz);
 
         if (myInstance instanceof IJSONDeserializeAware) {
@@ -85,13 +86,13 @@ class ObjectReader<T> extends ObjectSerializer {
             }
             accept(myInstance, myMap, myAbsMap);
         } else {
-            throw new JSONDecodeException(new Exception("cannot read object from non-map"));
+            throw new JSONException(Messages.get(Messages.Key.ERROR_READ_OBJECT_FROM_NON_MAP_TYPE));
         }
 
         return myInstance;
     }
 
-    private <U> U construct(final Class<U> parClazz) throws JSONException {
+    private <U> U construct(final Class<U> parClazz) throws IOException {
         final Class<? extends U> myClazz = getConcreteClass(parClazz);
 
         try {
@@ -105,7 +106,7 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    private <U> Class<? extends U> getConcreteClass(final Class<? extends U> parClazz) throws JSONException {
+    private <U> Class<? extends U> getConcreteClass(final Class<? extends U> parClazz) throws IOException {
         try {
             if (parClazz == Map.class || parClazz == AbstractMap.class) {
                 return (Class<? extends U>) LinkedHashMap.class;
@@ -121,15 +122,15 @@ class ObjectReader<T> extends ObjectSerializer {
         }
 
         if (parClazz.isInterface() || Modifier.isAbstract(parClazz.getModifiers())) {
-            throw new JSONException(String.format("Could not resolve concrete implementation for %s",
-                parClazz.getName()));
+            throw new JSONException(
+                Messages.get(Messages.Key.ERROR_RESOLVE_IMPLEMENTATION).replace(":class", parClazz.getName()));
         }
 
         return parClazz;
     }
 
     private void accept(final Object parInstance, final Map<CharSequence, Object> parRelMap,
-                        final Map<CharSequence, Object> parAbsMap) throws JSONException {
+                        final Map<CharSequence, Object> parAbsMap) throws IOException {
         for (final Field myField : getFields(clazz)) {
             accept(parInstance, myField, parRelMap, parAbsMap);
         }
@@ -137,7 +138,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     private void accept(final Object parInstance, final Field parField, final Map<CharSequence, Object> parRelMap,
                         final Map<CharSequence, Object> parAbsMap)
-            throws JSONException {
+            throws IOException {
         final SerializationSettings mySerializationSettings = getSerializationSettings(parField);
         final Class<?> myType = parField.getType();
         final Object myValue;
@@ -154,7 +155,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     private <U> boolean recursivelyAccept(final Object parInstance, final Field parField, final Class<U> parType,
                                        final Map<CharSequence, Object> parAbsMap, final Set<Class<?>> parClassStack)
-            throws JSONException {
+            throws IOException {
         if (!canRecursivelyAccept(parType)) {
             return false;
         }
@@ -250,7 +251,7 @@ class ObjectReader<T> extends ObjectSerializer {
     @SuppressWarnings("unchecked")
     private Object buildValue(final Type parGenericType, final Class<?> parType, final Object parValue,
                               final Map<CharSequence, Object> parAbsMap)
-            throws JSONException {
+            throws IOException {
         final Class<?> myType;
         if (parType == Object.class && parValue != null) {
             myType = deAnonymize(parValue.getClass());
@@ -307,13 +308,13 @@ class ObjectReader<T> extends ObjectSerializer {
 
     @SuppressWarnings("unchecked")
     private Object buildMapValue(final Type parGenericType, final Class<?> parType, final Map<?, ?> parValue)
-            throws JSONException {
+            throws IOException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
         final Type[] myArgs = getGenericTypes(myType, 2);
         final Class[] myClasses = getGenericArgClasses(myType, 2, parType);
 
         if (!CharSequence.class.isAssignableFrom(myClasses[0]) && myClasses[0] != Object.class) {
-            throw new JSONException("Map keys must implement CharSequence or be generic Objects");
+            throw new JSONException(Messages.get(Messages.Key.ERROR_INVALID_MAP_KEY_TYPE));
         }
 
         final Map<Object, Object> myMap;
@@ -334,7 +335,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     @SuppressWarnings("unchecked")
     private Object buildCollectionValue(final Type parGenericType, final Class<?> parType,
-                                        final Collection<?> parValue) throws JSONException {
+                                        final Collection<?> parValue) throws IOException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
         final Type[] myArgs = getGenericTypes(myType, 1);
         final Class[] myClasses = getGenericArgClasses(myType, 1, parType);
@@ -354,7 +355,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     @SuppressWarnings("unchecked")
     private Object buildArrayValue(final Class<?> parType, final Object parValue)
-            throws JSONException {
+            throws IOException {
         final Class myClass = parType.getComponentType();
 
         final int myLength = Array.getLength(parValue);
@@ -543,12 +544,12 @@ class ObjectReader<T> extends ObjectSerializer {
 
         @Override
         public boolean retainAll(final Collection<?> parCollection) {
-            throw new UnsupportedOperationException("retainAll is not implemented");
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "retainAll");
         }
 
         @Override
         public boolean removeAll(final Collection<?> parCollection) {
-            throw new UnsupportedOperationException("removeAll is not implemented");
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "removeAll");
         }
 
         @Override

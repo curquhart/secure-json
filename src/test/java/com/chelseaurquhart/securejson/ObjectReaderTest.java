@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testSimpleDeserialization() throws JSONException {
+    public void testSimpleDeserialization() throws IOException {
         final SimpleDeserializationClass mySimpleDeserializationClass = new ObjectReader<>(
                 SimpleDeserializationClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
             put("integerVal", 1);
@@ -49,7 +50,7 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testSimpleNesting() throws JSONException {
+    public void testSimpleNesting() throws IOException {
         final SimpleNestingClass mySimpleNestingClass = new ObjectReader<>(
                 SimpleNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("inner1", new HashMap<CharSequence, Object>() {{
@@ -87,7 +88,7 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testSubNesting() throws JSONException {
+    public void testSubNesting() throws IOException {
         final SubNestingClass mySubNestingClass = new ObjectReader<>(
                 SubNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("inner1", new HashMap<CharSequence, Object>() {{
@@ -119,7 +120,7 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testRecursiveNesting() throws JSONException {
+    public void testRecursiveNesting() throws IOException {
         final SubNestingClass mySubNestingClass = new ObjectReader<>(
                 SubNestingClass.class, UNSTRICT_SETTINGS)
                     .accept(new HashMap<CharSequence, Object>() {{
@@ -183,7 +184,7 @@ public final class ObjectReaderTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testComplexType() throws JSONException {
+    public void testComplexType() throws IOException {
         final ComplexTypeClass myComplexTypeClass = new ObjectReader<>(
                 ComplexTypeClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
             final List<Map<CharSequence, Map<String, Integer>>> myList1 = new ArrayList<>();
@@ -220,7 +221,7 @@ public final class ObjectReaderTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testAbsoluteNesting() throws JSONException {
+    public void testAbsoluteNesting() throws IOException {
         final NestingAbsClass myNestingAbsClass = new ObjectReader<>(
                 NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
             put("1", 11);

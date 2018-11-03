@@ -1,5 +1,6 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,13 +12,13 @@ import java.util.Map;
  */
 class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     @Override
-    public Object accept(final Object parInput) throws JSONException {
+    public Object accept(final Object parInput) throws IOException {
         final Map<CharSequence, Object> myRootMap = new LinkedHashMap<>();
         return accept(parInput, myRootMap, myRootMap);
     }
 
     private Object accept(final Object parInput, final Map<CharSequence, Object> parRelMap,
-                          final Map<CharSequence, Object> parAbsMap) throws JSONException {
+                          final Map<CharSequence, Object> parAbsMap) throws IOException {
         final Object myInput = resolve(parInput);
 
         if (isSimpleType(myInput)) {
@@ -42,7 +43,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
             for (final Map.Entry<?, ?> myEntry : myMap.entrySet()) {
                 final Object myKey = resolve(myEntry.getKey());
                 if (!(myKey instanceof CharSequence)) {
-                    throw new JSONEncodeException(new Exception("Map keys must implement CharSequence"));
+                    throw new JSONEncodeException(Messages.Key.ERROR_INVALID_MAP_KEY_TYPE_STRICT);
                 }
                 myOutput.put((CharSequence) myKey, accept(myEntry.getValue(), parRelMap, parAbsMap));
             }
@@ -61,8 +62,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     }
 
     private Map<CharSequence, Object> addObjectToMap(final Object parInput, final Map<CharSequence, Object> parRelMap,
-                                                     final Map<CharSequence, Object> parAbsMap)
-            throws JSONException {
+                                                     final Map<CharSequence, Object> parAbsMap) throws IOException {
         for (final Field myField : getFields(parInput.getClass())) {
             final SerializationSettings mySerializationSettings = getSerializationSettings(myField);
             final Object myFieldValue = accept(getValue(myField, parInput), parRelMap, parAbsMap);
@@ -80,7 +80,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
 
     private void addToMap(final Object parFieldValue, final Map<CharSequence, Object> parTargetMap,
                           final Map<CharSequence, Object> parAbsMap, final CharSequence[] parTarget)
-            throws JSONException {
+            throws IOException {
 
         Map<CharSequence, Object> myTargetMap = parTargetMap;
 
@@ -91,14 +91,13 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
                     myValue = new LinkedHashMap<>();
                     myTargetMap.put(parTarget[myIndex], myValue);
                 } else if (!(myValue instanceof Map)) {
-                    throw new JSONEncodeException(new IllegalArgumentException("expected map"));
+                    throw new JSONEncodeException(Messages.Key.ERROR_ATTEMPT_TO_ADD_MAP_ENTRY_TO_NON_MAP);
                 }
 
                 myTargetMap = castToMap(myValue);
             } else {
                 if (myTargetMap.containsKey(parTarget[myIndex])) {
-                    throw new JSONEncodeException(new IllegalArgumentException("Serialization config is causing"
-                        + " overwrites"));
+                    throw new JSONEncodeException(Messages.Key.ERROR_INVALID_SERIALIZATION_CONFIG);
                 }
                 myTargetMap.put(parTarget[myIndex], accept(parFieldValue, myTargetMap, parAbsMap));
             }
