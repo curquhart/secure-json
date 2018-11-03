@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * SecureJSON is a JSON serializer and deserializer with strict security in mind. It does not create strings due to
@@ -61,6 +62,8 @@ public final class SecureJSON {
      */
     public void toJSON(final Object parInput, final IConsumer<CharSequence> parConsumer)
             throws JSONEncodeException {
+        Objects.requireNonNull(parConsumer);
+
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput));
         } catch (final JSONEncodeException myException) {
@@ -98,6 +101,8 @@ public final class SecureJSON {
      */
     public void toJSONBytes(final Object parInput, final IConsumer<byte[]> parConsumer)
             throws JSONEncodeException {
+        Objects.requireNonNull(parConsumer);
+
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput).getBytes());
         } catch (final JSONEncodeException myException) {
@@ -125,8 +130,9 @@ public final class SecureJSON {
      * @param parOutputStream The stream to write to.
      * @throws JSONEncodeException On encode failure.
      */
-    public void toJSON(final Object parInput, final OutputStream parOutputStream)
-            throws JSONEncodeException {
+    public void toJSON(final Object parInput, final OutputStream parOutputStream) throws JSONEncodeException {
+        Objects.requireNonNull(parOutputStream);
+
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, StandardCharsets.UTF_8));
         } catch (final JSONEncodeException myException) {
@@ -167,6 +173,9 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
+        Objects.requireNonNull(parInput);
+        Objects.requireNonNull(parConsumer);
+
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
@@ -250,6 +259,9 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
+        Objects.requireNonNull(parInput);
+        Objects.requireNonNull(parConsumer);
+
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
         } catch (final JSONDecodeException myException) {
@@ -299,6 +311,10 @@ public final class SecureJSON {
      */
     public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
             throws JSONDecodeException {
+        Objects.requireNonNull(parInput);
+        Objects.requireNonNull(parConsumer);
+        Objects.requireNonNull(parClass);
+
         fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
 
@@ -334,6 +350,9 @@ public final class SecureJSON {
      */
     @SuppressWarnings("unchecked")
     public <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
+        Objects.requireNonNull(parInput);
+        Objects.requireNonNull(parConsumer);
+
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONDecodeException myException) {
@@ -383,10 +402,16 @@ public final class SecureJSON {
      */
     public <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer, final Class<T> parClass)
             throws JSONDecodeException {
+        Objects.requireNonNull(parInput);
+        Objects.requireNonNull(parConsumer);
+        Objects.requireNonNull(parClass);
+
         fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
 
     private <T> IConsumer<?> getConsumer(final IConsumer<T> parConsumer, final Class<T> parClass) {
+        Objects.requireNonNull(parConsumer);
+
         if (parClass == null) {
             return parConsumer;
         }
@@ -541,7 +566,7 @@ public final class SecureJSON {
          */
         public Builder writableCharBufferFactory(
                 final IFunction<Integer, IWritableCharSequence> parWritableCharBufferFactory) {
-            writableCharBufferFactory = parWritableCharBufferFactory;
+            writableCharBufferFactory = Objects.requireNonNull(parWritableCharBufferFactory);
 
             return this;
         }
