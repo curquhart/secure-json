@@ -2,14 +2,13 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * @exclude
  */
-class IterableInputStream extends EncodingAwareCharacterIterator implements ICharacterIterator, Closeable {
+class IterableInputStream extends EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final int UNSIGNED_CONVERT_DIGIT = 0xff;
 
     private final InputStream inputStream;
@@ -26,11 +25,6 @@ class IterableInputStream extends EncodingAwareCharacterIterator implements ICha
         } catch (final IOException myException) {
             throw new JSONRuntimeException(myException);
         }
-    }
-
-    @Override
-    public void close() throws IOException {
-        inputStream.close();
     }
 
     @Override

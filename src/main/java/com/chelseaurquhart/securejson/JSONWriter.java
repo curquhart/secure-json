@@ -178,7 +178,7 @@ class JSONWriter implements Closeable, AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        for (final ICharacterWriter mySecureBuffer : secureBuffers) {
+        for (final ManagedSecureCharBuffer mySecureBuffer : secureBuffers) {
             mySecureBuffer.close();
         }
     }
