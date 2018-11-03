@@ -16,8 +16,13 @@
 
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,7 +83,6 @@ class ObjectSerializer {
                 // ignore transient and synthetic fields.
                 continue;
             }
-            myField.setAccessible(true);
             myCollection.add(myField);
         }
         final Class mySuperClass = parClass.getSuperclass();
@@ -89,23 +93,44 @@ class ObjectSerializer {
         return Collections.unmodifiableCollection(myCollection);
     }
 
-    final Object getValue(final Field parField, final Object parInstance) throws JSONException {
-        try {
-            return parField.get(parInstance);
-        } catch (final IllegalAccessException | ExceptionInInitializerError | IllegalArgumentException myException) {
-            throw new JSONException(myException);
-        }
+    final Object getValue(final Field parField, final Object parInstance) {
+        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                final boolean myOriginalValue = parField.isAccessible();
+                try {
+                    parField.setAccessible(true);
+                    return parField.get(parInstance);
+                } catch (final SecurityException | IllegalAccessException myException) {
+                    throw new JSONRuntimeException(myException);
+                } finally {
+                    parField.setAccessible(myOriginalValue);
+                }
+            }
+        });
     }
 
-    final void setValueIfNotNull(final Field parField, final Object parInput, final Object parValue)
-            throws JSONException {
-        try {
-            if (parValue != null) {
-                parField.set(parInput, parValue);
-            }
-        } catch (final IllegalAccessException | ExceptionInInitializerError | IllegalArgumentException myException) {
-            throw new JSONException(myException);
+    final void setValueIfNotNull(final Field parField, final Object parInput, final Object parValue) {
+        if (parValue == null) {
+            return;
         }
+
+        AccessController.doPrivileged(new PrivilegedAction<Field>() {
+            @Override
+            public Field run() {
+                final boolean myOriginalValue = parField.isAccessible();
+                try {
+                    parField.setAccessible(true);
+                    parField.set(parInput, parValue);
+                } catch (final SecurityException | IllegalAccessException | IllegalArgumentException myException) {
+                    throw new JSONRuntimeException(myException);
+                } finally {
+                    parField.setAccessible(myOriginalValue);
+                }
+
+                return null;
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")

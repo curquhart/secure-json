@@ -16,6 +16,8 @@
 
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import net.jodah.typetools.TypeResolver;
 
 import java.io.IOException;
@@ -28,6 +30,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -113,10 +117,22 @@ class ObjectReader<T> extends ObjectSerializer {
 
         try {
             final Constructor<? extends U> myConstructor = myClazz.getDeclaredConstructor();
-            myConstructor.setAccessible(true);
-            return myConstructor.newInstance();
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
-                | InvocationTargetException | ClassCastException myException) {
+            return AccessController.doPrivileged(new PrivilegedAction<U>() {
+                @Override
+                public U run() {
+                    final boolean myOriginalValue = myConstructor.isAccessible();
+                    try {
+                        myConstructor.setAccessible(true);
+                        return myConstructor.newInstance();
+                    } catch (final InstantiationException | IllegalAccessException
+                            | InvocationTargetException myException) {
+                        throw new JSONRuntimeException(myException);
+                    } finally {
+                        myConstructor.setAccessible(myOriginalValue);
+                    }
+                }
+            });
+        } catch (NoSuchMethodException | JSONRuntimeException | ClassCastException | SecurityException myException) {
             throw new JSONDecodeException(myException);
         }
     }
