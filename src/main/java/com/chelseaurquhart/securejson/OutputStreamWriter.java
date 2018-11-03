@@ -1,6 +1,5 @@
 package com.chelseaurquhart.securejson;
 
-import java.io.Closeable;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -9,7 +8,7 @@ import java.nio.charset.Charset;
 /**
  * @exclude
  */
-class OutputStreamWriter implements ICharacterWriter, Closeable, AutoCloseable {
+class OutputStreamWriter implements ICharacterWriter {
     private final PrintStream outputStream;
 
     OutputStreamWriter(final OutputStream parOutputStream, final Charset parCharset)
@@ -29,10 +28,5 @@ class OutputStreamWriter implements ICharacterWriter, Closeable, AutoCloseable {
         for (int myIndex = 0; myIndex < myCharsLength; myIndex++) {
             outputStream.append(parChars.charAt(myIndex));
         }
-    }
-
-    @Override
-    public void close() {
-        outputStream.close();
     }
 }
