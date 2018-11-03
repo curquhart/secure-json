@@ -35,24 +35,29 @@ sourceSets {
         }
     }
 
-    java9 {
-        java {
-            srcDirs = ['src/main/java9']
-            compileClasspath += sourceSets.main.output
+    if (JavaVersion.current().java9Compatible) {
+        java9 {
+            java {
+                srcDirs = ['src/main/java9']
+                compileClasspath += sourceSets.main.output
+            }
         }
     }
 }
 
-compileJava {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-    if (JavaVersion.current().java9Compatible) {
+if (JavaVersion.current().java9Compatible) {
+    compileJava {
+        sourceCompatibility = 1.7
+        targetCompatibility = 1.7
         options.compilerArgs.addAll(['--release', '7'])
     }
+} else {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
 }
 
-compileJava9Java {
-    if (JavaVersion.current().java9Compatible) {
+if (JavaVersion.current().java9Compatible) {
+    compileJava9Java {
         sourceCompatibility = 9
         targetCompatibility = 9
         options.compilerArgs.addAll(['--release', '9'])
