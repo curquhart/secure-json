@@ -65,9 +65,11 @@ class WordReader implements IReader<Object> {
             if (!parIterator.hasNext()) {
                 throw new InvalidTokenException(parIterator);
             }
-            if (myWord.charAt(myIndex) != parIterator.next()) {
+            if (myWord.charAt(myIndex) != parIterator.peek()) {
                 throw new InvalidTokenException(parIterator);
             }
+
+            parIterator.next();
         }
 
         if (!parIterator.hasNext()) {
