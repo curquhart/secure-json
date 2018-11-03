@@ -6,21 +6,27 @@ testJava7:
     - docker
   image: gradle:4.10-jdk7
   stage: test
-  script: gradle --no-daemon -b build.java7.gradle check
+  script:
+    - unset SONAR_TOKEN
+    - gradle --no-daemon -b build.java7.gradle check
 
 testJava8:
   tags:
     - docker
   image: gradle:4.10-jdk8
   stage: test
-  script: gradle --no-daemon check
+  script:
+    - unset SONAR_TOKEN
+    - gradle --no-daemon check
 
 testJava10:
   tags:
     - docker
   image: gradle:4.10-jdk10
   stage: test
-  script: gradle --no-daemon check
+  script:
+    - unset SONAR_TOKEN
+    - gradle --no-daemon check
 
 javadocs:
   # we aren't doing anything with these here, but we use them in the Maven releases, so we want the pipeline to run them
@@ -29,14 +35,18 @@ javadocs:
   - docker
   image: gradle:4.10-jdk10
   stage: test
-  script: gradle --no-daemon javadoc
+  script:
+    - unset SONAR_TOKEN
+    - gradle --no-daemon javadoc
 
 testJava11:
   tags:
     - docker
   image: gradle:4.10-jdk11
   stage: test
-  script: gradle --no-daemon check
+  script:
+    - unset SONAR_TOKEN
+    - gradle --no-daemon check
   when: manual
 
 verifyJSONTestSuite:
@@ -44,7 +54,9 @@ verifyJSONTestSuite:
     - docker
   image: gradle:4.10-jdk10
   stage: test
-  script: gradle verifyJSONTestSuite
+  script:
+    - unset SONAR_TOKEN
+    - gradle verifyJSONTestSuite
 
 sonarqube:
   tags:
@@ -54,7 +66,7 @@ sonarqube:
   only:
     - master
   script: gradle sonarqube \
-    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-    -Dsonar.organization=${SONAR_ORGANIZATION} \
-    -Dsonar.host.url=${SONAR_HOST_URL} \
-    -Dsonar.login=${SONAR_TOKEN}
+    -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+    -Dsonar.organization=$SONAR_ORGANIZATION \
+    -Dsonar.host.url=$SONAR_HOST_URL \
+    -Dsonar.login=$SONAR_TOKEN
