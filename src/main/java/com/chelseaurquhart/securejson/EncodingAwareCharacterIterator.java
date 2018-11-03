@@ -74,7 +74,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         switch (myNextChar) {
             case UTF8_BOM_CHAR0:
                 next();
-                if (!hasNext() || next() != UTF8_BOM_CHAR1 || !hasNext() || next() != UTF8_BOM_CHAR2) {
+                if (!hasNext() || next() != UTF8_BOM_CHAR1) {
+                    throw new MalformedJSONException(this);
+                }
+                if (!hasNext() || next() != UTF8_BOM_CHAR2) {
                     throw new MalformedJSONException(this);
                 }
                 return Encoding.UTF8;

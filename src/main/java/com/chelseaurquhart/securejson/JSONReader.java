@@ -25,9 +25,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
 
 /**
  * @exclude
@@ -68,7 +69,7 @@ final class JSONReader implements Closeable, AutoCloseable {
     }
 
     Object read(final ICharacterIterator parIterator) throws IOException {
-        final Stack<Map.Entry<IReader, Object>> myStack = new Stack<>();
+        final Deque<Map.Entry<IReader, Object>> myStack = new ArrayDeque<>();
 
         final Data myData = new Data();
         while (parIterator.hasNext()) {
@@ -85,7 +86,7 @@ final class JSONReader implements Closeable, AutoCloseable {
                 }
 
                 myData.hasResult = true;
-            } else if (myStack.empty()) {
+            } else if (myStack.isEmpty()) {
                 throw new InvalidTokenException(parIterator);
             } else {
                 myData.hasResult = false;
@@ -109,9 +110,9 @@ final class JSONReader implements Closeable, AutoCloseable {
         throw new EmptyJSONException(parIterator);
     }
 
-    private void readStack(final ICharacterIterator parIterator, final Stack<Map.Entry<IReader, Object>> parStack,
+    private void readStack(final ICharacterIterator parIterator, final Deque<Map.Entry<IReader, Object>> parStack,
                            final Data parData) throws IOException {
-        while (!parStack.empty()) {
+        while (!parStack.isEmpty()) {
             final Map.Entry<IReader, Object> myHead = parStack.peek();
             if (parData.separatorForObject != myHead) {
                 parData.separatorForObject = null;

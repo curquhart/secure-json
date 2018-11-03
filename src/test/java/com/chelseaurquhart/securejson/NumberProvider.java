@@ -92,8 +92,8 @@ public final class NumberProvider {
             buildParameters(
                 "long min - 1",
                 new BigDecimal(BigInteger.valueOf(Long.MIN_VALUE)).subtract(BigDecimal.ONE).toString(),
-                new BigDecimal(BigInteger.valueOf(Long.MIN_VALUE)).subtract(BigDecimal.ONE),
-                BigDecimal.class,
+                new BigDecimal(BigInteger.valueOf(Long.MIN_VALUE)).subtract(BigDecimal.ONE).doubleValue(),
+                Double.class,
                 HUGE_PRECISION_MATH_CONTEXT
             ),
             buildParameters(
@@ -177,15 +177,16 @@ public final class NumberProvider {
             ),
             buildParameters(
                 "double min - 1",
-                new BigDecimal(Double.MIN_VALUE).subtract(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT).toString(),
-                new BigDecimal(Double.MIN_VALUE).subtract(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT),
+                new BigDecimal(Double.MIN_VALUE).negate().subtract(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT)
+                    .toString(),
+                new BigDecimal(Double.MIN_VALUE).negate().subtract(BigDecimal.ONE, HUGE_PRECISION_MATH_CONTEXT),
                 BigDecimal.class,
                 HUGE_PRECISION_MATH_CONTEXT
             ),
             buildParameters(
                 "double min",
-                new BigDecimal(Double.MIN_VALUE).toString(),
-                Double.MIN_VALUE,
+                new BigDecimal(Double.MIN_NORMAL).toString(),
+                Double.MIN_NORMAL,
                 Double.class,
                 HUGE_PRECISION_MATH_CONTEXT
             ),
@@ -198,16 +199,16 @@ public final class NumberProvider {
             ),
             buildParameters(
                 "double max - 1",
-                "" + (Double.MAX_VALUE - 1),
-                Double.MAX_VALUE - 1,
-                Double.class,
+                new BigDecimal(Double.MAX_VALUE).subtract(BigDecimal.ONE).toString(),
+                new BigDecimal(Double.MAX_VALUE).subtract(BigDecimal.ONE),
+                BigDecimal.class,
                 HUGE_PRECISION_MATH_CONTEXT
             ),
             buildParameters(
                 "double max",
                 new BigDecimal(Double.MAX_VALUE).toString(),
-                Double.MAX_VALUE,
-                Double.class,
+                new BigDecimal(Double.MAX_VALUE),
+                BigDecimal.class,
                 HUGE_PRECISION_MATH_CONTEXT
             ),
             buildParameters(
@@ -255,8 +256,8 @@ public final class NumberProvider {
             buildParameters(
                 "1.00001 negative",
                 "-1.00001",
-                new BigDecimal("-1.00001"),
-                BigDecimal.class,
+                -1.00001,
+                Double.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
