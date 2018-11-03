@@ -121,9 +121,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
         try {
             final double myDoubleValue = myDecimal.doubleValue();
-            if ((myDecimal.compareTo(MIN_VALUE) < 0 || myDecimal.compareTo(MAX_VALUE) > 0)
-                && !new BigDecimal(myDoubleValue)
-                    .setScale(myDecimal.scale(), RoundingMode.UNNECESSARY).equals(myDecimal)) {
+            if (!verifyNumber(myDoubleValue, myDecimal)) {
                 return myDecimal;
             }
 
@@ -151,6 +149,18 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         } finally {
             Arrays.fill(myBuffer, '\u0000');
         }
+    }
+
+    // allow new BigDecimal as we only use it for verification.
+    @SuppressWarnings("PMD.AvoidDecimalLiteralsInBigDecimalConstructor")
+    private boolean verifyNumber(final double parDoubleValue, final BigDecimal parDecimalValue) {
+        if ((parDecimalValue.compareTo(MIN_VALUE) < 0 || parDecimalValue.compareTo(MAX_VALUE) > 0)
+                && !new BigDecimal(parDoubleValue)
+                .setScale(parDecimalValue.scale(), RoundingMode.UNNECESSARY).equals(parDecimalValue)) {
+            return false;
+        }
+
+        return true;
     }
 
     private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset,
