@@ -12,7 +12,7 @@ public final class ObjectWriterTest {
     }
 
     @Test
-    void testSimpleObject() throws JSONException {
+    void testSimpleObject() {
         final ObjectWriter myObjectWriter = new ObjectWriter();
         Assert.assertEquals(myObjectWriter.accept(new Object() {
             @SuppressFBWarnings(value = "UrF")
@@ -20,12 +20,12 @@ public final class ObjectWriterTest {
             @SuppressFBWarnings(value = "UrF")
             private transient CharSequence b = "c";
         }), new HashMap<CharSequence, Object>() {{
-            put("a", "b");
-        }});
+                put("a", "b");
+            }});
     }
 
     @Test
-    void testJSONAwareList() throws JSONException {
+    void testJSONAwareList() {
         final ObjectWriter myObjectWriter = new ObjectWriter();
         Assert.assertEquals(myObjectWriter.accept(new IJSONSerializeAware() {
             @SuppressFBWarnings(value = "Se")
@@ -33,13 +33,13 @@ public final class ObjectWriterTest {
             @Override
             public Object toJSONable() {
                 return new LinkedList<Object>() {{
-                    add("a");
-                    add("b");
-                }};
+                        add("a");
+                        add("b");
+                    }};
             }
         }), new LinkedList<Object>() {{
-            add("a");
-            add("b");
-        }});
+                add("a");
+                add("b");
+            }});
     }
 }

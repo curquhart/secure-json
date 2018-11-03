@@ -1,5 +1,7 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -57,7 +59,7 @@ public class HugeDecimal extends Number implements CharSequence {
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().intValue();
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -75,7 +77,7 @@ public class HugeDecimal extends Number implements CharSequence {
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().longValue();
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -93,7 +95,7 @@ public class HugeDecimal extends Number implements CharSequence {
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().floatValue();
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -111,7 +113,7 @@ public class HugeDecimal extends Number implements CharSequence {
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().doubleValue();
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -187,7 +189,7 @@ public class HugeDecimal extends Number implements CharSequence {
             try {
                 return bigDecimalValue().equals(myThat.bigDecimalValue());
             } catch (final IOException myException) {
-                throw new RuntimeException(myException);
+                throw new JSONRuntimeException(myException);
             }
         }
     }

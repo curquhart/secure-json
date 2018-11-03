@@ -1,5 +1,6 @@
 package com.chelseaurquhart.securejson;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -135,13 +136,24 @@ final class JSONSymbolCollection {
             }
         }
 
-        static Token forSymbol(final char parSymbol) {
+        static Token forSymbol(final char parSymbol) throws IOException {
+            final Token myToken = forSymbolOrDefault(parSymbol, null);
+
+            if (myToken == null) {
+                throw new JSONException(
+                    Messages.get(Messages.Key.ERROR_INVALID_SYMBOL).replace(":symbol", String.valueOf(parSymbol)));
+            }
+
+            return myToken;
+        }
+
+        static Token forSymbolOrDefault(final char parSymbol, final Token parDefault) {
             final char mySymbol = Character.toLowerCase(parSymbol);
             if (SHORT_TOKEN_MAP.containsKey(mySymbol)) {
                 return SHORT_TOKEN_MAP.get(mySymbol);
             }
 
-            throw new IllegalArgumentException(String.format("%c is an invalid symbol.", parSymbol));
+            return parDefault;
         }
 
         private final Object symbol;
@@ -170,7 +182,7 @@ final class JSONSymbolCollection {
             return symbol;
         }
 
-        char getShortSymbol() {
+        Character getShortSymbol() {
             return shortSymbol;
         }
     }

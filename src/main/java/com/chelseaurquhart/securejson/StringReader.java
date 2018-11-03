@@ -19,7 +19,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        return parIterator.peek() == JSONSymbolCollection.Token.QUOTE.getShortSymbol();
+        return JSONSymbolCollection.Token.QUOTE.getShortSymbol().equals(parIterator.peek());
     }
 
     @Override
@@ -30,7 +30,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     @Override
     public CharSequence read(final ICharacterIterator parInput)
             throws IOException {
-        if (parInput.peek() != JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
+        if (!JSONSymbolCollection.Token.QUOTE.getShortSymbol().equals(parInput.peek())) {
             throw new MalformedStringException(parInput);
         }
         parInput.next();
@@ -41,6 +41,9 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         while (parInput.hasNext()) {
             char myChar = parInput.next();
             if (myChar == '\\') {
+                if (!parInput.hasNext()) {
+                    throw new MalformedStringException(parInput);
+                }
                 myChar = parInput.next();
 
                 if (myChar == 'u') {
@@ -92,7 +95,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     private char readUnicode(final ICharacterIterator parInput) throws IOException {
         int myValue = 0;
         for (int myIndex = 0; myIndex < JSONSymbolCollection.UNICODE_DIGITS; myIndex++) {
-            char myChar = Character.toLowerCase(parInput.next());
+            final char myChar = Character.toLowerCase(parInput.next());
             if (Character.isDigit(myChar)) {
                 myValue = (myValue << JSONSymbolCollection.UNICODE_DIGITS) + myChar - '0';
             } else if (myChar >= 'a' && myChar <= 'f') {

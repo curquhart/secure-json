@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 public final class ManagedSecureCharBufferTest {
     private static final String SUBSEQUENCE_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestCharSequence";
     @DataProvider(name = SUBSEQUENCE_DATA_PROVIDER_NAME)
-    private static Object[] dataProvider(final Method parMethod) {
+    private static Object[] dataProvider(final Method parMethod)  {
         return new Object[]{
             new Parameters(
                 "simple single byte buffer",
@@ -362,7 +362,7 @@ public final class ManagedSecureCharBufferTest {
                     parParameters.start, parParameters.end);
                 Assert.assertEquals(StringUtil.charSequenceToString(mySequence), parParameters.expected);
                 Assert.assertNull(parParameters.expectedException);
-            } catch (final Exception myException) {
+            } catch (final ArrayIndexOutOfBoundsException myException) {
                 Assert.assertNotNull(parParameters.expectedException);
                 Assert.assertEquals(myException.getMessage(), parParameters.expectedException);
             }

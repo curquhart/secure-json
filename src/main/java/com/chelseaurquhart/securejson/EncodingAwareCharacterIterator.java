@@ -2,6 +2,7 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -13,6 +14,17 @@ import java.util.Deque;
 abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final int UTF16_BYTES = 2;
     private static final int UTF32_BYTES = 4;
+
+    private static final char UTF8_BOM_CHAR0 = '\u00ef';
+    private static final char UTF8_BOM_CHAR1 = '\u00bb';
+    private static final char UTF8_BOM_CHAR2 = '\u00bf';
+
+    private static final char UTF16_BOM_CHAR0 = '\u00fe';
+    private static final char UTF16_BOM_CHAR1 = '\u00ff';
+
+    private static final char UTF_BIG_ENDIAN = '\ufeff';
+    private static final char UTF_LITTLE_ENDIAN = '\ufffe';
+
 
     private final Deque<Character> charQueue;
     private int offset;
@@ -39,86 +51,87 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
         // the only special characters we need to handle.
 
-        final char myUtf8BomChar0 = '\u00ef';
-        final char myUtf8BomChar1 = '\u00bb';
-        final char myUtf8BomChar2 = '\u00bf';
-
-        final char myUtf16BomChar0 = '\u00fe';
-        final char myUtf16BomChar1 = '\u00ff';
-
-        final char myUtfBigEndian = '\ufeff';
-        final char myUtfLittleEndian = '\ufffe';
-
+        if (!hasNext()) {
+            throw new JSONException(Messages.get(Messages.Key.ERROR_MALFORMED_JSON));
+        }
         final char myNextChar = peek();
         switch (myNextChar) {
-            case myUtf8BomChar0:
+            case UTF8_BOM_CHAR0:
                 next();
-                if (!hasNext() || next() != myUtf8BomChar1 || !hasNext() || next() != myUtf8BomChar2) {
+                if (!hasNext() || next() != UTF8_BOM_CHAR1 || !hasNext() || next() != UTF8_BOM_CHAR2) {
                     throw new MalformedJSONException(this);
                 }
                 return Encoding.UTF8;
-            case myUtfBigEndian:
+            case UTF_BIG_ENDIAN:
                 next();
                 if (findPartialUtf32Encoding() == Encoding.UTF32) {
                     return Encoding.UTF32BE;
                 }
                 return Encoding.UTF16BE;
-            case myUtfLittleEndian:
+            case UTF_LITTLE_ENDIAN:
                 next();
                 if (findPartialUtf32Encoding() == Encoding.UTF32) {
                     return Encoding.UTF32LE;
                 }
                 return Encoding.UTF16LE;
-            case myUtf16BomChar0:
+            case UTF16_BOM_CHAR0:
                 next();
                 // big-endian
-                if (!hasNext() || next() != myUtf16BomChar1) {
+                if (!hasNext() || next() != UTF16_BOM_CHAR1) {
                     throw new MalformedJSONException(this);
                 }
                 return Encoding.UTF16BE;
-            case myUtf16BomChar1:
-                next();
-                // little-endian
-                if (!hasNext() || next() != myUtf16BomChar0) {
-                    throw new MalformedJSONException(this);
-                }
-                if (findPartialUtf32Encoding() == Encoding.UTF32) {
-                    return Encoding.UTF32LE;
-                }
-                if (forceReadNullChars(1) == EOFMarker.EOF) {
-                    throw new MalformedJSONException(this);
-                }
-                return Encoding.UTF16LE;
+            case UTF16_BOM_CHAR1:
+                return findUtf16Or32LittleEndianEncoding(UTF16_BOM_CHAR0);
             default:
-                final Encoding myPartialEncoding = findPartialUtf32Encoding();
-                if (myPartialEncoding == Encoding.UTF32) {
-                    final Encoding myEncoding = findEncoding();
-                    if (myEncoding == Encoding.UTF16BE) {
-                        return Encoding.UTF32BE;
-                    }
-                    throw new MalformedJSONException(this);
-                } else if (myPartialEncoding == Encoding.UTF16) {
-                    return Encoding.UTF16BE;
-                }
+                return findEncodingWithoutBOM();
+        }
+    }
 
-                final int myQueueSize = charQueue.size();
-                final int myNullCount = readNullChars(UTF32_BYTES - 1);
+    private Encoding findUtf16Or32LittleEndianEncoding(final char parUtf16BomChar0) throws IOException {
+        next();
+        // little-endian
+        if (!hasNext() || next() != parUtf16BomChar0) {
+            throw new MalformedJSONException(this);
+        }
+        if (findPartialUtf32Encoding() == Encoding.UTF32) {
+            return Encoding.UTF32LE;
+        }
+        if (forceReadNullChars(1) == EOFMarker.EOF) {
+            throw new MalformedJSONException(this);
+        }
+        return Encoding.UTF16LE;
+    }
 
-                if (myNullCount == UTF32_BYTES - 1) {
-                    return Encoding.UTF32LE;
-                } else if (myNullCount == UTF16_BYTES - 1) {
-                    // For UTF16BE, the last character is always the next non-NULL character except where EOF. We can
-                    // determine if we should force the next null marker by checking our queue size before and after the
-                    // above read.
-                    if (myQueueSize != charQueue.size() && forceReadNullChars(UTF16_BYTES - 1) == EOFMarker.EOF) {
-                        throw new MalformedJSONException(this);
-                    }
-                    return Encoding.UTF16LE;
-                } else if (myNullCount != 0 && myNullCount != -1) {
-                    throw new MalformedJSONException(this);
-                } else {
-                    return Encoding.UTF8;
-                }
+    private Encoding findEncodingWithoutBOM() throws IOException {
+        final Encoding myPartialEncoding = findPartialUtf32Encoding();
+        if (myPartialEncoding == Encoding.UTF32) {
+            final Encoding myEncoding = findEncoding();
+            if (myEncoding == Encoding.UTF16BE) {
+                return Encoding.UTF32BE;
+            }
+            throw new MalformedJSONException(this);
+        } else if (myPartialEncoding == Encoding.UTF16) {
+            return Encoding.UTF16BE;
+        }
+
+        final int myQueueSize = charQueue.size();
+        final int myNullCount = readNullChars(UTF32_BYTES - 1);
+
+        if (myNullCount == UTF32_BYTES - 1) {
+            return Encoding.UTF32LE;
+        } else if (myNullCount == UTF16_BYTES - 1) {
+            // For UTF16BE, the last character is always the next non-NULL character except where EOF. We can
+            // determine if we should force the next null marker by checking our queue size before and after the
+            // above read.
+            if (myQueueSize != charQueue.size() && forceReadNullChars(UTF16_BYTES - 1) == EOFMarker.EOF) {
+                throw new MalformedJSONException(this);
+            }
+            return Encoding.UTF16LE;
+        } else if (myNullCount != 0 && myNullCount != -1) {
+            throw new MalformedJSONException(this);
+        } else {
+            return Encoding.UTF8;
         }
     }
 
@@ -160,7 +173,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         try {
             return cacheAndGetNextChar() != null;
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -181,7 +194,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             offset++;
             return readAndProcessNextChar();
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -214,7 +227,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
                 myChar = readNextChar();
                 break;
             default:
-                throw new IOException("Invalid encoding");
+                throw new JSONDecodeException(this, Messages.Key.ERROR_INVALID_ENCODING);
         }
 
         return myChar;

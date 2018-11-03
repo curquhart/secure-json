@@ -89,14 +89,17 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
             try {
                 return myDecimal.shortValueExact();
             } catch (ArithmeticException e) {
+                // Allowed empty block: trying multiple conversions.
             }
             try {
                 return myDecimal.intValueExact();
             } catch (ArithmeticException e) {
+                // Allowed empty block: trying multiple conversions.
             }
             try {
                 return myDecimal.longValueExact();
             } catch (ArithmeticException e) {
+                // Allowed empty block: trying multiple conversions.
             }
         }
 
@@ -128,105 +131,111 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
             throws IOException {
         final char[] myBuffer = new char[parSource.length()];
         try {
-            boolean myFoundExponent = false;
-            boolean myFoundDecimal = false;
-            boolean myFoundNonZeroDigit = false;
-            boolean myForceDouble = false;
+            return charSequenceToBigDecimal(parSource, parOffset, myBuffer);
+        } finally {
+            Arrays.fill(myBuffer, '\u0000');
+        }
+    }
 
-            char myLastChar = 0;
-            final int myLength = parSource.length();
-            int myLengthOffset = 0;
-            for (int myIndex = 0; myIndex < myLength; myIndex++) {
-                final char myChar = parSource.charAt(myIndex);
-                final JSONSymbolCollection.Token myToken;
-                try {
-                    myToken = JSONSymbolCollection.Token.forSymbol(myChar);
-                } catch (final IllegalArgumentException myException) {
-                    throw buildException(parSource, myIndex + parOffset);
-                }
-                myBuffer[myIndex + myLengthOffset] = myChar;
-                final char myNextChar;
-                if (myLength > myIndex + 1) {
-                    myNextChar = parSource.charAt(myIndex + 1);
-                } else {
-                    myNextChar = 0;
-                }
+    private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset,
+                                                                    final char[] parBuffer)
+            throws IOException {
+        boolean myFoundExponent = false;
+        boolean myFoundDecimal = false;
+        boolean myFoundNonZeroDigit = false;
+        boolean myForceDouble = false;
 
-                switch (myToken) {
-                    case ZERO:
-                        if (myLength != 1 && !myFoundNonZeroDigit && !myFoundDecimal) {
-                            if (myLength <= myIndex + 1) {
-                                if (myLastChar != JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
-                                    throw buildException(parSource, myIndex + parOffset);
-                                }
-                            } else if (myNextChar != JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
-                                    && myNextChar != JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
-                                throw buildException(parSource, myIndex + parOffset + 1);
+        char myLastChar = 0;
+        final int myLength = parSource.length();
+        int myLengthOffset = 0;
+        for (int myIndex = 0; myIndex < myLength; myIndex++) {
+            final char myChar = parSource.charAt(myIndex);
+            final JSONSymbolCollection.Token myToken;
+            try {
+                myToken = JSONSymbolCollection.Token.forSymbol(myChar);
+            } catch (final IllegalArgumentException myException) {
+                throw buildException(parSource, myIndex + parOffset);
+            }
+            parBuffer[myIndex + myLengthOffset] = myChar;
+            final char myNextChar;
+            if (myLength > myIndex + 1) {
+                myNextChar = parSource.charAt(myIndex + 1);
+            } else {
+                myNextChar = 0;
+            }
+
+            switch (myToken) {
+                case ZERO:
+                    if (myLength != 1 && !myFoundNonZeroDigit && !myFoundDecimal) {
+                        if (myLength <= myIndex + 1) {
+                            if (myLastChar != JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
+                                throw buildException(parSource, myIndex + parOffset);
                             }
+                        } else if (myNextChar != JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                                && myNextChar != JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                            throw buildException(parSource, myIndex + parOffset + 1);
                         }
-                        break;
-                    case ONE:
-                    case TWO:
-                    case THREE:
-                    case FOUR:
-                    case FIVE:
-                    case SIX:
-                    case SEVEN:
-                    case EIGHT:
-                    case NINE:
-                        myFoundNonZeroDigit = true;
-                        break;
-                    case DECIMAL:
-                        if (myFoundDecimal || myFoundExponent || myIndex == 0 || myIndex == myLength - 1) {
-                            throw buildException(parSource, myIndex + parOffset);
-                        }
-                        myFoundDecimal = true;
+                    }
+                    break;
+                case ONE:
+                case TWO:
+                case THREE:
+                case FOUR:
+                case FIVE:
+                case SIX:
+                case SEVEN:
+                case EIGHT:
+                case NINE:
+                    myFoundNonZeroDigit = true;
+                    break;
+                case DECIMAL:
+                    if (myFoundDecimal || myFoundExponent || myIndex == 0 || myIndex == myLength - 1) {
+                        throw buildException(parSource, myIndex + parOffset);
+                    }
+                    myFoundDecimal = true;
+                    myForceDouble = true;
+                    break;
+                case EXPONENT:
+                    if (myFoundExponent || myLastChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                            || myIndex == myLength - 1 || myIndex == 0) {
+                        throw buildException(parSource, myIndex + parOffset);
+                    }
+                    myFoundExponent = true;
+                    if (myNextChar == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
                         myForceDouble = true;
-                        break;
-                    case EXPONENT:
-                        if (myFoundExponent || myLastChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
-                                || myIndex == myLength - 1 || myIndex == 0) {
-                            throw buildException(parSource, myIndex + parOffset);
-                        }
-                        myFoundExponent = true;
-                        if (myNextChar == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
-                            myForceDouble = true;
-                            myBuffer[++myIndex + myLengthOffset] = JSONSymbolCollection.Token.MINUS.getShortSymbol();
-                            if (myIndex == myLength - 1) {
-                                throw buildException(parSource, myIndex + parOffset);
-                            }
-                        } else if (myNextChar == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
-                            myIndex++;
-                            if (myIndex == myLength - 1) {
-                                throw buildException(parSource, myIndex + parOffset);
-                            }
-                            myLengthOffset--;
-                        }
-                        break;
-                    case MINUS:
+                        parBuffer[++myIndex + myLengthOffset] = JSONSymbolCollection.Token.MINUS.getShortSymbol();
                         if (myIndex == myLength - 1) {
                             throw buildException(parSource, myIndex + parOffset);
                         }
-
-                        if (myNextChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
-                                || myNextChar == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
-                            throw buildException(parSource, myIndex + parOffset + 1);
-                        } else if (myIndex == 0) {
-                            // 0 is ok, anything else is not.
-                            break;
+                    } else if (myNextChar == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
+                        myIndex++;
+                        if (myIndex == myLength - 1) {
+                            throw buildException(parSource, myIndex + parOffset);
                         }
-                    default:
+                        myLengthOffset--;
+                    }
+                    break;
+                case MINUS:
+                    if (myIndex == myLength - 1) {
                         throw buildException(parSource, myIndex + parOffset);
-                }
+                    }
 
-                myLastChar = myChar;
+                    if (myNextChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                            || myNextChar == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                        throw buildException(parSource, myIndex + parOffset + 1);
+                    } else if (myIndex == 0) {
+                        // 0 is ok, anything else is not.
+                        break;
+                    }
+                default:
+                    throw buildException(parSource, myIndex + parOffset);
             }
-            return new AbstractMap.SimpleImmutableEntry<>(
-                new BigDecimal(myBuffer, 0, myLength + myLengthOffset, mathContext), myForceDouble);
-        } finally {
-            // clear contents
-            Arrays.fill(myBuffer, ' ');
+
+            myLastChar = myChar;
         }
+
+        return new AbstractMap.SimpleImmutableEntry<>(
+            new BigDecimal(parBuffer, 0, myLength + myLengthOffset, mathContext), myForceDouble);
     }
 
     private MalformedNumberException buildException(final CharSequence parSource, final int parOffset)

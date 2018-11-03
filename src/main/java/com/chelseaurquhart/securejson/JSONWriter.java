@@ -53,50 +53,11 @@ class JSONWriter implements Closeable, AutoCloseable {
         if (myInput == null) {
             parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
         } else if (myInput instanceof Collection) {
-            parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
-            boolean myIsFirst = true;
-            for (final Object myElement : ((Collection) myInput)) {
-                if (!myIsFirst) {
-                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
-                }
-                myIsFirst = false;
-                write(myElement, parSecureBuffer);
-            }
-            parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
+            writeCollection(parSecureBuffer, (Collection) myInput);
         } else if (myInput.getClass().isArray()) {
-            parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
-            final int myLength = Array.getLength(myInput);
-            boolean myIsFirst = true;
-            for (int myIndex = 0; myIndex < myLength; myIndex++) {
-                if (!myIsFirst) {
-                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
-                }
-                myIsFirst = false;
-                write(Array.get(myInput, myIndex), parSecureBuffer);
-            }
-            parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
+            writeArray(parSecureBuffer, myInput);
         } else if (myInput instanceof Map) {
-            parSecureBuffer.append(JSONSymbolCollection.Token.L_CURLY.getShortSymbol());
-            boolean myIsFirst = true;
-            for (final Object myObject : ((Map) myInput).entrySet()) {
-                final Map.Entry myEntry = (Map.Entry) myObject;
-                final Object myKey = myEntry.getKey();
-                if (!(myKey instanceof CharSequence)) {
-                    throw new InvalidTypeException();
-                }
-
-                if (!myIsFirst) {
-                    parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
-                }
-                myIsFirst = false;
-                parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
-                writeQuoted((CharSequence) myKey, parSecureBuffer);
-                parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
-                parSecureBuffer.append(JSONSymbolCollection.Token.COLON.getShortSymbol());
-
-                write(myEntry.getValue(), parSecureBuffer);
-            }
-            parSecureBuffer.append(JSONSymbolCollection.Token.R_CURLY.getShortSymbol());
+            writeMap(parSecureBuffer, (Map) myInput);
         } else if (myInput instanceof Number && myInput instanceof CharSequence) {
             parSecureBuffer.append((CharSequence) myInput);
         } else if (myInput instanceof Number) {
@@ -115,15 +76,63 @@ class JSONWriter implements Closeable, AutoCloseable {
         }
     }
 
+    private void writeArray(final ICharacterWriter parSecureBuffer, final Object parInput) throws IOException {
+        parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
+        final int myLength = Array.getLength(parInput);
+        boolean myIsFirst = true;
+        for (int myIndex = 0; myIndex < myLength; myIndex++) {
+            if (!myIsFirst) {
+                parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+            }
+            myIsFirst = false;
+            write(Array.get(parInput, myIndex), parSecureBuffer);
+        }
+        parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
+    }
+
+    private void writeMap(final ICharacterWriter parSecureBuffer, final Map parInput) throws IOException {
+        parSecureBuffer.append(JSONSymbolCollection.Token.L_CURLY.getShortSymbol());
+        boolean myIsFirst = true;
+        for (final Object myObject : parInput.entrySet()) {
+            final Map.Entry myEntry = (Map.Entry) myObject;
+            final Object myKey = myEntry.getKey();
+            if (!(myKey instanceof CharSequence)) {
+                throw new InvalidTypeException();
+            }
+
+            if (!myIsFirst) {
+                parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+            }
+            myIsFirst = false;
+            parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
+            writeQuoted((CharSequence) myKey, parSecureBuffer);
+            parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
+            parSecureBuffer.append(JSONSymbolCollection.Token.COLON.getShortSymbol());
+
+            write(myEntry.getValue(), parSecureBuffer);
+        }
+        parSecureBuffer.append(JSONSymbolCollection.Token.R_CURLY.getShortSymbol());
+    }
+
+    private void writeCollection(final ICharacterWriter parSecureBuffer, final Collection parInput) throws IOException {
+        parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
+        boolean myIsFirst = true;
+        for (final Object myElement : parInput) {
+            if (!myIsFirst) {
+                parSecureBuffer.append(JSONSymbolCollection.Token.COMMA.getShortSymbol());
+            }
+            myIsFirst = false;
+            write(myElement, parSecureBuffer);
+        }
+        parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
+    }
+
     private void writeQuoted(final CharSequence parInput, final ICharacterWriter parSecureBuffer) throws IOException {
         final int myInputLength = parInput.length();
         for (int myIndex = 0; myIndex < myInputLength; myIndex++) {
             final char myNextChar = parInput.charAt(myIndex);
-            JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.NULL;
-            try {
-                myToken = JSONSymbolCollection.Token.forSymbol(myNextChar);
-            } catch (IllegalArgumentException myException) {
-            }
+            final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(
+                myNextChar, JSONSymbolCollection.Token.NULL);
 
             switch (myToken) {
                 case QUOTE:

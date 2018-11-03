@@ -14,7 +14,7 @@ public class NumberReaderTest {
             Assert.assertNull(parParameters.expectedException);
             Assert.assertSame(myNumber.getClass(), parParameters.expectedNumberClass);
             Assert.assertEquals(myNumber, parParameters.expected);
-        } catch (final Exception myException) {
+        } catch (final IOException | JSONException.JSONRuntimeException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
@@ -28,26 +28,6 @@ public class NumberReaderTest {
 
     private Number charSequenceToNumber(final CharSequence parNumber, final MathContext parMathContext)
             throws IOException {
-        final boolean myHasDecimal = getIndex(parNumber, '.', 0) != -1;
-        final int myExponentIndex = getIndex(parNumber, 'e', 0);
-        final char myExponentSign;
-        if (myExponentIndex > 0 && getIndex(parNumber, '-', myExponentIndex + 1) > -1) {
-            myExponentSign = '-';
-        } else {
-            myExponentSign = '+';
-        }
         return new NumberReader(parMathContext, Settings.DEFAULTS).charSequenceToNumber(parNumber, 0);
-    }
-
-    private int getIndex(final CharSequence parInput, final char parSearchFor, final int parStartIndex) {
-        final char mySearchFor = Character.toLowerCase(parSearchFor);
-        final int myInputLength = parInput.length();
-        for (int myIndex = parStartIndex; myIndex < myInputLength; myIndex++) {
-            if (Character.toLowerCase(parInput.charAt(myIndex)) == mySearchFor) {
-                return myIndex;
-            }
-        }
-
-        return -1;
     }
 }

@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,22 +19,22 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testSimpleDeserialization() throws JSONException {
+    public void testSimpleDeserialization() throws IOException {
         final SimpleDeserializationClass mySimpleDeserializationClass = new ObjectReader<>(
-                SimpleDeserializationClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
-            put("integerVal", 1);
-            put("shortVal", 2);
-            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
-            myStringBuffer.append("testingString");
-            put("stringVal", myStringBuffer);
-            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
-            myCSeqBuffer.append("testingCharSeq");
-            put("charSeqVal", myCSeqBuffer);
-            put("transientIntVal", 123);
-            put("ints", new int[]{1, 2, 3});
-            put("intList", Arrays.asList(4, 5, 6));
-            put("root1", true);
-        }});
+            SimpleDeserializationClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
+                    put("integerVal", 1);
+                    put("shortVal", 2);
+                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                    myStringBuffer.append("testingString");
+                    put("stringVal", myStringBuffer);
+                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                    myCSeqBuffer.append("testingCharSeq");
+                    put("charSeqVal", myCSeqBuffer);
+                    put("transientIntVal", 123);
+                    put("ints", new int[]{1, 2, 3});
+                    put("intList", Arrays.asList(4, 5, 6));
+                    put("root1", true);
+                }});
 
         Assert.assertEquals(mySimpleDeserializationClass.presetVal, 5);
         Assert.assertEquals(mySimpleDeserializationClass.integerVal, 1);
@@ -49,32 +50,34 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testSimpleNesting() throws JSONException {
+    public void testSimpleNesting() throws IOException {
         final SimpleNestingClass mySimpleNestingClass = new ObjectReader<>(
-                SimpleNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
+            SimpleNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("inner1", new HashMap<CharSequence, Object>() {{
-                        put("integerVal", 11);
-                        put("shortVal", 21);
-                        final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                        myStringBuffer.append("testingString1");
-                        put("stringVal", myStringBuffer);
-                        final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                        myCSeqBuffer.append("testingCharSeq1");
-                        put("charSeqVal", myCSeqBuffer);
-                        put("transientIntVal", 1234);
-                    }});
+                            put("integerVal", 11);
+                            put("shortVal", 21);
+                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
+                                Settings.DEFAULTS);
+                            myStringBuffer.append("testingString1");
+                            put("stringVal", myStringBuffer);
+                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                            myCSeqBuffer.append("testingCharSeq1");
+                            put("charSeqVal", myCSeqBuffer);
+                            put("transientIntVal", 1234);
+                        }});
                     put("inner2", new HashMap<CharSequence, Object>() {{
-                        put("integerVal", 111);
-                        put("shortVal", 211);
-                        final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                        myStringBuffer.append("testingString2");
-                        put("stringVal", myStringBuffer);
-                        final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                        myCSeqBuffer.append("testingCharSeq2");
-                        put("charSeqVal", myCSeqBuffer);
-                        put("transientIntVal", 12345);
-                    }});
-        }});
+                            put("integerVal", 111);
+                            put("shortVal", 211);
+                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
+                                Settings.DEFAULTS);
+                            myStringBuffer.append("testingString2");
+                            put("stringVal", myStringBuffer);
+                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                            myCSeqBuffer.append("testingCharSeq2");
+                            put("charSeqVal", myCSeqBuffer);
+                            put("transientIntVal", 12345);
+                        }});
+                }});
 
         Assert.assertNull(mySimpleNestingClass.inner1);
         Assert.assertEquals(mySimpleNestingClass.inner2.presetVal, 5);
@@ -83,29 +86,30 @@ public final class ObjectReaderTest {
         Assert.assertEquals(mySimpleNestingClass.inner2.transientIntVal, 0);
         Assert.assertEquals(mySimpleNestingClass.inner2.stringVal, "testingString2");
         Assert.assertEquals(mySimpleNestingClass.inner2.charSeqVal.getClass(), ManagedSecureCharBuffer.class);
-        Assert.assertEquals(StringUtil.charSequenceToString(mySimpleNestingClass.inner2.charSeqVal), "testingCharSeq2");
+        Assert.assertEquals(StringUtil.charSequenceToString(mySimpleNestingClass.inner2.charSeqVal),
+            "testingCharSeq2");
     }
 
     @Test
-    public void testSubNesting() throws JSONException {
+    public void testSubNesting() throws IOException {
         final SubNestingClass mySubNestingClass = new ObjectReader<>(
-                SubNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
+            SubNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("inner1", new HashMap<CharSequence, Object>() {{
-                        put("data1", new HashMap<CharSequence, Object>() {{
-                            put("integerVal", 111);
-                            put("shortVal", 211);
-                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                Settings.DEFAULTS);
-                            myStringBuffer.append("testingString2");
-                            put("stringVal", myStringBuffer);
-                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(
-                                Settings.DEFAULTS);
-                            myCSeqBuffer.append("testingCharSeq2");
-                            put("charSeqVal", myCSeqBuffer);
-                            put("transientIntVal", 1234);
+                            put("data1", new HashMap<CharSequence, Object>() {{
+                                    put("integerVal", 111);
+                                    put("shortVal", 211);
+                                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
+                                        Settings.DEFAULTS);
+                                    myStringBuffer.append("testingString2");
+                                    put("stringVal", myStringBuffer);
+                                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(
+                                        Settings.DEFAULTS);
+                                    myCSeqBuffer.append("testingCharSeq2");
+                                    put("charSeqVal", myCSeqBuffer);
+                                    put("transientIntVal", 1234);
+                                }});
                         }});
-                    }});
-        }});
+                }});
 
         Assert.assertNull(mySubNestingClass.data1);
         Assert.assertEquals(mySubNestingClass.inner1.data1.presetVal, 5);
@@ -119,44 +123,44 @@ public final class ObjectReaderTest {
     }
 
     @Test
-    public void testRecursiveNesting() throws JSONException {
+    public void testRecursiveNesting() throws IOException {
         final SubNestingClass mySubNestingClass = new ObjectReader<>(
                 SubNestingClass.class, UNSTRICT_SETTINGS)
                     .accept(new HashMap<CharSequence, Object>() {{
-                    put("inner1", new HashMap<CharSequence, Object>() {{
-                        put("inner1", new HashMap<CharSequence, Object>() {{
-                            put("data1", new HashMap<CharSequence, Object>() {{
-                                put("integerVal", 1111);
-                                put("shortVal", 2111);
-                                final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                    Settings.DEFAULTS);
-                                myStringBuffer.append("testingString3");
-                                put("stringVal", myStringBuffer);
-                                final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(
-                                    Settings.DEFAULTS);
-                                myCSeqBuffer.append("testingCharSeq3");
-                                put("charSeqVal", myCSeqBuffer);
-                                put("transientIntVal", 12345);
-                            }});
-
                             put("inner1", new HashMap<CharSequence, Object>() {{
-                                put("data1", new HashMap<CharSequence, Object>() {{
-                                    put("integerVal", 111);
-                                    put("shortVal", 211);
-                                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                        Settings.DEFAULTS);
-                                    myStringBuffer.append("testingString2");
-                                    put("stringVal", myStringBuffer);
-                                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(
-                                        Settings.DEFAULTS);
-                                    myCSeqBuffer.append("testingCharSeq2");
-                                    put("charSeqVal", myCSeqBuffer);
-                                    put("transientIntVal", 1234);
+                                    put("inner1", new HashMap<CharSequence, Object>() {{
+                                            put("data1", new HashMap<CharSequence, Object>() {{
+                                                    put("integerVal", 1111);
+                                                    put("shortVal", 2111);
+                                                    final ManagedSecureCharBuffer myStringBuffer =
+                                                        new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                    myStringBuffer.append("testingString3");
+                                                    put("stringVal", myStringBuffer);
+                                                    final ManagedSecureCharBuffer myCSeqBuffer =
+                                                        new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                    myCSeqBuffer.append("testingCharSeq3");
+                                                    put("charSeqVal", myCSeqBuffer);
+                                                    put("transientIntVal", 12345);
+                                                }});
+
+                                            put("inner1", new HashMap<CharSequence, Object>() {{
+                                                    put("data1", new HashMap<CharSequence, Object>() {{
+                                                            put("integerVal", 111);
+                                                            put("shortVal", 211);
+                                                            final ManagedSecureCharBuffer myStringBuffer =
+                                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                            myStringBuffer.append("testingString2");
+                                                            put("stringVal", myStringBuffer);
+                                                            final ManagedSecureCharBuffer myCSeqBuffer =
+                                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                            myCSeqBuffer.append("testingCharSeq2");
+                                                            put("charSeqVal", myCSeqBuffer);
+                                                            put("transientIntVal", 1234);
+                                                        }});
+                                                }});
+                                        }});
                                 }});
-                            }});
                         }});
-                    }});
-        }});
 
         Assert.assertNull(mySubNestingClass.data1);
         Assert.assertNull(mySubNestingClass.inner1.data1);
@@ -183,59 +187,59 @@ public final class ObjectReaderTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testComplexType() throws JSONException {
+    public void testComplexType() throws IOException {
         final ComplexTypeClass myComplexTypeClass = new ObjectReader<>(
                 ComplexTypeClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-            final List<Map<CharSequence, Map<String, Integer>>> myList1 = new ArrayList<>();
-            myList1.add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                put("1", new HashMap<String, Integer>() {{
-                    put("2", 3);
-                }});
-            }});
-            final List<Map<CharSequence, Map<String, Integer>>> myList2 = new ArrayList<>();
-            myList2.add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                put("4", new HashMap<String, Integer>() {{
-                    put("5", 6);
-                }});
-            }});
+                        final List<Map<CharSequence, Map<String, Integer>>> myList1 = new ArrayList<>();
+                        myList1.add(new HashMap<CharSequence, Map<String, Integer>>() {{
+                                put("1", new HashMap<String, Integer>() {{
+                                        put("2", 3);
+                                    }});
+                            }});
+                        final List<Map<CharSequence, Map<String, Integer>>> myList2 = new ArrayList<>();
+                        myList2.add(new HashMap<CharSequence, Map<String, Integer>>() {{
+                                put("4", new HashMap<String, Integer>() {{
+                                        put("5", 6);
+                                    }});
+                            }});
 
-            put("data", new List[]{myList1, myList2});
-        }});
+                        put("data", new List[]{myList1, myList2});
+                    }});
 
         Assert.assertEquals(myComplexTypeClass.data[0], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {{
-            add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                put("1", new HashMap<String, Integer>() {{
-                    put("2", 3);
-                }});
+                add(new HashMap<CharSequence, Map<String, Integer>>() {{
+                        put("1", new HashMap<String, Integer>() {{
+                                put("2", 3);
+                            }});
+                    }});
             }});
-        }});
         Assert.assertEquals(myComplexTypeClass.data[1], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {{
-            add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                put("4", new HashMap<String, Integer>() {{
-                    put("5", 6);
-                }});
+                add(new HashMap<CharSequence, Map<String, Integer>>() {{
+                        put("4", new HashMap<String, Integer>() {{
+                                put("5", 6);
+                            }});
+                    }});
             }});
-        }});
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testAbsoluteNesting() throws JSONException {
+    public void testAbsoluteNesting() throws IOException {
         final NestingAbsClass myNestingAbsClass = new ObjectReader<>(
-                NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-            put("1", 11);
-            put("2", 21);
-            put("3", 31);
-            put("level2", new HashMap<CharSequence, Object>() {{
-                put("rel", 41);
-                put("l3", new HashMap<CharSequence, Object>() {{
-                    put("rel", 51);
-                    put("level4", new HashMap<CharSequence, Object>() {{
-                        put("level4", 61);
-                    }});
+            NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
+                    put("1", 11);
+                    put("2", 21);
+                    put("3", 31);
+                    put("level2", new HashMap<CharSequence, Object>() {{
+                            put("rel", 41);
+                            put("l3", new HashMap<CharSequence, Object>() {{
+                                    put("rel", 51);
+                                    put("level4", new HashMap<CharSequence, Object>() {{
+                                            put("level4", 61);
+                                        }});
+                                }});
+                        }});
                 }});
-            }});
-        }});
 
         Assert.assertEquals(myNestingAbsClass.level1, 11);
         Assert.assertEquals(myNestingAbsClass.level2.level2, 21);

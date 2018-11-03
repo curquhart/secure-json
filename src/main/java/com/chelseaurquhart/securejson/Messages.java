@@ -26,14 +26,24 @@ final class Messages {
         ERROR_ITERATOR_REMOVE_NOT_ALLOWED,
         ERROR_INVALID_TYPE,
         ERROR_BAD_SEQUENCE_ARGS,
-        ERROR_BUFFER_OVERFLOW
+        ERROR_BUFFER_OVERFLOW,
+        ERROR_INVALID_ENCODING,
+        ERROR_WRITE_TO_READONLY_BUFFER,
+        ERROR_READ_OBJECT_FROM_NON_MAP_TYPE,
+        ERROR_RESOLVE_IMPLEMENTATION,
+        ERROR_INVALID_MAP_KEY_TYPE,
+        ERROR_INVALID_MAP_KEY_TYPE_STRICT,
+        ERROR_NOT_IMPLEMENTED,
+        ERROR_ATTEMPT_TO_ADD_MAP_ENTRY_TO_NON_MAP,
+        ERROR_INVALID_SERIALIZATION_CONFIG,
+        ERROR_INVALID_SYMBOL
     }
 
     static String get(final Key parKey) throws IOException {
         return getInstance().properties.getProperty(parKey.toString());
     }
 
-    private static final String RESOURCE_NAME = "messages.properties";
+    private static final String RESOURCE_NAME = "com/chelseaurquhart/securejson/messages.properties";
 
     private static Messages INSTANCE;
 

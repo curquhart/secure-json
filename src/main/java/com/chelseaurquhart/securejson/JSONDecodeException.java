@@ -20,7 +20,7 @@ public class JSONDecodeException extends JSONException {
      * @exclude
      */
     JSONDecodeException(final Throwable parInput) {
-        super(Util.unwrapException(parInput));
+        super(parInput);
     }
 
     /**
@@ -128,6 +128,16 @@ public class JSONDecodeException extends JSONException {
          */
         ExtraCharactersException(final ICharacterIterator parCharSequence) throws IOException {
             super(parCharSequence, Messages.Key.ERROR_EXTRA_CHARACTERS);
+        }
+    }
+
+    static JSONDecodeException fromException(final Exception parException) {
+        final Throwable myException = Util.unwrapException(parException);
+
+        if (myException instanceof JSONDecodeException) {
+            return (JSONDecodeException) myException;
+        } else {
+            return new JSONDecodeException(myException);
         }
     }
 }
