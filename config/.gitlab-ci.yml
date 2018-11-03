@@ -56,7 +56,7 @@ verifyJSONTestSuite:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle verifyJSONTestSuite
+    - gradle --no-daemon verifyJSONTestSuite
 
 sonarqube:
   tags:
@@ -65,8 +65,4 @@ sonarqube:
   stage: test
   only:
     - master
-  script: gradle sonarqube \
-    -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-    -Dsonar.organization=$SONAR_ORGANIZATION \
-    -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.login=$SONAR_TOKEN
+  script: gradle --no-daemon sonarqube -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
