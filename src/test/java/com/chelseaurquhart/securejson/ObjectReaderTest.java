@@ -19,17 +19,32 @@ package com.chelseaurquhart.securejson;
 import com.chelseaurquhart.securejson.util.StringUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.lang.reflect.ReflectPermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// We have to run single-threaded to prevent our security manager from buggering up.
+@Test(singleThreaded = true)
 public final class ObjectReaderTest {
     private static final Settings UNSTRICT_SETTINGS = new Settings(new SecureJSON.Builder().strictStrings(false));
+
+    @BeforeTest
+    static void setUp() {
+        SJSecurityManager.setUp();
+    }
+
+    @AfterTest
+    static void tearDown() {
+        SJSecurityManager.tearDown();
+    }
 
     private ObjectReaderTest() {
     }
@@ -63,6 +78,16 @@ public final class ObjectReaderTest {
         Assert.assertEquals(mySimpleDeserializationClass.ints, new int[]{1, 2, 3});
         Assert.assertEquals(mySimpleDeserializationClass.intList, Arrays.asList(4, 5, 6));
         Assert.assertTrue(mySimpleDeserializationClass.absPosition);
+    }
+
+    public void testSimpleDeserializationSecurityViolation() throws IOException {
+        try {
+            SJSecurityManager.SECURITY_VIOLATIONS.add(new ReflectPermission("suppressAccessChecks"));
+            testSimpleDeserialization();
+            Assert.fail("Expected exception not thrown");
+        } catch (final JSONException.JSONRuntimeException myException) {
+            Assert.assertEquals(myException.getCause().getClass(), SecurityException.class);
+        }
     }
 
     @Test

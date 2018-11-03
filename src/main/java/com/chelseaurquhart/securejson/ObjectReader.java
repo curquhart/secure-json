@@ -125,14 +125,14 @@ class ObjectReader<T> extends ObjectSerializer {
                         myConstructor.setAccessible(true);
                         return myConstructor.newInstance();
                     } catch (final InstantiationException | IllegalAccessException
-                            | InvocationTargetException myException) {
+                            | InvocationTargetException | SecurityException myException) {
                         throw new JSONRuntimeException(myException);
                     } finally {
                         myConstructor.setAccessible(myOriginalValue);
                     }
                 }
             });
-        } catch (NoSuchMethodException | JSONRuntimeException | ClassCastException | SecurityException myException) {
+        } catch (NoSuchMethodException | ClassCastException myException) {
             throw new JSONDecodeException(myException);
         }
     }
