@@ -7,9 +7,6 @@ apply plugin: 'pmd'
 
 def versionNumber = rootProject.file('version.txt').text.trim()
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
 def VERSION_SNAPSHOT = 'SNAPSHOT'
 
 repositories {
@@ -35,6 +32,43 @@ sourceSets {
         java {
             compileClasspath += sourceSets.shared.output
             runtimeClasspath += sourceSets.shared.output
+        }
+    }
+
+    java9 {
+        java {
+            srcDirs = ['src/main/java9']
+            compileClasspath += sourceSets.main.output
+        }
+    }
+}
+
+compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+    if (JavaVersion.current().java9Compatible) {
+        options.compilerArgs.addAll(['--release', '7'])
+    }
+}
+
+compileJava9Java {
+    if (JavaVersion.current().java9Compatible) {
+        sourceCompatibility = 9
+        targetCompatibility = 9
+        options.compilerArgs.addAll(['--release', '9'])
+    }
+}
+
+if (JavaVersion.current().java9Compatible) {
+    jar {
+        into('META-INF/versions/9') {
+            from sourceSets.java9.output
+        }
+
+        manifest {
+            attributes(
+                "Multi-Release": true
+            )
         }
     }
 }
