@@ -20,9 +20,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.ReflectPermission;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+// We have to run single-threaded to prevent our security manager from buggering up.
+@Test(singleThreaded = true)
 public final class ObjectWriterTest {
     private ObjectWriterTest() {
     }
@@ -38,6 +41,17 @@ public final class ObjectWriterTest {
         }), new HashMap<CharSequence, Object>() {{
                 put("a", "b");
             }});
+    }
+
+
+    public void testSimpleObjectSecurityViolation() {
+        try {
+            SJSecurityManager.SECURITY_VIOLATIONS.add(new ReflectPermission("suppressAccessChecks"));
+            testSimpleObject();
+            Assert.fail("Expected exception not thrown");
+        } catch (final JSONException.JSONRuntimeException myException) {
+            Assert.assertEquals(myException.getCause().getClass(), SecurityException.class);
+        }
     }
 
     @Test

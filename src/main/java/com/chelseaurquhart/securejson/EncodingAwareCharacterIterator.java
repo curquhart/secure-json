@@ -23,6 +23,7 @@ import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.NoSuchElementException;
 
 /**
  * @exclude
@@ -74,7 +75,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         switch (myNextChar) {
             case UTF8_BOM_CHAR0:
                 next();
-                if (!hasNext() || next() != UTF8_BOM_CHAR1 || !hasNext() || next() != UTF8_BOM_CHAR2) {
+                if (!hasNext() || next() != UTF8_BOM_CHAR1) {
+                    throw new MalformedJSONException(this);
+                }
+                if (!hasNext() || next() != UTF8_BOM_CHAR2) {
                     throw new MalformedJSONException(this);
                 }
                 return Encoding.UTF8;
@@ -208,7 +212,11 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
         try {
             offset++;
-            return readAndProcessNextChar();
+            final Character myChar = readAndProcessNextChar();
+            if (myChar == null) {
+                throw new NoSuchElementException();
+            }
+            return myChar;
         } catch (final IOException myException) {
             throw new JSONRuntimeException(myException);
         }

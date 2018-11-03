@@ -16,8 +16,16 @@
 
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
+
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +37,7 @@ import java.util.Map;
  * Serializer to/from Objects.
  * @exclude
  */
-class ObjectSerializer {
+class ObjectSerializer extends ObjectReflector {
     final SerializationSettings getSerializationSettings(final Field parField) {
         final Serialize myAnnotation = parField.getAnnotation(Serialize.class);
         String[] mySerializationTarget = null;
@@ -78,7 +86,6 @@ class ObjectSerializer {
                 // ignore transient and synthetic fields.
                 continue;
             }
-            myField.setAccessible(true);
             myCollection.add(myField);
         }
         final Class mySuperClass = parClass.getSuperclass();
@@ -89,22 +96,66 @@ class ObjectSerializer {
         return Collections.unmodifiableCollection(myCollection);
     }
 
-    final Object getValue(final Field parField, final Object parInstance) throws JSONException {
-        try {
-            return parField.get(parInstance);
-        } catch (final IllegalAccessException | ExceptionInInitializerError | IllegalArgumentException myException) {
-            throw new JSONException(myException);
-        }
+    final Object getValue(final Field parField, final Object parInstance) {
+        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                final boolean myOriginalValue = isAccessible(parField, parInstance);
+                try {
+                    parField.setAccessible(true);
+                    return parField.get(parInstance);
+                } catch (final SecurityException | IllegalAccessException myException) {
+                    throw new JSONRuntimeException(myException);
+                } finally {
+                    parField.setAccessible(myOriginalValue);
+                }
+            }
+        });
     }
 
-    final void setValueIfNotNull(final Field parField, final Object parInput, final Object parValue)
-            throws JSONException {
-        try {
-            if (parValue != null) {
-                parField.set(parInput, parValue);
+    final void setValueIfNotNull(final Field parField, final Object parInstance, final Object parValue) {
+        if (parValue == null) {
+            return;
+        }
+
+        AccessController.doPrivileged(new PrivilegedAction<Field>() {
+            @Override
+            public Field run() {
+                final boolean myOriginalValue = isAccessible(parField, parInstance);
+                try {
+                    parField.setAccessible(true);
+                    parField.set(parInstance, parValue);
+                } catch (final SecurityException | IllegalAccessException | IllegalArgumentException myException) {
+                    throw new JSONRuntimeException(myException);
+                } finally {
+                    parField.setAccessible(myOriginalValue);
+                }
+
+                return null;
             }
-        } catch (final IllegalAccessException | ExceptionInInitializerError | IllegalArgumentException myException) {
-            throw new JSONException(myException);
+        });
+    }
+
+    <U> U construct(final Class<U> parClazz) throws IOException {
+        try {
+            final Constructor<? extends U> myConstructor = parClazz.getDeclaredConstructor();
+            return AccessController.doPrivileged(new PrivilegedAction<U>() {
+                @Override
+                public U run() {
+                    final boolean myOriginalValue = isAccessible(myConstructor, null);
+                    try {
+                        myConstructor.setAccessible(true);
+                        return myConstructor.newInstance();
+                    } catch (final InstantiationException | IllegalAccessException
+                            | InvocationTargetException | SecurityException myException) {
+                        throw new JSONRuntimeException(myException);
+                    } finally {
+                        myConstructor.setAccessible(myOriginalValue);
+                    }
+                }
+            });
+        } catch (NoSuchMethodException | ClassCastException myException) {
+            throw new JSONDecodeException(myException);
         }
     }
 

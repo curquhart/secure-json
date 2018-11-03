@@ -20,9 +20,7 @@ import net.jodah.typetools.TypeResolver;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -108,19 +106,6 @@ class ObjectReader<T> extends ObjectSerializer {
         return myInstance;
     }
 
-    private <U> U construct(final Class<U> parClazz) throws IOException {
-        final Class<? extends U> myClazz = getConcreteClass(parClazz);
-
-        try {
-            final Constructor<? extends U> myConstructor = myClazz.getDeclaredConstructor();
-            myConstructor.setAccessible(true);
-            return myConstructor.newInstance();
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
-                | InvocationTargetException | ClassCastException myException) {
-            throw new JSONDecodeException(myException);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private <U> Class<? extends U> getConcreteClass(final Class<? extends U> parClazz) throws IOException {
         try {
@@ -177,7 +162,7 @@ class ObjectReader<T> extends ObjectSerializer {
         }
         Object myInstance = getValue(parField, parInstance);
         if (myInstance == null) {
-            myInstance = construct(parType);
+            myInstance = construct(getConcreteClass(parType));
         }
 
         boolean myFoundData = false;
@@ -192,7 +177,7 @@ class ObjectReader<T> extends ObjectSerializer {
             }
             final Class<?> myFieldType = myField.getType();
             if (canRecursivelyAccept(myFieldType)) {
-                final Object mySubInstance = construct(myFieldType);
+                final Object mySubInstance = construct(getConcreteClass(myFieldType));
 
                 boolean myFoundSubData = false;
                 if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
@@ -335,7 +320,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
         final Map<Object, Object> myMap;
         try {
-            myMap = construct((Class<Map<Object, Object>>) parType);
+            myMap = construct(getConcreteClass((Class<Map<Object, Object>>) parType));
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
@@ -358,7 +343,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
         final Collection<Object> myCollection;
         try {
-            myCollection = construct((Class<Collection<Object>>) parType);
+            myCollection = construct(getConcreteClass((Class<Collection<Object>>) parType));
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }

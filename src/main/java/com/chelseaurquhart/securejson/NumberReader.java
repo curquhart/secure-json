@@ -33,8 +33,10 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);
 
-    private static final BigDecimal MIN_VALUE = new BigDecimal(Double.MIN_VALUE);
-    private static final BigDecimal MAX_VALUE = new BigDecimal(Double.MAX_VALUE);
+    // min and max values that we will allow to convert to double. Outside of this range, we'll use a bigger type.
+    private static final BigDecimal MIN_VALUE = new BigDecimal("-1.0e300", MathContext.UNLIMITED);
+    private static final BigDecimal MAX_VALUE = new BigDecimal("1.0e300", MathContext.UNLIMITED);
+
     private final MathContext mathContext;
     private final Settings settings;
 
@@ -83,6 +85,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
     @Override
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+        // only for collections
+        throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addValue");
     }
 
     Number charSequenceToNumber(final CharSequence parNumber, final int parOffset)
@@ -121,9 +125,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
         try {
             final double myDoubleValue = myDecimal.doubleValue();
-            if ((myDecimal.compareTo(MIN_VALUE) < 0 || myDecimal.compareTo(MAX_VALUE) > 0)
-                && !new BigDecimal(myDoubleValue)
-                    .setScale(myDecimal.scale(), RoundingMode.UNNECESSARY).equals(myDecimal)) {
+            if (!verifyNumber(myDoubleValue, myDecimal)) {
                 return myDecimal;
             }
 
@@ -151,6 +153,17 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         } finally {
             Arrays.fill(myBuffer, '\u0000');
         }
+    }
+
+    // allow new BigDecimal as we only use it for verification.
+    private boolean verifyNumber(final double parDoubleValue, final BigDecimal parDecimalValue) {
+        if (Double.isInfinite(parDoubleValue) || parDecimalValue.compareTo(MIN_VALUE) <= 0
+                || parDecimalValue.compareTo(MAX_VALUE) >= 0 || parDecimalValue.scale() > Double.MAX_EXPONENT
+                || parDecimalValue.scale() < Double.MIN_EXPONENT) {
+            return false;
+        }
+
+        return true;
     }
 
     private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset,

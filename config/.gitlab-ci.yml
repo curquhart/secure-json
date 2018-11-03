@@ -45,3 +45,16 @@ verifyJSONTestSuite:
   image: gradle:4.10-jdk10
   stage: test
   script: gradle verifyJSONTestSuite
+
+sonarqube:
+  tags:
+    - docker
+  image: gradle:4.10-jdk10
+  stage: test
+  only:
+    - master
+  script: gradle sonarqube \
+    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+    -Dsonar.organization=${SONAR_ORGANIZATION} \
+    -Dsonar.host.url=${SONAR_HOST_URL} \
+    -Dsonar.login=${SONAR_TOKEN}
