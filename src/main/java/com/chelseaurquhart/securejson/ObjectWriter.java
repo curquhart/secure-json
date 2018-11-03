@@ -1,5 +1,7 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -12,9 +14,13 @@ import java.util.Map;
  */
 class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     @Override
-    public Object accept(final Object parInput) throws IOException {
+    public Object accept(final Object parInput) {
         final Map<CharSequence, Object> myRootMap = new LinkedHashMap<>();
-        return accept(parInput, myRootMap, myRootMap);
+        try {
+            return accept(parInput, myRootMap, myRootMap);
+        } catch (final Exception myException) {
+            throw new JSONRuntimeException(myException);
+        }
     }
 
     private Object accept(final Object parInput, final Map<CharSequence, Object> parRelMap,

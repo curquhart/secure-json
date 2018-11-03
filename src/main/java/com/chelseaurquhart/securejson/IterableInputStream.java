@@ -1,5 +1,7 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +24,7 @@ class IterableInputStream extends EncodingAwareCharacterIterator implements ICha
         try {
             throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_ITERATOR_REMOVE_NOT_ALLOWED));
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 

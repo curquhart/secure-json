@@ -1,5 +1,7 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -56,15 +58,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         if (!(myHeadBuffer instanceof IWritableCharSequence)
                 || (myHeadBuffer.length() + 1 >= ((IWritableCharSequence) myHeadBuffer).getCapacity()
                 && ((IWritableCharSequence) myHeadBuffer).isRestrictedToCapacity())) {
-            try {
-                myWriteBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
-            } catch (final Exception myException) {
-                if (myException instanceof IOException) {
-                    throw (IOException) myException;
-                }
-
-                throw new JSONException(myException);
-            }
+            myWriteBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
             buffers.add(myWriteBuffer);
         } else {
             myWriteBuffer = myHeadBuffer;
@@ -167,7 +161,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             try {
                 myMessage = Messages.get(Messages.Key.ERROR_BAD_SEQUENCE_ARGS);
             } catch (final IOException myException) {
-                throw new RuntimeException(myException);
+                throw new JSONRuntimeException(myException);
             }
             throw new ArrayIndexOutOfBoundsException(myMessage);
         }
@@ -198,7 +192,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             try {
                 myMessage = Messages.get(Messages.Key.ERROR_BUFFER_OVERFLOW);
             } catch (final IOException myException) {
-                throw new RuntimeException(myException);
+                throw new JSONRuntimeException(myException);
             }
             throw new ArrayIndexOutOfBoundsException(myMessage);
         }
@@ -310,6 +304,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
                 | (compositionSecond.get(myOffset) & JSONSymbolCollection.TWO_BYTE));
         }
 
+        @Override
         public void append(final char parChar) throws IOException {
             if (fixedLength != null) {
                 throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_WRITE_TO_READONLY_BUFFER));

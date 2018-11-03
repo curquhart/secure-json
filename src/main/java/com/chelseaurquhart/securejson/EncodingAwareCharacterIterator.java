@@ -2,6 +2,7 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -160,7 +161,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         try {
             return cacheAndGetNextChar() != null;
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 
@@ -181,7 +182,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             offset++;
             return readAndProcessNextChar();
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 

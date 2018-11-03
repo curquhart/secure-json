@@ -35,7 +35,8 @@ final class Messages {
         ERROR_INVALID_MAP_KEY_TYPE_STRICT,
         ERROR_NOT_IMPLEMENTED,
         ERROR_ATTEMPT_TO_ADD_MAP_ENTRY_TO_NON_MAP,
-        ERROR_INVALID_SERIALIZATION_CONFIG
+        ERROR_INVALID_SERIALIZATION_CONFIG,
+        ERROR_INVALID_SYMBOL
     }
 
     static String get(final Key parKey) throws IOException {

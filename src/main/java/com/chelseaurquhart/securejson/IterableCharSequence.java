@@ -1,5 +1,7 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import java.io.IOException;
 
 /**
@@ -23,7 +25,7 @@ class IterableCharSequence extends EncodingAwareCharacterIterator implements ICh
         try {
             throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_ITERATOR_REMOVE_NOT_ALLOWED));
         } catch (final IOException myException) {
-            throw new RuntimeException(myException);
+            throw new JSONRuntimeException(myException);
         }
     }
 

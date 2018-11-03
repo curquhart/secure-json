@@ -11,7 +11,6 @@ public interface IFunction<T, R> {
      * Performs this operation on the given argument and returns the result.
      * @param parInput The input argument.
      * @return The processed value.
-     * @throws Exception On error.
      */
-    R accept(T parInput) throws Exception;
+    R accept(T parInput);
 }

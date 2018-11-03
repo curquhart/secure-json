@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 public final class ManagedSecureCharBufferTest {
     private static final String SUBSEQUENCE_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestCharSequence";
     @DataProvider(name = SUBSEQUENCE_DATA_PROVIDER_NAME)
-    private static Object[] dataProvider(final Method parMethod) throws Exception {
+    private static Object[] dataProvider(final Method parMethod)  {
         return new Object[]{
             new Parameters(
                 "simple single byte buffer",
@@ -409,7 +409,7 @@ public final class ManagedSecureCharBufferTest {
         private Parameters(final String parTestName, final int parCapacity,
                            final IConsumer<ManagedSecureCharBuffer> parManagedSecureCharBufferConsumer,
                            final CharSequence parExpected, final int parStart, final int parEnd,
-                           final String parExpectedException) throws Exception {
+                           final String parExpectedException) {
             testName = parTestName;
             managedSecureCharBuffer = new ManagedSecureCharBuffer(parCapacity, Settings.DEFAULTS);
             parManagedSecureCharBufferConsumer.accept(managedSecureCharBuffer);

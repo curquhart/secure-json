@@ -1,6 +1,9 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -66,10 +69,8 @@ public final class SecureJSON {
 
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput));
-        } catch (final JSONEncodeException myException) {
-            throw myException;
-        } catch (final Exception myException) {
-            throw new JSONEncodeException(myException);
+        } catch (final JSONRuntimeException | IOException myException) {
+            throw JSONEncodeException.fromException(myException);
         }
     }
 
@@ -105,10 +106,8 @@ public final class SecureJSON {
 
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput).getBytes());
-        } catch (final JSONEncodeException myException) {
-            throw myException;
-        } catch (final Exception myException) {
-            throw new JSONEncodeException(myException);
+        } catch (final JSONRuntimeException | IOException myException) {
+            throw JSONEncodeException.fromException(myException);
         }
     }
 
@@ -135,10 +134,8 @@ public final class SecureJSON {
 
         try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, StandardCharsets.UTF_8));
-        } catch (final JSONEncodeException myException) {
-            throw myException;
-        } catch (final Exception myException) {
-            throw new JSONEncodeException(myException);
+        } catch (final JSONRuntimeException | IOException myException) {
+            throw JSONEncodeException.fromException(myException);
         }
     }
 
@@ -178,10 +175,8 @@ public final class SecureJSON {
 
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
-        } catch (final JSONDecodeException myException) {
-            throw myException;
-        } catch (final Exception myException) {
-            throw new JSONDecodeException(myException);
+        } catch (final JSONRuntimeException | IOException | ClassCastException myException) {
+            throw JSONDecodeException.fromException(myException);
         }
     }
 
@@ -264,10 +259,8 @@ public final class SecureJSON {
 
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
-        } catch (final JSONDecodeException myException) {
-            throw myException;
-        } catch (final Exception myException) {
-            throw new JSONDecodeException(myException);
+        } catch (final JSONRuntimeException | IOException | ClassCastException myException) {
+            throw JSONDecodeException.fromException(myException);
         }
     }
 
@@ -355,10 +348,8 @@ public final class SecureJSON {
 
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
-        } catch (final JSONDecodeException myException) {
-            throw myException;
-        } catch (final Exception myException) {
-            throw new JSONDecodeException(myException);
+        } catch (final JSONRuntimeException | IOException | ClassCastException myException) {
+            throw JSONDecodeException.fromException(myException);
         }
     }
 
@@ -418,8 +409,13 @@ public final class SecureJSON {
 
         return new IConsumer<Object>() {
             @Override
-            public void accept(final Object parOutput) throws Exception {
-                parConsumer.accept(new ObjectReader<>(parClass, settings).accept(parOutput));
+            public void accept(final Object parOutput) {
+                try {
+                    parConsumer.accept(new ObjectReader<>(parClass, settings)
+                        .accept(parOutput));
+                } catch (final IOException myException) {
+                    throw new JSONRuntimeException(myException);
+                }
             }
         };
     }

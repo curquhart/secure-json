@@ -23,31 +23,6 @@ public class JSONEncodeException extends JSONException {
     }
 
     /**
-     * @exclude
-     */
-    static class JSONEncodeRuntimeException extends RuntimeException {
-        private JSONEncodeException cause;
-
-        JSONEncodeRuntimeException(final JSONEncodeException parInput) {
-            super(parInput);
-            cause = parInput;
-        }
-
-        JSONEncodeRuntimeException(final Exception parInput) {
-            super(Util.unwrapException(parInput).getMessage());
-        }
-
-        @Override
-        public JSONEncodeException getCause() {
-            if (cause == null) {
-                cause = new JSONEncodeException(super.getCause());
-            }
-
-            return cause;
-        }
-    }
-
-    /**
      * Exception representing an invalid data type.
      */
     public static class InvalidTypeException extends JSONEncodeException {
@@ -58,4 +33,15 @@ public class JSONEncodeException extends JSONException {
             super(Messages.Key.ERROR_INVALID_TYPE);
         }
     }
+
+    static JSONEncodeException fromException(final Exception parException) {
+        final Throwable myException = Util.unwrapException(parException);
+
+        if (myException instanceof JSONEncodeException) {
+            return (JSONEncodeException) myException;
+        } else {
+            return new JSONEncodeException(myException);
+        }
+    }
+
 }
