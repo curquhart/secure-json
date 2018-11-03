@@ -23,6 +23,7 @@ import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.NoSuchElementException;
 
 /**
  * @exclude
@@ -211,7 +212,11 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
         try {
             offset++;
-            return readAndProcessNextChar();
+            final Character myChar = readAndProcessNextChar();
+            if (myChar == null) {
+                throw new NoSuchElementException();
+            }
+            return myChar;
         } catch (final IOException myException) {
             throw new JSONRuntimeException(myException);
         }
