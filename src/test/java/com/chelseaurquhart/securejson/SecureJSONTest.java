@@ -1,10 +1,13 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import com.chelseaurquhart.securejson.util.StringUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -23,7 +26,7 @@ public final class SecureJSONTest {
                 }
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final Exception myException) {
+        } catch (final IOException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
@@ -42,7 +45,7 @@ public final class SecureJSONTest {
                 }
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final Exception myException) {
+        } catch (final IOException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
@@ -65,7 +68,7 @@ public final class SecureJSONTest {
                 }
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final Exception myException) {
+        } catch (final IOException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }

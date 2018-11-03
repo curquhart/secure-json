@@ -301,60 +301,60 @@ public final class JSONReaderTest {
                 "map with string:string",
                 "{\"1\":\"test\"}",
                 new HashMap<CharSequence, Object>() {{
-                    put("1", "test");
-                }},
+                        put("1", "test");
+                    }},
                 null
             ),
             new Parameters(
                 "map with string:int",
                 "{\"1\":123}",
                 new HashMap<CharSequence, Object>() {{
-                    put("1", (short) 123);
-                }},
+                        put("1", (short) 123);
+                    }},
                 null
             ),
             new Parameters(
                 "map with string:null",
                 "{\"1\":null}",
                 new HashMap<CharSequence, Object>() {{
-                    put("1", null);
-                }},
+                        put("1", null);
+                    }},
                 null
             ),
             new Parameters(
                 "map with string:bool",
                 "{\"1\":true}",
                 new HashMap<CharSequence, Object>() {{
-                    put("1", true);
-                }},
+                        put("1", true);
+                    }},
                 null
             ),
             new Parameters(
                 "map with string:bool padded",
                 "{\"1\"   :    true}",
                 new HashMap<CharSequence, Object>() {{
-                    put("1", true);
-                }},
+                        put("1", true);
+                    }},
                 null
             ),
             new Parameters(
                 "much nesting",
                 "{\"1\"   :    [1,2,3],\"2\":[false,{\"22\":\"456\"}]}",
                 new HashMap<CharSequence, Object>() {{
-                    put("1", Arrays.asList((short) 1, (short) 2, (short) 3));
-                    put("2", Arrays.asList(false, new HashMap<CharSequence, Object>() {{
-                        put("22", "456");
-                    }}));
-                }},
+                        put("1", Arrays.asList((short) 1, (short) 2, (short) 3));
+                        put("2", Arrays.asList(false, new HashMap<CharSequence, Object>() {{
+                                put("22", "456");
+                            }}));
+                    }},
                 null
             ),
             new Parameters(
                 "spaces around comma in map",
                 "{\"asd\":\"sdf\"   ,  \"dfg\":\"fgh\"}",
                 new HashMap<CharSequence, Object>() {{
-                    put("asd", "sdf");
-                    put("dfg", "fgh");
-                }},
+                        put("asd", "sdf");
+                        put("dfg", "fgh");
+                    }},
                 null
             ),
             new Parameters(
@@ -401,7 +401,7 @@ public final class JSONReaderTest {
             Assert.assertNull(parExpectedException, "Expected exception was not thrown");
             Assert.assertEquals(StringUtil.deepCharSequenceToString(myActual),
                 StringUtil.deepCharSequenceToString(parExpected));
-        } catch (final Exception myException) {
+        } catch (final IOException | JSONException.JSONRuntimeException myException) {
             Assert.assertNotNull(parExpectedException);
             Assert.assertEquals(Util.unwrapException(myException).getMessage(),
                 parExpectedException.getMessage());

@@ -51,12 +51,12 @@ public final class JSONWriterTest {
             new Parameters(
                 "nesting",
                 new LinkedHashMap<String, Object>() {{
-                    put("a", new ArrayList<Object>() {{
-                        add(new HashMap<String, Object>() {{
-                            put("x", 12);
-                        }});
-                    }});
-                }},
+                        put("a", new ArrayList<Object>() {{
+                                add(new HashMap<String, Object>() {{
+                                        put("x", 12);
+                                    }});
+                            }});
+                    }},
                 "{\"a\":[{\"x\":12}]}"
             ),
             new Parameters(

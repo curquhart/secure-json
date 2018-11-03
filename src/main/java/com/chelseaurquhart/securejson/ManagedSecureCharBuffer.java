@@ -167,7 +167,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         }
 
         for (final CharSequence myBuffer : buffers) {
-            int myLength = myBuffer.length();
+            final int myLength = myBuffer.length();
             if (myLength < 0) {
                 throw new ArrayIndexOutOfBoundsException();
             }

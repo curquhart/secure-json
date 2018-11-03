@@ -5,13 +5,12 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.nio.CharBuffer;
 
 public final class MessagesTest {
     private static final String DATA_PROVIDER_NAME = "MessagesTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME)
-    public Object[] dataProvider() {
+    private static Object[] dataProvider() {
         return Messages.Key.values();
     }
 

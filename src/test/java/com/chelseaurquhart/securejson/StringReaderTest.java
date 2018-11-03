@@ -1,8 +1,11 @@
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.nio.CharBuffer;
 
 public final class StringReaderTest {
@@ -21,7 +24,7 @@ public final class StringReaderTest {
             CharBuffer.wrap(myResult).get(myActualChars);
             CharBuffer.wrap(parParameters.expected).get(myExpectedChars);
             Assert.assertEquals(new String(myActualChars), new String(myExpectedChars));
-        } catch (final Exception myException) {
+        } catch (final IOException | JSONRuntimeException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());

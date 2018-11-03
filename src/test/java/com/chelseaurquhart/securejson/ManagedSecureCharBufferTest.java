@@ -362,7 +362,7 @@ public final class ManagedSecureCharBufferTest {
                     parParameters.start, parParameters.end);
                 Assert.assertEquals(StringUtil.charSequenceToString(mySequence), parParameters.expected);
                 Assert.assertNull(parParameters.expectedException);
-            } catch (final Exception myException) {
+            } catch (final ArrayIndexOutOfBoundsException myException) {
                 Assert.assertNotNull(parParameters.expectedException);
                 Assert.assertEquals(myException.getMessage(), parParameters.expectedException);
             }

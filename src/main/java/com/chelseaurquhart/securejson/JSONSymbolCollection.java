@@ -137,13 +137,23 @@ final class JSONSymbolCollection {
         }
 
         static Token forSymbol(final char parSymbol) throws IOException {
+            final Token myToken = forSymbolOrDefault(parSymbol, null);
+
+            if (myToken == null) {
+                throw new JSONException(
+                    Messages.get(Messages.Key.ERROR_INVALID_SYMBOL).replace(":symbol", String.valueOf(parSymbol)));
+            }
+
+            return myToken;
+        }
+
+        static Token forSymbolOrDefault(final char parSymbol, final Token parDefault) {
             final char mySymbol = Character.toLowerCase(parSymbol);
             if (SHORT_TOKEN_MAP.containsKey(mySymbol)) {
                 return SHORT_TOKEN_MAP.get(mySymbol);
             }
 
-            throw new JSONException(
-                Messages.get(Messages.Key.ERROR_INVALID_SYMBOL).replace(":symbol", String.valueOf(parSymbol)));
+            return parDefault;
         }
 
         private final Object symbol;
@@ -172,7 +182,7 @@ final class JSONSymbolCollection {
             return symbol;
         }
 
-        char getShortSymbol() {
+        Character getShortSymbol() {
             return shortSymbol;
         }
     }

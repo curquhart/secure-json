@@ -18,7 +18,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
         final Map<CharSequence, Object> myRootMap = new LinkedHashMap<>();
         try {
             return accept(parInput, myRootMap, myRootMap);
-        } catch (final Exception myException) {
+        } catch (final IOException myException) {
             throw new JSONRuntimeException(myException);
         }
     }

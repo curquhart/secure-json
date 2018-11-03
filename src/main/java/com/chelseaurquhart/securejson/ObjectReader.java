@@ -439,7 +439,7 @@ class ObjectReader<T> extends ObjectSerializer {
             if (parType == HugeDecimal.class && myValueClass != HugeDecimal.class) {
                 return new HugeDecimal(parValue);
             }
-        } catch (final Throwable myException) {
+        } catch (final NumberFormatException | ArithmeticException | IOException myException) {
             // conversion failure. This is specific to HugeDecimal in that it will disallow conversions that will
             // cause data loss, but there could be other custom implementations of Number.
             throw new JSONException(myException);

@@ -190,7 +190,30 @@
         <module name="FinalParameters"/>
         <module name="TodoComment"/>
         <module name="UpperEll"/>
-
+        <module name="MutableException"/>
+        <module name="IllegalCatch"/>
+        <module name="IllegalThrows"/>
+        <module name="EmptyCatchBlock">
+            <property name="commentFormat" value="Allowed empty block"/>
+        </module>
+        <module name="EqualsAvoidNull"/>
+        <module name="FinalLocalVariable"/>
+        <module name="Indentation"/>
+        <module name="MissingDeprecated"/>
+        <module name="NestedForDepth"/>
+        <module name="NestedIfDepth">
+            <property name="max" value="3"/>
+        </module>
+        <module name="NestedTryDepth"/>
+        <module name="NoClone"/>
+        <module name="OneStatementPerLine"/>
+        <module name="OneTopLevelClass"/>
+        <module name="OuterTypeFilename"/>
+        <module name="PackageAnnotation"/>
+        <module name="PackageDeclaration"/>
+        <module name="ParameterAssignment"/>
+        <module name="TrailingComment"/>
+        <module name="VariableDeclarationUsageDistance"/>
     </module>
 
 </module>

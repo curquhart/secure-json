@@ -92,7 +92,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     private char readUnicode(final ICharacterIterator parInput) throws IOException {
         int myValue = 0;
         for (int myIndex = 0; myIndex < JSONSymbolCollection.UNICODE_DIGITS; myIndex++) {
-            char myChar = Character.toLowerCase(parInput.next());
+            final char myChar = Character.toLowerCase(parInput.next());
             if (Character.isDigit(myChar)) {
                 myValue = (myValue << JSONSymbolCollection.UNICODE_DIGITS) + myChar - '0';
             } else if (myChar >= 'a' && myChar <= 'f') {
