@@ -49,6 +49,8 @@ class WordReader implements IReader<Object> {
 
     @Override
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+        // only for collections
+        throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addValue");
     }
 
     @Override
@@ -65,9 +67,11 @@ class WordReader implements IReader<Object> {
             if (!parIterator.hasNext()) {
                 throw new InvalidTokenException(parIterator);
             }
-            if (myWord.charAt(myIndex) != parIterator.next()) {
+            if (myWord.charAt(myIndex) != parIterator.peek()) {
                 throw new InvalidTokenException(parIterator);
             }
+
+            parIterator.next();
         }
 
         if (!parIterator.hasNext()) {
@@ -89,5 +93,6 @@ class WordReader implements IReader<Object> {
 
     @Override
     public void close() {
+        // This reader does not open any resources.
     }
 }

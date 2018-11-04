@@ -25,11 +25,21 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
+import java.nio.charset.StandardCharsets;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 // We have to run single-threaded to prevent our security manager from buggering up.
 @Test(singleThreaded = true)
@@ -290,6 +300,107 @@ public final class ObjectReaderTest {
         Assert.assertEquals(myNestingAbsClass.level2.level3.level4.level4, 61);
     }
 
+    @SuppressWarnings("unchecked")
+    public void testConcreteConstruction() throws IOException {
+        final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<>(
+                NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
+                        put("genericMap", new TreeMap<CharSequence, Object>() {{
+                                put("a", "b");
+                            }});
+                        put("typedMap", new TreeMap<CharSequence, Object>() {{
+                                put("c", "d");
+                            }});
+                        put("genericSet", new HashSet<Object>() {{
+                                add("e");
+                            }});
+                        put("typedSet", new HashSet<Object>() {{
+                                add("f");
+                            }});
+                        put("genericAbstractSet", new HashSet<Object>() {{
+                                add("g");
+                            }});
+                        put("typedAbstractSet", new HashSet<Object>() {{
+                                add("h");
+                            }});
+                        put("genericCollection", new ArrayList<Object>() {{
+                                add("i");
+                            }});
+                        put("typedCollection", new LinkedList<Object>() {{
+                                add("j");
+                            }});
+                        put("genericAbstractCollection", new HashSet<Object>() {{
+                                add("k");
+                            }});
+                        put("genericList", new ArrayList<Object>() {{
+                                add("l");
+                            }});
+                    }});
+
+        Assert.assertEquals(myConcreteTest.genericMap, new LinkedHashMap() {{
+                put("a", "b");
+            }});
+        Assert.assertEquals(myConcreteTest.typedMap, new LinkedHashMap() {{
+                put("c", "d");
+            }});
+        Assert.assertEquals(myConcreteTest.genericSet, new HashSet() {{
+                add("e");
+            }});
+        Assert.assertEquals(myConcreteTest.typedSet, new HashSet() {{
+                add("f");
+            }});
+        Assert.assertEquals(myConcreteTest.genericAbstractSet, new HashSet() {{
+                add("g");
+            }});
+        Assert.assertEquals(myConcreteTest.typedAbstractSet, new HashSet() {{
+                add("h");
+            }});
+        Assert.assertEquals(myConcreteTest.genericCollection, new HashSet() {{
+                add("i");
+            }});
+        Assert.assertEquals(myConcreteTest.typedCollection, new HashSet() {{
+                add("j");
+            }});
+        Assert.assertEquals(myConcreteTest.genericAbstractCollection, new HashSet() {{
+                add("k");
+            }});
+        Assert.assertEquals(myConcreteTest.genericList, new HashSet() {{
+                add("l");
+            }});
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(expectedExceptions = JSONException.JSONRuntimeException.class)
+    public void testUnknownType() throws IOException {
+        new ObjectReader<>(
+            NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
+                    put("calendar", new ArrayList<Object>() {{
+                            add(Calendar.getInstance());
+                        }});
+                }});
+    }
+
+    public static final class IdentityHashSetTest {
+        @Test(expectedExceptions = NotImplementedException.class)
+        public void testAddValue() {
+            new ObjectReader.IdentityHashSet<>().size();
+        }
+
+        @Test(expectedExceptions = NotImplementedException.class)
+        public void testIterator() {
+            new ObjectReader.IdentityHashSet<>().iterator();
+        }
+
+        @Test
+        public void testContains() {
+            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<>();
+            myHashSet.add("test");
+            Assert.assertTrue(myHashSet.contains("test"));
+            Assert.assertFalse(myHashSet.contains("testing"));
+            Assert.assertFalse(myHashSet.contains(new String("test".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8)));
+        }
+    }
+
     private static final class SimpleDeserializationClass {
         private SimpleDeserializationClass() {
         }
@@ -356,6 +467,23 @@ public final class ObjectReaderTest {
 
         private static final class Level4 {
             private int level4;
+        }
+
+        private static final class ConcreteTest {
+            private Map genericMap;
+            private Map<String, Object> typedMap;
+            private Set genericSet;
+            private Set<CharSequence> typedSet;
+            private AbstractSet genericAbstractSet;
+            private AbstractSet<CharSequence> typedAbstractSet;
+            private Collection genericCollection;
+            private Collection<CharSequence> typedCollection;
+            private AbstractCollection genericAbstractCollection;
+            private List genericList;
+        }
+
+        private static final class InvalidClassTest {
+            private Calendar calendar;
         }
     }
 }

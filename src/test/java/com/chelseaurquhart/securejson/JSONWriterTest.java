@@ -60,6 +60,16 @@ public final class JSONWriterTest {
                 "[]"
             ),
             new Parameters(
+                "empty array",
+                new Object[0],
+                "[]"
+            ),
+            new Parameters(
+                "array with numbers",
+                new Object[]{0, 1, 2},
+                "[0,1,2]"
+            ),
+            new Parameters(
                 "empty map",
                 new LinkedHashMap<>(),
                 "{}"

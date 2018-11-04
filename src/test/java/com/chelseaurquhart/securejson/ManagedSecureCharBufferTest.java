@@ -26,6 +26,8 @@ import java.lang.reflect.Method;
 
 public final class ManagedSecureCharBufferTest {
     private static final String SUBSEQUENCE_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestCharSequence";
+    private static final String EQUALS_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestEquals";
+
     @DataProvider(name = SUBSEQUENCE_DATA_PROVIDER_NAME)
     private static Object[] dataProvider(final Method parMethod)  {
         return new Object[]{
@@ -385,6 +387,84 @@ public final class ManagedSecureCharBufferTest {
         }
     }
 
+    @DataProvider(name = EQUALS_DATA_PROVIDER_NAME)
+    private static Object[] equalsDataProvider() {
+        return new Object[]{
+            new Parameters(
+                "empty string",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                        }
+                    }, "", true),
+            new Parameters(
+                "simple string",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                            parInput.append("123");
+                        }
+                    }, "123", true),
+            new Parameters(
+                "simple char string",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                            append(parInput, '1', '2', '3');
+                        }
+                    }, "123", true),
+            new Parameters(
+                "simple char string with an extra char",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                            append(parInput, '1', '2', '3');
+                        }
+                    }, "1234", false),
+            new Parameters(
+                "null string",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                            append(parInput, '1', '2', '3');
+                        }
+                    }, null, false),
+            new Parameters(
+                "null string to empty buffer",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                        }
+                    }, null, false),
+            new Parameters(
+                "assortment of bytes, strings, and empty strings",
+                new IConsumer<ManagedSecureCharBuffer>() {
+                        @Override
+                        public void accept(final ManagedSecureCharBuffer parInput) {
+                            append(parInput, '1', '2', '3');
+                            parInput.append("123");
+                            append(parInput, '1', '2', '3');
+                            parInput.append("");
+                            parInput.append("");
+                            parInput.append("");
+                            parInput.append("");
+
+                        }
+                    }, "123123123", true),
+        };
+    }
+
+    @Test(dataProvider = EQUALS_DATA_PROVIDER_NAME)
+    public void testEqual(final Parameters parParameters) throws IOException {
+        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
+            if (parParameters.expectedEquals) {
+                Assert.assertTrue(myManagedSecureCharBuffer.equals(parParameters.expected));
+            } else {
+                Assert.assertFalse(myManagedSecureCharBuffer.equals(parParameters.expected));
+            }
+        }
+    }
+
     private static void append(final ManagedSecureCharBuffer parInput, final char... parChars) {
         for (final char myChar : parChars) {
             try {
@@ -415,12 +495,13 @@ public final class ManagedSecureCharBufferTest {
     }
 
     private static final class Parameters {
-        private String testName;
+        private final String testName;
         private ManagedSecureCharBuffer managedSecureCharBuffer;
-        private CharSequence expected;
+        private final CharSequence expected;
         private int start;
         private int end;
         private String expectedException;
+        private final boolean expectedEquals;
 
         private Parameters(final String parTestName, final int parCapacity,
                            final IConsumer<ManagedSecureCharBuffer> parManagedSecureCharBufferConsumer,
@@ -433,6 +514,17 @@ public final class ManagedSecureCharBufferTest {
             start = parStart;
             end = parEnd;
             expectedException = parExpectedException;
+            expectedEquals = false;
+        }
+
+        private Parameters(final String parTestName,
+                           final IConsumer<ManagedSecureCharBuffer> parManagedSecureCharBufferConsumer,
+                           final CharSequence parExpected, final boolean parExpectedEquals) {
+            testName = parTestName;
+            managedSecureCharBuffer = new ManagedSecureCharBuffer(512, Settings.DEFAULTS);
+            parManagedSecureCharBufferConsumer.accept(managedSecureCharBuffer);
+            expected = parExpected;
+            expectedEquals = parExpectedEquals;
         }
 
         @Override

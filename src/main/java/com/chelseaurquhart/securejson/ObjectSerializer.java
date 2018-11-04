@@ -137,9 +137,14 @@ class ObjectSerializer extends ObjectReflector {
     }
 
     <U> U construct(final Class<U> parClazz) throws IOException {
+        final Constructor<? extends U> myConstructor;
         try {
-            final Constructor<? extends U> myConstructor = parClazz.getDeclaredConstructor();
-            return AccessController.doPrivileged(new PrivilegedAction<U>() {
+            myConstructor = parClazz.getDeclaredConstructor();
+        } catch (final NoSuchMethodException myException) {
+            throw new JSONDecodeException(myException);
+        }
+
+        return AccessController.doPrivileged(new PrivilegedAction<U>() {
                 @Override
                 public U run() {
                     final boolean myOriginalValue = isAccessible(myConstructor, null);
@@ -154,9 +159,6 @@ class ObjectSerializer extends ObjectReflector {
                     }
                 }
             });
-        } catch (NoSuchMethodException | ClassCastException myException) {
-            throw new JSONDecodeException(myException);
-        }
     }
 
     @SuppressWarnings("unchecked")

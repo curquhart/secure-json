@@ -22,9 +22,9 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.math.MathContext;
 
-public class NumberReaderTest {
+public final class NumberReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
-    public final void testRead(final NumberProvider.Parameters parParameters) {
+    public void testRead(final NumberProvider.Parameters parParameters) {
         try {
             final Number myNumber = charSequenceToNumber(parParameters.number, parParameters.mathContext);
             Assert.assertNull(parParameters.expectedException);
@@ -38,12 +38,18 @@ public class NumberReaderTest {
     }
 
     @Test
-    public final void testDefaults() throws IOException {
+    public void testDefaults() throws IOException {
         Assert.assertEquals((short) 220, charSequenceToNumber("22e1", NumberReader.DEFAULT_MATH_CONTEXT));
     }
 
     private Number charSequenceToNumber(final CharSequence parNumber, final MathContext parMathContext)
             throws IOException {
         return new NumberReader(parMathContext, Settings.DEFAULTS).charSequenceToNumber(parNumber, 0);
+    }
+
+    @Test(expectedExceptions = NotImplementedException.class)
+    public void testAddValue() throws IOException {
+        final IReader myNumberReader = new NumberReader(Settings.DEFAULTS);
+        myNumberReader.addValue(null, null, null);
     }
 }
