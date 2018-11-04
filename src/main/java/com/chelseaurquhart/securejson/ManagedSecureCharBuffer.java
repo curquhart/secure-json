@@ -79,7 +79,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         } else {
             myWriteBuffer = myHeadBuffer;
         }
-        ((ObfuscatedByteBuffer) myWriteBuffer).append(parChar);
+        ((IWritableCharSequence) myWriteBuffer).append(parChar);
     }
 
     @Override
