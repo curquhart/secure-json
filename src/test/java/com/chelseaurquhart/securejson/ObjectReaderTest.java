@@ -371,12 +371,12 @@ public final class ObjectReaderTest {
     @SuppressWarnings("unchecked")
     @Test(expectedExceptions = JSONException.JSONRuntimeException.class)
     public void testUnknownType() throws IOException {
-        final NestingAbsClass.InvalidClassTest myInvalidTest = new ObjectReader<>(
-                NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                        put("calendar", new ArrayList<>() {{
-                                add(Calendar.getInstance());
-                            }});
-                    }});
+        new ObjectReader<>(
+            NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
+                    put("calendar", new ArrayList<>() {{
+                            add(Calendar.getInstance());
+                        }});
+                }});
     }
 
     public static final class IdentityHashSetTest {
@@ -396,7 +396,8 @@ public final class ObjectReaderTest {
             myHashSet.add("test");
             Assert.assertTrue(myHashSet.contains("test"));
             Assert.assertFalse(myHashSet.contains("testing"));
-            Assert.assertFalse(myHashSet.contains(new String("test".getBytes(StandardCharsets.UTF_8))));
+            Assert.assertFalse(myHashSet.contains(new String("test".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8)));
         }
     }
 
