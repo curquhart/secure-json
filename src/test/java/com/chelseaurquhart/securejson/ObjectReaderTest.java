@@ -304,34 +304,34 @@ public final class ObjectReaderTest {
     public void testConcreteConstruction() throws IOException {
         final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<>(
                 NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                        put("genericMap", new TreeMap<>() {{
+                        put("genericMap", new TreeMap<CharSequence, Object>() {{
                                 put("a", "b");
                             }});
-                        put("typedMap", new TreeMap<>() {{
+                        put("typedMap", new TreeMap<CharSequence, Object>() {{
                                 put("c", "d");
                             }});
-                        put("genericSet", new HashSet<>() {{
+                        put("genericSet", new HashSet<Object>() {{
                                 add("e");
                             }});
-                        put("typedSet", new HashSet<>() {{
+                        put("typedSet", new HashSet<Object>() {{
                                 add("f");
                             }});
-                        put("genericAbstractSet", new HashSet<>() {{
+                        put("genericAbstractSet", new HashSet<Object>() {{
                                 add("g");
                             }});
-                        put("typedAbstractSet", new HashSet<>() {{
+                        put("typedAbstractSet", new HashSet<Object>() {{
                                 add("h");
                             }});
-                        put("genericCollection", new ArrayList<>() {{
+                        put("genericCollection", new ArrayList<Object>() {{
                                 add("i");
                             }});
-                        put("typedCollection", new LinkedList<>() {{
+                        put("typedCollection", new LinkedList<Object>() {{
                                 add("j");
                             }});
-                        put("genericAbstractCollection", new HashSet<>() {{
+                        put("genericAbstractCollection", new HashSet<Object>() {{
                                 add("k");
                             }});
-                        put("genericList", new ArrayList<>() {{
+                        put("genericList", new ArrayList<Object>() {{
                                 add("l");
                             }});
                     }});
@@ -373,7 +373,7 @@ public final class ObjectReaderTest {
     public void testUnknownType() throws IOException {
         new ObjectReader<>(
             NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                    put("calendar", new ArrayList<>() {{
+                    put("calendar", new ArrayList<Object>() {{
                             add(Calendar.getInstance());
                         }});
                 }});
