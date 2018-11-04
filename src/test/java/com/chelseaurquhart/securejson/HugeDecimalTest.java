@@ -39,6 +39,7 @@ public final class HugeDecimalTest {
                 1.0
             )
                 .expectedBigDecimal(BigDecimal.valueOf(1.0))
+                .expectedBigInteger(BigInteger.ONE)
                 .expectedDouble(1.0)
                 .expectedFloat(1.0f)
                 .expectedLong(1)
@@ -191,8 +192,20 @@ public final class HugeDecimalTest {
     }
 
     private void testConvert(final Parameters parParameters, final IConsumer<HugeDecimal> parConsumer) {
+        // test from number
         final HugeDecimal myHugeDecimal = new HugeDecimal(parParameters.input);
         parConsumer.accept(myHugeDecimal);
+
+        // test from string
+        final CharSequence myCharSequenceValue;
+        if (parParameters.input instanceof HugeDecimal) {
+            myCharSequenceValue = ((HugeDecimal) parParameters.input).charSequenceValue();
+        } else {
+            myCharSequenceValue = parParameters.input.toString();
+        }
+        final HugeDecimal myHugeDecimalFromString = new HugeDecimal(myCharSequenceValue,
+            new NumberReader(Settings.DEFAULTS));
+        parConsumer.accept(myHugeDecimalFromString);
     }
 
     private static final class Parameters {

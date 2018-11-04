@@ -164,7 +164,8 @@ public class HugeDecimal extends Number implements CharSequence {
                 return ((BigDecimal) number).toBigInteger();
             }
 
-            return new BigInteger(number.toString());
+            // decimal first and then big integer, since this will allow us to strip .0000 without hacks.
+            return new BigDecimal(number.toString()).toBigIntegerExact();
         }
 
         return numberReader.charSequenceToBigDecimal(chars, 0).getKey().toBigIntegerExact();
