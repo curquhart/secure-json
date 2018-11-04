@@ -474,12 +474,12 @@ class ObjectReader<T> extends ObjectSerializer {
         return myResult;
     }
 
-    private static class IdentityHashSet<T> implements Set<T> {
+    static class IdentityHashSet<T> implements Set<T> {
         private final IdentityHashMap<T, Void> identityHashMap = new IdentityHashMap<>();
 
         @Override
         public int size() {
-            return identityHashMap.size();
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "size");
         }
 
         @Override
@@ -494,17 +494,17 @@ class ObjectReader<T> extends ObjectSerializer {
 
         @Override
         public Iterator<T> iterator() {
-            return identityHashMap.keySet().iterator();
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "iterator");
         }
 
         @Override
         public Object[] toArray() {
-            return identityHashMap.keySet().toArray();
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "toArray");
         }
 
         @Override
         public <T1> T1[] toArray(final T1[] parArrayClass) {
-            return identityHashMap.keySet().toArray(parArrayClass);
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "toArray");
         }
 
         @Override
@@ -518,29 +518,17 @@ class ObjectReader<T> extends ObjectSerializer {
 
         @Override
         public boolean remove(final Object parKey) {
-            final boolean myHasKey = contains(parKey);
-            if (myHasKey) {
-                identityHashMap.remove(parKey);
-            }
-
-            return myHasKey;
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "remove");
         }
 
         @Override
         public boolean containsAll(final Collection<?> parCollection) {
-            return identityHashMap.keySet().containsAll(parCollection);
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "containsAll");
         }
 
         @Override
         public boolean addAll(final Collection<? extends T> parCollection) {
-            boolean myAdded = false;
-            for (final T myObject : parCollection) {
-                if (add(myObject)) {
-                    myAdded = true;
-                }
-            }
-
-            return myAdded;
+            throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addAll");
         }
 
         @Override

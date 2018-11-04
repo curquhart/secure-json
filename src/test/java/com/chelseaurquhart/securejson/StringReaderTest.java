@@ -46,4 +46,10 @@ public final class StringReaderTest {
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
         }
     }
+
+    @Test(expectedExceptions = NotImplementedException.class)
+    public void testAddValue() throws IOException {
+        final IReader myStringReader = new StringReader(Settings.DEFAULTS);
+        myStringReader.addValue(null, null, null);
+    }
 }

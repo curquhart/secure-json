@@ -102,6 +102,12 @@ public final class WordReaderTest {
         }
     }
 
+    @Test(expectedExceptions = NotImplementedException.class)
+    public void testAddValue() throws IOException {
+        final IReader myWordReader = new WordReader();
+        myWordReader.addValue(null, null, null);
+    }
+
     private static final class Parameters {
         private final String testName;
         private final CharSequence input;
