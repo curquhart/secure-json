@@ -1,7 +1,8 @@
 # Secure JSON
-[![pipeline status](https://gitlab.com/curquhart/secure-json/badges/master/pipeline.svg)](https://gitlab.com/curquhart/secure-json/commits/master)
-[![coverage report](https://gitlab.com/curquhart/secure-json/badges/master/coverage.svg)](https://gitlab.com/curquhart/secure-json/commits/master)
+[![Pipeline Status](https://gitlab.com/curquhart/secure-json/badges/master/pipeline.svg)](https://gitlab.com/curquhart/secure-json/commits/master)
+[![Coverage Report](https://gitlab.com/curquhart/secure-json/badges/master/coverage.svg)](https://gitlab.com/curquhart/secure-json/commits/master)
 [![Documentation Status](https://readthedocs.org/projects/securejson/badge/?version=latest)](https://securejson.readthedocs.io/en/latest/?badge=latest)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.chelseaurquhart.securejson&metric=alert_status)](https://sonarcloud.io/dashboard/index/com.chelseaurquhart.securejson)
 
 ## About
 Secure JSON is a JSON reader and writer that works outside of the garbage-collected heap. It can work on CharSequence
