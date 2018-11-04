@@ -75,7 +75,7 @@ public final class StringUtil {
      * @return A character sequence with no strings.
      */
     public static String charSequenceToString(final CharSequence parInput) {
-        if (parInput instanceof String) {
+        if (parInput instanceof String || parInput == null) {
             return (String) parInput;
         }
 

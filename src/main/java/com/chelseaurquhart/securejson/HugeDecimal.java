@@ -28,6 +28,9 @@ import java.util.Objects;
 
 /**
  * HugeDecimal is for numbers that are too big to parse with BigDecimal through normal means.
+ * Note that we will frequently convert to strings during conversion, so sensitive data should either
+ *   a) not be stored in numeric types or
+ *   b) should be retrieved from HugeDecimal.charSequenceValue()
  */
 public class HugeDecimal extends Number implements CharSequence {
     private static final long serialVersionUID = 1L;
@@ -139,6 +142,10 @@ public class HugeDecimal extends Number implements CharSequence {
      * @return Our raw character sequence value.
      */
     public final CharSequence charSequenceValue() {
+        if (number != null) {
+            return number.toString();
+        }
+
         return chars;
     }
 
@@ -156,6 +163,8 @@ public class HugeDecimal extends Number implements CharSequence {
             if (number instanceof BigDecimal) {
                 return ((BigDecimal) number).toBigInteger();
             }
+
+            return new BigInteger(number.toString());
         }
 
         return numberReader.charSequenceToBigDecimal(chars, 0).getKey().toBigIntegerExact();
@@ -175,6 +184,8 @@ public class HugeDecimal extends Number implements CharSequence {
             if (number instanceof BigInteger) {
                 return new BigDecimal((BigInteger) number);
             }
+
+            return new BigDecimal(number.toString());
         }
 
         return numberReader.charSequenceToBigDecimal(chars, 0).getKey();
