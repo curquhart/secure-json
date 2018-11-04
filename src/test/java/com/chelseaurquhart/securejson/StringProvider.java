@@ -58,7 +58,7 @@ public final class StringProvider {
             ),
             buildParameters(
                 "string with unicode characters",
-                "\"\\u1234\\u5678\"\\uabcd",
+                "\"\\u1234\\u5678\\uabcd\"",
                 "\u1234\u5678\uabcd"
             ),
         };
