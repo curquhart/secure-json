@@ -93,5 +93,6 @@ class WordReader implements IReader<Object> {
 
     @Override
     public void close() {
+        // This reader does not open any resources.
     }
 }

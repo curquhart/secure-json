@@ -62,6 +62,12 @@ public final class WordReaderTest {
                 null
             ),
             new Parameters(
+                "eof while reading true string",
+                "tr",
+                null,
+                new JSONDecodeException.InvalidTokenException(new PresetIterableCharSequence(2))
+            ),
+            new Parameters(
                 "bad token at start",
                 "Btrue",
                 null,
