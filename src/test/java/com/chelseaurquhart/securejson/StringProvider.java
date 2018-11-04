@@ -51,6 +51,16 @@ public final class StringProvider {
                 "\"simple \\\"string\"",
                 "simple \"string"
             ),
+            buildParameters(
+                "string with escape characters",
+                "\"\\t\\r\\b\\n\\f\"",
+                "\t\r\b\n\f"
+            ),
+            buildParameters(
+                "string with unicode characters",
+                "\"\\u1234\\u5678\"",
+                "\u1234\u5678"
+            ),
         };
     }
 
