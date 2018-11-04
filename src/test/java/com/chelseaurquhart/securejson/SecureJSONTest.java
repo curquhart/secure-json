@@ -133,7 +133,8 @@ public final class SecureJSONTest {
     public void testReadIncorrectType() throws JSONException {
         final CharSequence myInput = "\"test\"";
         // read correct type to test for general functionality
-        new SecureJSON().fromJSON(myInput, new IConsumer<CharSequence>() {
+        // use the builder just so there is something executing it
+        new SecureJSON.Builder().build().fromJSON(myInput, new IConsumer<CharSequence>() {
             @Override
             public void accept(final CharSequence parInput) {
                 Assert.assertEquals(StringUtil.charSequenceToString(parInput), "test");
