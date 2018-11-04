@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -376,6 +377,27 @@ public final class ObjectReaderTest {
                                 add(Calendar.getInstance());
                             }});
                     }});
+    }
+
+    public static final class IdentityHashSetTest {
+        @Test(expectedExceptions = NotImplementedException.class)
+        public void testAddValue() {
+            new ObjectReader.IdentityHashSet<>().size();
+        }
+
+        @Test(expectedExceptions = NotImplementedException.class)
+        public void testIterator() {
+            new ObjectReader.IdentityHashSet<>().iterator();
+        }
+
+        @Test
+        public void testContains() {
+            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<>();
+            myHashSet.add("test");
+            Assert.assertTrue(myHashSet.contains("test"));
+            Assert.assertFalse(myHashSet.contains("testing"));
+            Assert.assertFalse(myHashSet.contains(new String("test".getBytes(StandardCharsets.UTF_8))));
+        }
     }
 
     private static final class SimpleDeserializationClass {
