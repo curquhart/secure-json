@@ -21,8 +21,6 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.NoSuchElementException;
 
 /**
@@ -43,7 +41,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final char UTF_LITTLE_ENDIAN = '\ufffe';
 
 
-    private final Deque<Character> charQueue;
+    private final CharQueue charQueue;
     private int offset;
     private boolean initialized;
     private Encoding encoding;
@@ -54,7 +52,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
     EncodingAwareCharacterIterator(final int parOffset) {
         offset = parOffset;
-        charQueue = new ArrayDeque<>();
+        charQueue = new CharQueue(UTF32_BYTES);
     }
 
     @Override
