@@ -260,6 +260,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                         // 0 is ok, anything else is not.
                         break;
                     }
+                    throw buildException(parSource, myIndex + parOffset);
                 default:
                     throw buildException(parSource, myIndex + parOffset);
             }
