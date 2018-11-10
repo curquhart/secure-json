@@ -34,7 +34,8 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        return JSONSymbolCollection.Token.L_BRACE.getShortSymbol().equals(parIterator.peek());
+        return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+            == JSONSymbolCollection.Token.L_BRACE;
     }
 
     @Override
@@ -43,23 +44,21 @@ class ListReader implements IReader<ListReader.Container> {
             throw new MalformedListException(parIterator);
         }
 
-        final char myChar = parIterator.peek();
+        final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(),
+            JSONSymbolCollection.Token.UNKNOWN);
 
-        if (myChar == JSONSymbolCollection.Token.R_BRACE.getShortSymbol()) {
-            return SymbolType.END;
-        } else if (myChar == JSONSymbolCollection.Token.COMMA.getShortSymbol()) {
-            return SymbolType.SEPARATOR;
+        switch (myToken) {
+            case R_BRACE:
+                return SymbolType.END;
+            case COMMA:
+                return SymbolType.SEPARATOR;
+            default:
+                return SymbolType.UNKNOWN;
         }
-
-        return SymbolType.UNKNOWN;
     }
 
     @Override
     public Container read(final ICharacterIterator parIterator) throws IOException {
-        if (!JSONSymbolCollection.Token.L_BRACE.getShortSymbol().equals(parIterator.peek())) {
-            throw new MalformedListException(parIterator);
-        }
-
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
 

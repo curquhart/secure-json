@@ -36,6 +36,8 @@ public interface IWritableCharSequence extends CharSequence, Closeable, AutoClos
      * Check if this buffer is restricted to the initial capacity. If it is, we will create more buffers before going
      * over the initial capacity. If it is not, we will expect it to handle resizing itself.
      *
+     * Note that the result of this will be cached. Changing values at runtime is not supported.
+     *
      * @return True if this buffer is restricted to the initial capacity. False otherwise.
      */
     boolean isRestrictedToCapacity();

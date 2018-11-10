@@ -25,18 +25,21 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @exclude
  */
 final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
-    private static final int HASH_PRIME = 31;
 
     private final int initialCapacity;
-    private final LinkedList<CharSequence> buffers;
+    private final List<CharSequence> buffers;
+    private final List<IWritableCharSequence> writeBuffers;
     private byte[] bytes;
     private final Settings settings;
+    private Capacity capacityRestriction;
+    private IWritableCharSequence writeBuffer;
 
     ManagedSecureCharBuffer(final Settings parSettings) {
         this(0, parSettings);
@@ -49,52 +52,54 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             initialCapacity = INITIAL_CAPACITY;
         }
         buffers = new LinkedList<>();
+        writeBuffers = new LinkedList<>();
         settings = parSettings;
+        capacityRestriction = Capacity.UNKNOWN;
     }
 
-    private ManagedSecureCharBuffer(final int parInitialCapacity, final LinkedList<CharSequence> parBuffers,
+    private ManagedSecureCharBuffer(final int parInitialCapacity, final List<CharSequence> parBuffers,
+                                    final List<IWritableCharSequence> parWriteBuffers,
                                     final Settings parSettings) {
         initialCapacity = parInitialCapacity;
         buffers = parBuffers;
+        writeBuffers = parWriteBuffers;
         settings = parSettings;
+        capacityRestriction = Capacity.UNKNOWN;
     }
 
     @Override
     public void append(final char parChar) throws IOException {
         final int myMaxSize = initialCapacity + 1;
 
-        final CharSequence myHeadBuffer;
-        if (buffers.isEmpty()) {
-            myHeadBuffer = null;
-        } else {
-            myHeadBuffer = buffers.getLast();
+        if (writeBuffer == null || (capacityRestriction == Capacity.RESTRICTED
+                && writeBuffer.length() + 1 >= (writeBuffer).getCapacity())) {
+            writeBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
+            if (writeBuffer.isRestrictedToCapacity()) {
+                capacityRestriction = Capacity.RESTRICTED;
+            } else {
+                capacityRestriction = Capacity.UNRESTRICTED;
+            }
+            buffers.add(writeBuffer);
+            writeBuffers.add(writeBuffer);
         }
 
-        final CharSequence myWriteBuffer;
-        if (!(myHeadBuffer instanceof IWritableCharSequence)
-                || (myHeadBuffer.length() + 1 >= ((IWritableCharSequence) myHeadBuffer).getCapacity()
-                && ((IWritableCharSequence) myHeadBuffer).isRestrictedToCapacity())) {
-            myWriteBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
-            buffers.add(myWriteBuffer);
-        } else {
-            myWriteBuffer = myHeadBuffer;
-        }
-        ((IWritableCharSequence) myWriteBuffer).append(parChar);
+        writeBuffer.append(parChar);
     }
 
     @Override
     public void append(final CharSequence parChars) {
         buffers.add(parChars);
+        // we'll need a new buffer or we'll get out of order.
+        writeBuffer = null;
     }
 
     @Override
     public void close() throws IOException {
-        for (final CharSequence myBuffer : buffers) {
-            if (myBuffer instanceof Closeable) {
-                ((Closeable) myBuffer).close();
-            }
+        for (final IWritableCharSequence myBuffer : writeBuffers) {
+            myBuffer.close();
         }
         buffers.clear();
+        writeBuffers.clear();
         closeBytes();
     }
 
@@ -213,7 +218,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             throw new ArrayIndexOutOfBoundsException(myMessage);
         }
 
-        return new ManagedSecureCharBuffer(initialCapacity, myBuffers, settings);
+        return new ManagedSecureCharBuffer(initialCapacity, myBuffers, writeBuffers, settings);
     }
 
     @Override
@@ -226,51 +231,6 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             Arrays.fill(bytes, (byte) 0);
             bytes = null;
         }
-    }
-
-    @Override
-    public boolean equals(final Object parObject) {
-        if (this == parObject) {
-            return true;
-        }
-        if (!(parObject instanceof CharSequence)) {
-            return false;
-        }
-
-        return isEqual(subSequence(0, length()), (CharSequence) parObject);
-    }
-
-    @Override
-    public int hashCode() {
-        return hashCode(subSequence(0, length()));
-    }
-
-    private static boolean isEqual(final CharSequence parLhs, final CharSequence parRhs) {
-        if (parLhs == null || parRhs == null) {
-            return parLhs == parRhs;
-        }
-
-        final int myLength = parLhs.length();
-        if (parRhs.length() != myLength) {
-            return false;
-        }
-
-        for (int myIndex = 0; myIndex < myLength; myIndex++) {
-            if (parLhs.charAt(myIndex) != parRhs.charAt(myIndex)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static int hashCode(final CharSequence parSubSequence) {
-        int myHashCode = 0;
-        for (int myIndex = parSubSequence.length() - 1; myIndex > 0; myIndex--) {
-            myHashCode += HASH_PRIME * (int) parSubSequence.charAt(myIndex);
-        }
-
-        return myHashCode;
     }
 
     /**
@@ -351,23 +311,6 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         }
 
         @Override
-        public boolean equals(final Object parObject) {
-            if (this == parObject) {
-                return true;
-            }
-            if (!(parObject instanceof CharSequence)) {
-                return false;
-            }
-
-            return isEqual(subSequence(0, length()), (CharSequence) parObject);
-        }
-
-        @Override
-        public int hashCode() {
-            return ManagedSecureCharBuffer.hashCode(subSequence(0, length()));
-        }
-
-        @Override
         public String toString() {
             throw new UnsupportedOperationException();
         }
@@ -381,5 +324,11 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         public int getCapacity() {
             return capacity;
         }
+    }
+
+    private enum Capacity {
+        UNKNOWN,
+        RESTRICTED,
+        UNRESTRICTED
     }
 }
