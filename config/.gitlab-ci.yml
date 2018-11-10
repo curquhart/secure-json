@@ -39,15 +39,17 @@ javadocs:
     - unset SONAR_TOKEN
     - gradle --no-daemon javadoc
 
-testJava11:
+# Lets support this in the pipeline, but call it experimental to be clear that we're using an experimental Gradle version.
+testJava11Experimental:
   tags:
     - docker
   image: gradle:4.10-jdk11
   stage: test
+  allow_failure: true
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
-  when: manual
+    - gradle wrapper --gradle-version=5.0-20181110000025+0000
+    - ./gradlew --no-daemon check
 
 verifyJSONTestSuite:
   tags:
