@@ -43,15 +43,17 @@ class ListReader implements IReader<ListReader.Container> {
             throw new MalformedListException(parIterator);
         }
 
-        final char myChar = parIterator.peek();
+        final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(),
+            JSONSymbolCollection.Token.UNKNOWN);
 
-        if (myChar == JSONSymbolCollection.Token.R_BRACE.getShortSymbol()) {
-            return SymbolType.END;
-        } else if (myChar == JSONSymbolCollection.Token.COMMA.getShortSymbol()) {
-            return SymbolType.SEPARATOR;
+        switch (myToken) {
+            case R_BRACE:
+                return SymbolType.END;
+            case COMMA:
+                return SymbolType.SEPARATOR;
+            default:
+                return SymbolType.UNKNOWN;
         }
-
-        return SymbolType.UNKNOWN;
     }
 
     @Override

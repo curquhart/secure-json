@@ -142,13 +142,16 @@ final class JSONSymbolCollection {
         FORM_FEED('\f', "\\f"),
         BACKSPACE('\b', "\\b"),
         UNICODE('u'),
-        ESCAPE('\\', "\\\\");
+        ESCAPE('\\', "\\\\"),
+        UNKNOWN(null, null);
 
         private static final Map<Character, Token> SHORT_TOKEN_MAP = new HashMap<>();
 
         static {
             for (final Token myValue : values()) {
-                SHORT_TOKEN_MAP.put(myValue.getShortSymbol(), myValue);
+                if (myValue != UNKNOWN) {
+                    SHORT_TOKEN_MAP.put(myValue.getShortSymbol(), myValue);
+                }
             }
         }
 
@@ -185,8 +188,10 @@ final class JSONSymbolCollection {
             this.value = parValue;
             if (symbol instanceof Character) {
                 this.shortSymbol = (char) symbol;
-            } else {
+            } else if (symbol != null) {
                 this.shortSymbol = symbol.toString().charAt(0);
+            } else {
+                this.shortSymbol = '\u0000';
             }
         }
 
