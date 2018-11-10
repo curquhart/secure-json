@@ -30,6 +30,11 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final int UTF16_BYTES = 2;
     private static final int UTF32_BYTES = 4;
 
+    // only enough space to store the next character if we read too far.
+    private static final int INITIAL_QUEUE_CAPACITY = 3;
+    // after encoding is detected, reduce to a single character. This allows for optimization within the queue.
+    private static final int RUNTIME_QUEUE_CAPACITY = 1;
+
     private static final char UTF8_BOM_CHAR0 = '\u00ef';
     private static final char UTF8_BOM_CHAR1 = '\u00bb';
     private static final char UTF8_BOM_CHAR2 = '\u00bf';
@@ -41,9 +46,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final char UTF_LITTLE_ENDIAN = '\ufffe';
 
 
-    private final CharQueue charQueue;
+    private CharQueue charQueue;
     private int offset;
-    private boolean initialized;
+    private State state = State.UNINITIALIZED;
     private Encoding encoding;
 
     EncodingAwareCharacterIterator() {
@@ -52,7 +57,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
     EncodingAwareCharacterIterator(final int parOffset) {
         offset = parOffset;
-        charQueue = new CharQueue(UTF32_BYTES);
+        charQueue = new CharQueue(INITIAL_QUEUE_CAPACITY);
     }
 
     @Override
@@ -169,9 +174,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     }
 
     private Character cacheAndGetNextChar() throws IOException {
-        if (!initialized) {
-            initialized = true;
+        if (state == State.UNINITIALIZED) {
+            state = State.CHECKING_CHARSET;
             encoding = findEncoding();
+            state = State.CHECKED_CHARSET;
         }
 
         if (charQueue.isEmpty()) {
@@ -206,6 +212,12 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         if (!charQueue.isEmpty()) {
             offset++;
             return charQueue.pop();
+        }
+
+        // once our queue is empty, change capacity. There is some optimization built around a single char queue.
+        if (state == State.CHECKED_CHARSET && charQueue.capacity() == INITIAL_QUEUE_CAPACITY) {
+            charQueue = new CharQueue(RUNTIME_QUEUE_CAPACITY);
+            state = State.INITIALIZED;
         }
 
         try {
@@ -301,5 +313,12 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private enum EOFMarker {
         EOF,
         UNKNOWN
+    }
+
+    private enum State {
+        UNINITIALIZED,
+        CHECKING_CHARSET,
+        CHECKED_CHARSET,
+        INITIALIZED
     }
 }

@@ -47,7 +47,7 @@ public final class CharQueueTest {
 
     @Test
     public void testWrapping() {
-        final CharQueue myQueue = new CharQueue(4);
+        final CharQueue myQueue = new CharQueue(5);
         myQueue.add('a');
         myQueue.add('b');
         myQueue.add('c');

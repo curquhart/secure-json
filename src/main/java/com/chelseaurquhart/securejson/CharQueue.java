@@ -17,7 +17,7 @@
 package com.chelseaurquhart.securejson;
 
 /**
- * Circular array queue.
+ * Circular array queue. Has optimizations to prevent math if size is 1.
  *
  * @exclude
  */
@@ -25,12 +25,23 @@ class CharQueue {
     private char[] chars;
     private int readIndex = 0;
     private int writeIndex = 0;
+    private int capacity;
 
     CharQueue(final int parCapacity) {
-        chars = new char[parCapacity + 1];
+        capacity = parCapacity;
+        chars = new char[parCapacity];
     }
 
     void add(final char parChar) {
+        if (capacity == 1) {
+            if (writeIndex != 0) {
+                throw new IllegalStateException();
+            }
+            chars[0] = parChar;
+            writeIndex = 1;
+            return;
+        }
+
         if (readIndex == (writeIndex + 1) % chars.length) {
             throw new IllegalStateException();
         }
@@ -46,6 +57,12 @@ class CharQueue {
 
         final char myRes = chars[readIndex];
         chars[readIndex] = '\u0000';
+
+        if (capacity == 1) {
+            writeIndex = 0;
+            return myRes;
+        }
+
         readIndex = (readIndex + 1) % chars.length;
 
         return myRes;
@@ -60,10 +77,18 @@ class CharQueue {
     }
 
     int size() {
+        if (capacity == 1) {
+            return writeIndex;
+        }
+
         return Math.abs(readIndex - writeIndex);
     }
 
     boolean isEmpty() {
         return readIndex == writeIndex;
+    }
+
+    int capacity() {
+        return capacity;
     }
 }
