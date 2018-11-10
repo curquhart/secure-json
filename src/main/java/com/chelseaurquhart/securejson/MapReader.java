@@ -63,11 +63,6 @@ class MapReader implements IReader<MapReader.Container> {
 
     @Override
     public Container read(final ICharacterIterator parIterator) throws IOException {
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
-                != JSONSymbolCollection.Token.L_CURLY) {
-            throw new MalformedMapException(parIterator);
-        }
-
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
 

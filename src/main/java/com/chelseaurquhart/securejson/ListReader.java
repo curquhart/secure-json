@@ -59,11 +59,6 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public Container read(final ICharacterIterator parIterator) throws IOException {
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
-                != JSONSymbolCollection.Token.L_BRACE) {
-            throw new MalformedListException(parIterator);
-        }
-
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
 
