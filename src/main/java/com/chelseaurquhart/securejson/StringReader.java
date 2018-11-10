@@ -35,7 +35,8 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        return JSONSymbolCollection.Token.QUOTE.getShortSymbol().equals(parIterator.peek());
+        return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+            == JSONSymbolCollection.Token.QUOTE;
     }
 
     @Override
@@ -46,7 +47,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     @Override
     public CharSequence read(final ICharacterIterator parInput)
             throws IOException {
-        if (!JSONSymbolCollection.Token.QUOTE.getShortSymbol().equals(parInput.peek())) {
+        if (JSONSymbolCollection.Token.forSymbolOrDefault(parInput.peek(), null) != JSONSymbolCollection.Token.QUOTE) {
             throw new MalformedStringException(parInput);
         }
         parInput.next();
@@ -56,6 +57,8 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
 
         while (parInput.hasNext()) {
             char myChar = parInput.next();
+            final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(myChar,
+                JSONSymbolCollection.Token.UNKNOWN);
             if (myChar == '\\') {
                 if (!parInput.hasNext()) {
                     throw new MalformedStringException(parInput);
@@ -83,7 +86,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
             } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
                 throw new MalformedUnicodeValueException(parInput);
             } else {
-                if (myChar == JSONSymbolCollection.Token.QUOTE.getShortSymbol()) {
+                if (myToken == JSONSymbolCollection.Token.QUOTE) {
                     return mySecureBuffer;
                 }
                 mySecureBuffer.append(myChar);

@@ -34,7 +34,8 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        return JSONSymbolCollection.Token.L_BRACE.getShortSymbol().equals(parIterator.peek());
+        return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+            == JSONSymbolCollection.Token.L_BRACE;
     }
 
     @Override
@@ -58,7 +59,8 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public Container read(final ICharacterIterator parIterator) throws IOException {
-        if (!JSONSymbolCollection.Token.L_BRACE.getShortSymbol().equals(parIterator.peek())) {
+        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+                != JSONSymbolCollection.Token.L_BRACE) {
             throw new MalformedListException(parIterator);
         }
 

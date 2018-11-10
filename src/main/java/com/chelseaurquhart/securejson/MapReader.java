@@ -36,7 +36,8 @@ class MapReader implements IReader<MapReader.Container> {
 
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException {
-        return JSONSymbolCollection.Token.L_CURLY.getShortSymbol().equals(parIterator.peek());
+        return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+            == JSONSymbolCollection.Token.L_CURLY;
     }
 
     @Override
@@ -62,7 +63,8 @@ class MapReader implements IReader<MapReader.Container> {
 
     @Override
     public Container read(final ICharacterIterator parIterator) throws IOException {
-        if (!JSONSymbolCollection.Token.L_CURLY.getShortSymbol().equals(parIterator.peek())) {
+        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+                != JSONSymbolCollection.Token.L_CURLY) {
             throw new MalformedMapException(parIterator);
         }
 
@@ -119,7 +121,8 @@ class MapReader implements IReader<MapReader.Container> {
     private CharSequence readKey(final ICharacterIterator parIterator) throws IOException {
         final CharSequence myKey = stringReader.read(parIterator);
         jsonReader.moveToNextToken(parIterator);
-        if (!JSONSymbolCollection.Token.COLON.getShortSymbol().equals(parIterator.peek())) {
+        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+                != JSONSymbolCollection.Token.COLON) {
             throw new MalformedMapException(parIterator);
         }
         parIterator.next();

@@ -203,7 +203,7 @@ final class JSONSymbolCollection {
             return symbol;
         }
 
-        Character getShortSymbol() {
+        char getShortSymbol() {
             return shortSymbol;
         }
     }

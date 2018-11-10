@@ -192,16 +192,20 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
             } else {
                 myNextChar = 0;
             }
+            final JSONSymbolCollection.Token myNextToken = JSONSymbolCollection.Token.forSymbolOrDefault(
+                myNextChar, JSONSymbolCollection.Token.UNKNOWN);
+            final JSONSymbolCollection.Token myLastToken = JSONSymbolCollection.Token.forSymbolOrDefault(
+                myLastChar, JSONSymbolCollection.Token.UNKNOWN);
 
             switch (myToken) {
                 case ZERO:
                     if (myLength != 1 && !myFoundNonZeroDigit && !myFoundDecimal) {
                         if (myLength <= myIndex + 1) {
-                            if (myLastChar != JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
+                            if (myLastToken != JSONSymbolCollection.Token.MINUS) {
                                 throw buildException(parSource, myIndex + parOffset);
                             }
-                        } else if (myNextChar != JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
-                                && myNextChar != JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                        } else if (myNextToken != JSONSymbolCollection.Token.DECIMAL
+                                && myNextToken != JSONSymbolCollection.Token.EXPONENT) {
                             throw buildException(parSource, myIndex + parOffset + 1);
                         }
                     }
@@ -225,18 +229,18 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                     myForceDouble = true;
                     break;
                 case EXPONENT:
-                    if (myFoundExponent || myLastChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
+                    if (myFoundExponent || myLastToken == JSONSymbolCollection.Token.DECIMAL
                             || myIndex == myLength - 1 || myIndex == 0) {
                         throw buildException(parSource, myIndex + parOffset);
                     }
                     myFoundExponent = true;
-                    if (myNextChar == JSONSymbolCollection.Token.MINUS.getShortSymbol()) {
+                    if (myNextToken == JSONSymbolCollection.Token.MINUS) {
                         myForceDouble = true;
-                        parBuffer[++myIndex + myLengthOffset] = JSONSymbolCollection.Token.MINUS.getShortSymbol();
+                        parBuffer[++myIndex + myLengthOffset] = myNextChar;
                         if (myIndex == myLength - 1) {
                             throw buildException(parSource, myIndex + parOffset);
                         }
-                    } else if (myNextChar == JSONSymbolCollection.Token.PLUS.getShortSymbol()) {
+                    } else if (myNextToken == JSONSymbolCollection.Token.PLUS) {
                         myIndex++;
                         if (myIndex == myLength - 1) {
                             throw buildException(parSource, myIndex + parOffset);
@@ -249,8 +253,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                         throw buildException(parSource, myIndex + parOffset);
                     }
 
-                    if (myNextChar == JSONSymbolCollection.Token.DECIMAL.getShortSymbol()
-                            || myNextChar == JSONSymbolCollection.Token.EXPONENT.getShortSymbol()) {
+                    if (myNextToken == JSONSymbolCollection.Token.DECIMAL
+                            || myNextToken == JSONSymbolCollection.Token.EXPONENT) {
                         throw buildException(parSource, myIndex + parOffset + 1);
                     } else if (myIndex == 0) {
                         // 0 is ok, anything else is not.
