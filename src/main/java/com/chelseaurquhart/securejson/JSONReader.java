@@ -113,47 +113,64 @@ final class JSONReader implements Closeable, AutoCloseable {
     private void readStack(final ICharacterIterator parIterator, final Deque<Map.Entry<IReader, Object>> parStack,
                            final Data parData) throws IOException, JSONException {
         while (!parStack.isEmpty()) {
-            final Map.Entry<IReader, Object> myHead = parStack.peek();
-            if (parData.separatorForObject != myHead) {
-                parData.separatorForObject = null;
-            }
-            if (!parIterator.hasNext()) {
-                throw new MalformedJSONException(parIterator);
-            }
-            final IReader.SymbolType mySymbolType = myHead.getKey().getSymbolType(parIterator);
-            if (parData.hasResult) {
-                myHead.getKey().addValue(parIterator, myHead.getValue(), parData.result);
-            }
-            if (mySymbolType == IReader.SymbolType.END) {
-                if (parData.separatorForObject == myHead) {
-                    throw new InvalidTokenException(parIterator);
-                }
-                parStack.pop();
-                parIterator.next();
-                moveToNextToken(parIterator);
-                // feed it to its parent. Because map stores its data as a wrapper, we need to ask the reader
-                // to provide a proper value (ex Map instead of Container)
-                parData.result = myHead.getKey().normalizeCollection(myHead.getValue());
-                parData.hasResult = true;
-            } else if (mySymbolType == IReader.SymbolType.SEPARATOR) {
-                // keep reading
-                parIterator.next();
-                moveToNextToken(parIterator);
-                if (myHead.getKey().getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
-                    throw new InvalidTokenException(parIterator);
-                }
-                parData.isFinished = false;
-                parData.separatorForObject = myHead;
-            } else if (parIterator.hasNext() && isValidToken(parIterator.peek())) {
-                parData.isFinished = false;
-            } else {
-                throw new MalformedJSONException(parIterator);
-            }
+            readStackEntry(parIterator, parStack, parData);
 
             if (!parData.isFinished) {
                 break;
             }
         }
+    }
+
+    private void readStackEntry(final ICharacterIterator parIterator, final Deque<Map.Entry<IReader, Object>> parStack,
+                           final Data parData) throws IOException, JSONException {
+        final Map.Entry<IReader, Object> myHead = parStack.peek();
+        if (parData.separatorForObject != myHead) {
+            parData.separatorForObject = null;
+        }
+        if (!parIterator.hasNext() || myHead == null) {
+            throw new MalformedJSONException(parIterator);
+        }
+        final IReader.SymbolType mySymbolType = myHead.getKey().getSymbolType(parIterator);
+        if (parData.hasResult) {
+            myHead.getKey().addValue(parIterator, myHead.getValue(), parData.result);
+        }
+        if (mySymbolType == IReader.SymbolType.END) {
+            readStackEnd(parIterator, myHead, parData, parStack);
+        } else if (mySymbolType == IReader.SymbolType.SEPARATOR) {
+            readStackPart(parIterator, myHead, parData);
+        } else if (parIterator.hasNext() && isValidToken(parIterator.peek())) {
+            parData.isFinished = false;
+        } else {
+            throw new MalformedJSONException(parIterator);
+        }
+    }
+
+    private void readStackPart(ICharacterIterator parIterator, Map.Entry<IReader, Object> myHead, final Data parData)
+            throws IOException, JSONException {
+        parIterator.next();
+        moveToNextToken(parIterator);
+        if (myHead.getKey().getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
+            throw new InvalidTokenException(parIterator);
+        }
+        // keep reading
+        parData.isFinished = false;
+        parData.separatorForObject = myHead;
+    }
+
+    private void readStackEnd(final ICharacterIterator parIterator, final Map.Entry<IReader, Object> parHead,
+                              final Data parData, final Deque<Map.Entry<IReader, Object>> parStack)
+            throws IOException, JSONException {
+        if (parData.separatorForObject == parHead) {
+            throw new InvalidTokenException(parIterator);
+        }
+        parStack.pop();
+        parIterator.next();
+        moveToNextToken(parIterator);
+        // feed it to its parent. Because map stores its data as a wrapper, we need to ask the reader
+        // to provide a proper value (ex Map instead of Container)
+        parData.result = parHead.getKey().normalizeCollection(parHead.getValue());
+        // keep reading
+        parData.hasResult = true;
     }
 
     private IReader isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
