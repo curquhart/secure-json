@@ -25,6 +25,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @exclude
@@ -33,8 +34,8 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
     private static final int INITIAL_CAPACITY = 32;
 
     private final int initialCapacity;
-    private final LinkedList<CharSequence> buffers;
-    private final LinkedList<IWritableCharSequence> writeBuffers;
+    private final List<CharSequence> buffers;
+    private final List<IWritableCharSequence> writeBuffers;
     private byte[] bytes;
     private final Settings settings;
     private Capacity capacityRestriction;
@@ -56,8 +57,8 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         capacityRestriction = Capacity.UNKNOWN;
     }
 
-    private ManagedSecureCharBuffer(final int parInitialCapacity, final LinkedList<CharSequence> parBuffers,
-                                    final LinkedList<IWritableCharSequence> parWriteBuffers,
+    private ManagedSecureCharBuffer(final int parInitialCapacity, final List<CharSequence> parBuffers,
+                                    final List<IWritableCharSequence> parWriteBuffers,
                                     final Settings parSettings) {
         initialCapacity = parInitialCapacity;
         buffers = parBuffers;

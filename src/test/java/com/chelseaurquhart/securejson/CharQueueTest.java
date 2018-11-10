@@ -16,6 +16,8 @@
 
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -23,7 +25,7 @@ public final class CharQueueTest {
     private CharQueueTest() {
     }
 
-    @Test(expectedExceptions = IllegalStateException.class)
+    @Test(expectedExceptions = JSONRuntimeException.class)
     public void testAddBufferOverflow() {
         final CharQueue myQueue = new CharQueue(4);
         myQueue.add('a');
@@ -33,13 +35,13 @@ public final class CharQueueTest {
         myQueue.add('e');
     }
 
-    @Test(expectedExceptions = IllegalStateException.class)
+    @Test(expectedExceptions = JSONRuntimeException.class)
     public void testPopBufferUnderflow() {
         final CharQueue myQueue = new CharQueue(4);
         myQueue.pop();
     }
 
-    @Test(expectedExceptions = IllegalStateException.class)
+    @Test(expectedExceptions = JSONRuntimeException.class)
     public void testPeekBufferUnderflow() {
         final CharQueue myQueue = new CharQueue(4);
         myQueue.peek();

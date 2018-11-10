@@ -16,6 +16,8 @@
 
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 /**
  * Circular array queue. Has optimizations to prevent math if size is 1.
  *
@@ -35,7 +37,7 @@ class CharQueue {
     void add(final char parChar) {
         if (capacity == 1) {
             if (writeIndex != 0) {
-                throw new IllegalStateException();
+                throw new JSONRuntimeException(new IllegalStateException());
             }
             chars[0] = parChar;
             writeIndex = 1;
@@ -43,7 +45,7 @@ class CharQueue {
         }
 
         if (readIndex == (writeIndex + 1) % chars.length) {
-            throw new IllegalStateException();
+            throw new JSONRuntimeException(new IllegalStateException());
         }
 
         chars[writeIndex] = parChar;
@@ -52,7 +54,7 @@ class CharQueue {
 
     char pop() {
         if (isEmpty()) {
-            throw new IllegalStateException();
+            throw new JSONRuntimeException(new IllegalStateException());
         }
 
         final char myRes = chars[readIndex];
@@ -70,7 +72,7 @@ class CharQueue {
 
     char peek() {
         if (isEmpty()) {
-            throw new IllegalStateException();
+            throw new JSONRuntimeException(new IllegalStateException());
         }
 
         return chars[readIndex];
