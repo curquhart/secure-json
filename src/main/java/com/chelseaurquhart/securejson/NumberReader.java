@@ -157,13 +157,9 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
     // allow new BigDecimal as we only use it for verification.
     private boolean verifyNumber(final double parDoubleValue, final BigDecimal parDecimalValue) {
-        if (Double.isInfinite(parDoubleValue) || parDecimalValue.compareTo(MIN_VALUE) <= 0
-                || parDecimalValue.compareTo(MAX_VALUE) >= 0 || parDecimalValue.scale() > Double.MAX_EXPONENT
-                || parDecimalValue.scale() < Double.MIN_EXPONENT) {
-            return false;
-        }
-
-        return true;
+        return !(Double.isInfinite(parDoubleValue) || parDecimalValue.compareTo(MIN_VALUE) <= 0
+            || parDecimalValue.compareTo(MAX_VALUE) >= 0 || parDecimalValue.scale() > Double.MAX_EXPONENT
+            || parDecimalValue.scale() < Double.MIN_EXPONENT);
     }
 
     private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset,
