@@ -182,7 +182,7 @@ final class JSONReader implements Closeable, AutoCloseable {
 
     void moveToNextToken(final ICharacterIterator parIterator) throws IOException {
         while (parIterator.hasNext()) {
-            final char myChar = Character.toLowerCase(parIterator.peek());
+            final char myChar = parIterator.peek();
             if (JSONSymbolCollection.WHITESPACES.containsKey(myChar)) {
                 parIterator.next();
             } else if (isValidToken(myChar)) {
