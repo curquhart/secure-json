@@ -195,12 +195,8 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     @Override
     public final boolean hasNext() {
         try {
-            try {
-                return cacheAndGetNextChar() != null;
-            } catch (final JSONException myException) {
-                throw new JSONRuntimeException(myException);
-            }
-        } catch (final IOException myException) {
+            return cacheAndGetNextChar() != null;
+        } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -224,21 +220,19 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             state = State.INITIALIZED;
         }
 
+        offset++;
+        final Character myChar;
+
         try {
-            offset++;
-            final Character myChar;
-            try {
-                myChar = readAndProcessNextChar();
-            } catch (final JSONDecodeException myException) {
-                throw new JSONRuntimeException(myException);
-            }
-            if (myChar == null) {
-                throw new JSONRuntimeException(new NoSuchElementException());
-            }
-            return myChar;
-        } catch (final IOException myException) {
+            myChar = readAndProcessNextChar();
+        } catch (final IOException | JSONDecodeException myException) {
             throw new JSONRuntimeException(myException);
         }
+
+        if (myChar == null) {
+            throw new JSONRuntimeException(new NoSuchElementException());
+        }
+        return myChar;
     }
 
     private Character readAndProcessNextChar() throws IOException, JSONDecodeException {
