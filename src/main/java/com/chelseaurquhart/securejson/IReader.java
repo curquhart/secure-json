@@ -35,13 +35,14 @@ interface IReader<T> extends Closeable {
         RESERVED
     }
 
-    T read(ICharacterIterator parIterator) throws IOException;
+    T read(ICharacterIterator parIterator) throws IOException, JSONException;
 
-    void addValue(ICharacterIterator parIterator, Object parCollection, Object parValue) throws IOException;
+    void addValue(ICharacterIterator parIterator, Object parCollection, Object parValue) throws IOException,
+        JSONException;
 
-    boolean isStart(ICharacterIterator parIterator) throws IOException;
+    boolean isStart(ICharacterIterator parIterator) throws IOException, JSONException;
 
     boolean isContainerType();
 
-    SymbolType getSymbolType(ICharacterIterator parIterator) throws IOException;
+    SymbolType getSymbolType(ICharacterIterator parIterator) throws IOException, JSONException;
 }

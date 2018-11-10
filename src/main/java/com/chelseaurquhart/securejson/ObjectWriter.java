@@ -34,13 +34,13 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
         final Map<CharSequence, Object> myRootMap = new LinkedHashMap<>();
         try {
             return accept(parInput, myRootMap, myRootMap);
-        } catch (final IOException myException) {
+        } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
 
     private Object accept(final Object parInput, final Map<CharSequence, Object> parRelMap,
-                          final Map<CharSequence, Object> parAbsMap) throws IOException {
+                          final Map<CharSequence, Object> parAbsMap) throws IOException, JSONException {
         final Object myInput = resolve(parInput);
 
         if (isSimpleType(myInput)) {
@@ -84,7 +84,8 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     }
 
     private Map<CharSequence, Object> addObjectToMap(final Object parInput, final Map<CharSequence, Object> parRelMap,
-                                                     final Map<CharSequence, Object> parAbsMap) throws IOException {
+                                                     final Map<CharSequence, Object> parAbsMap) throws IOException,
+            JSONException {
         for (final Field myField : getFields(parInput.getClass())) {
             final SerializationSettings mySerializationSettings = getSerializationSettings(myField);
             final Object myFieldValue = accept(getValue(myField, parInput), parRelMap, parAbsMap);
@@ -102,7 +103,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
 
     private void addToMap(final Object parFieldValue, final Map<CharSequence, Object> parTargetMap,
                           final Map<CharSequence, Object> parAbsMap, final CharSequence[] parTarget)
-            throws IOException {
+            throws IOException, JSONException {
 
         Map<CharSequence, Object> myTargetMap = parTargetMap;
 

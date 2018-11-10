@@ -33,13 +33,13 @@ class ListReader implements IReader<ListReader.Container> {
     }
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
             == JSONSymbolCollection.Token.L_BRACE;
     }
 
     @Override
-    public SymbolType getSymbolType(final ICharacterIterator parIterator) throws IOException {
+    public SymbolType getSymbolType(final ICharacterIterator parIterator) throws IOException, JSONException {
         if (!parIterator.hasNext()) {
             throw new MalformedListException(parIterator);
         }
@@ -58,7 +58,7 @@ class ListReader implements IReader<ListReader.Container> {
     }
 
     @Override
-    public Container read(final ICharacterIterator parIterator) throws IOException {
+    public Container read(final ICharacterIterator parIterator) throws IOException, JSONException {
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
 
@@ -76,7 +76,7 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
-            throws IOException {
+            throws IOException, JSONException {
         final Container myContainer = objectToContainer(parCollection);
         myContainer.add(parValue);
 

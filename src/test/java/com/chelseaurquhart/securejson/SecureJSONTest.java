@@ -23,7 +23,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -42,7 +41,7 @@ public final class SecureJSONTest {
                 }
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final IOException | JSONRuntimeException myException) {
+        } catch (final JSONDecodeException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
@@ -61,7 +60,7 @@ public final class SecureJSONTest {
                 }
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final IOException | JSONRuntimeException myException) {
+        } catch (final JSONDecodeException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
@@ -84,7 +83,7 @@ public final class SecureJSONTest {
                 }
             });
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final IOException | JSONRuntimeException myException) {
+        } catch (final JSONDecodeException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }

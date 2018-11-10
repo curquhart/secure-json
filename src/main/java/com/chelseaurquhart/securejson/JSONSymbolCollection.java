@@ -155,7 +155,7 @@ final class JSONSymbolCollection {
             }
         }
 
-        static Token forSymbol(final char parSymbol) throws IOException {
+        static Token forSymbol(final char parSymbol) throws IOException, JSONException {
             final Token myToken = forSymbolOrDefault(parSymbol, null);
 
             if (myToken == null) {

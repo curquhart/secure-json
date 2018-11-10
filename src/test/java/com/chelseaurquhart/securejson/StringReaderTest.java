@@ -40,7 +40,7 @@ public final class StringReaderTest {
             CharBuffer.wrap(myResult).get(myActualChars);
             CharBuffer.wrap(parParameters.expected).get(myExpectedChars);
             Assert.assertEquals(new String(myActualChars), new String(myExpectedChars));
-        } catch (final IOException | JSONRuntimeException myException) {
+        } catch (final IOException | JSONException | JSONRuntimeException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
@@ -48,7 +48,7 @@ public final class StringReaderTest {
     }
 
     @Test(expectedExceptions = NotImplementedException.class)
-    public void testAddValue() throws IOException {
+    public void testAddValue() throws IOException, JSONException {
         final IReader myStringReader = new StringReader(Settings.DEFAULTS);
         myStringReader.addValue(null, null, null);
     }

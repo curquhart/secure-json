@@ -60,15 +60,15 @@ final class JSONReader implements Closeable, AutoCloseable {
         };
     }
 
-    Object read(final CharSequence parJson) throws IOException {
+    Object read(final CharSequence parJson) throws IOException, JSONException {
         return read(new IterableCharSequence(parJson));
     }
 
-    Object read(final InputStream parInputStream) throws IOException {
+    Object read(final InputStream parInputStream) throws IOException, JSONException {
         return read(new IterableInputStream(parInputStream));
     }
 
-    Object read(final ICharacterIterator parIterator) throws IOException {
+    Object read(final ICharacterIterator parIterator) throws IOException, JSONException {
         final Deque<Map.Entry<IReader, Object>> myStack = new ArrayDeque<>();
 
         final Data myData = new Data();
@@ -111,7 +111,7 @@ final class JSONReader implements Closeable, AutoCloseable {
     }
 
     private void readStack(final ICharacterIterator parIterator, final Deque<Map.Entry<IReader, Object>> parStack,
-                           final Data parData) throws IOException {
+                           final Data parData) throws IOException, JSONException {
         while (!parStack.isEmpty()) {
             final Map.Entry<IReader, Object> myHead = parStack.peek();
             if (parData.separatorForObject != myHead) {
@@ -154,7 +154,7 @@ final class JSONReader implements Closeable, AutoCloseable {
         }
     }
 
-    private IReader isStart(final ICharacterIterator parIterator) throws IOException {
+    private IReader isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         for (final IReader myReader : readers) {
             if (myReader.isStart(parIterator)) {
                 return myReader;
@@ -180,7 +180,7 @@ final class JSONReader implements Closeable, AutoCloseable {
         }
     }
 
-    void moveToNextToken(final ICharacterIterator parIterator) throws IOException {
+    void moveToNextToken(final ICharacterIterator parIterator) throws IOException, JSONException {
         while (parIterator.hasNext()) {
             final char myChar = parIterator.peek();
             if (JSONSymbolCollection.WHITESPACES.containsKey(myChar)) {

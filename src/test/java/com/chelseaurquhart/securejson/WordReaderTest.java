@@ -101,7 +101,7 @@ public final class WordReaderTest {
             Assert.assertEquals(myWordReader.read(new IterableCharSequence(parParameters.input)),
                 parParameters.expected);
             Assert.assertNull(parParameters.expectedException);
-        } catch (final IOException myException) {
+        } catch (final IOException | JSONException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
@@ -109,7 +109,7 @@ public final class WordReaderTest {
     }
 
     @Test(expectedExceptions = NotImplementedException.class)
-    public void testAddValue() throws IOException {
+    public void testAddValue() throws IOException, JSONException {
         final IReader myWordReader = new WordReader();
         myWordReader.addValue(null, null, null);
     }

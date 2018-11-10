@@ -50,7 +50,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     }
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.NUMBERS.containsKey(parIterator.peek());
     }
 
@@ -60,7 +60,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     }
 
     @Override
-    public Number read(final ICharacterIterator parIterator) throws IOException {
+    public Number read(final ICharacterIterator parIterator) throws IOException, JSONException {
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
         addSecureBuffer(mySecureBuffer);
 
@@ -90,7 +90,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     }
 
     Number charSequenceToNumber(final CharSequence parNumber, final int parOffset)
-            throws IOException {
+            throws IOException, JSONException {
         final Map.Entry<BigDecimal, Boolean> myDecimalAndForceDouble;
         try {
             myDecimalAndForceDouble = charSequenceToBigDecimal(parNumber, parOffset);
@@ -146,7 +146,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     }
 
     Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset)
-            throws IOException {
+            throws IOException, JSONException {
         final char[] myBuffer = new char[parSource.length()];
         try {
             return charSequenceToBigDecimal(parSource, parOffset, myBuffer);
@@ -168,7 +168,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
     private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset,
                                                                     final char[] parBuffer)
-            throws IOException {
+            throws IOException, JSONException {
         boolean myFoundExponent = false;
         boolean myFoundDecimal = false;
         boolean myFoundNonZeroDigit = false;
