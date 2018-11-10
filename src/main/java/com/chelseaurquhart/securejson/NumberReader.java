@@ -173,7 +173,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         char myLastChar = 0;
         final int myLength = parSource.length();
         int myLengthOffset = 0;
-        for (int myIndex = 0; myIndex < myLength; myIndex++) {
+        int myIndex = 0;
+        while (myIndex < myLength) {
             final char myChar = parSource.charAt(myIndex);
             final JSONSymbolCollection.Token myToken;
             try {
@@ -262,6 +263,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
             }
 
             myLastChar = myChar;
+            myIndex++;
         }
 
         return new AbstractMap.SimpleImmutableEntry<>(
