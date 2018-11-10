@@ -314,7 +314,7 @@ class ObjectReader<T> extends ObjectSerializer {
             throws IOException, JSONException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
         final Type[] myArgs = getGenericTypes(myType, 2);
-        final Class[] myClasses = getGenericArgClasses(myType, 2, parType);
+        final Class<?>[] myClasses = getGenericArgClasses(myType, 2, parType);
 
         if (!CharSequence.class.isAssignableFrom(myClasses[0]) && myClasses[0] != Object.class) {
             throw new JSONException(Messages.get(Messages.Key.ERROR_INVALID_MAP_KEY_TYPE));
@@ -341,7 +341,7 @@ class ObjectReader<T> extends ObjectSerializer {
                                         final Collection<?> parValue) throws IOException, JSONException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
         final Type[] myArgs = getGenericTypes(myType, 1);
-        final Class[] myClasses = getGenericArgClasses(myType, 1, parType);
+        final Class<?>[] myClasses = getGenericArgClasses(myType, 1, parType);
 
         final Collection<Object> myCollection;
         try {
@@ -359,7 +359,7 @@ class ObjectReader<T> extends ObjectSerializer {
     @SuppressWarnings("unchecked")
     private Object buildArrayValue(final Class<?> parType, final Object parValue)
             throws IOException, JSONException {
-        final Class myClass = parType.getComponentType();
+        final Class<?> myClass = parType.getComponentType();
 
         final int myLength = Array.getLength(parValue);
         final Object myArray = Array.newInstance(myClass, myLength);
@@ -388,12 +388,12 @@ class ObjectReader<T> extends ObjectSerializer {
         return myTypes;
     }
 
-    private Class[] getGenericArgClasses(final Type parGenericType, final int parCount,
-                                         final Class<?> parInterfaceClass) {
-        final Class[] myClasses = TypeResolver.resolveRawArguments(parGenericType, parInterfaceClass);
+    private Class<?>[] getGenericArgClasses(final Type parGenericType, final int parCount,
+                                            final Class<?> parInterfaceClass) {
+        final Class<?>[] myClasses = TypeResolver.resolveRawArguments(parGenericType, parInterfaceClass);
 
         if (myClasses == null) {
-            final Class[] myDefaultClasses = new Class[parCount];
+            final Class<?>[] myDefaultClasses = new Class<?>[parCount];
             Arrays.fill(myDefaultClasses, Object.class);
 
             return myDefaultClasses;

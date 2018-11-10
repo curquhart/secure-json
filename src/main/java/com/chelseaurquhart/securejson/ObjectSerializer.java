@@ -77,7 +77,7 @@ class ObjectSerializer extends ObjectReflector {
         return parInput.isArray();
     }
 
-    final Collection<Field> getFields(final Class parClass) {
+    final Collection<Field> getFields(final Class<?> parClass) {
         final List<Field> myCollection = new LinkedList<>();
         for (final Field myField : parClass.getDeclaredFields()) {
             if (Modifier.isTransient(myField.getModifiers()) || myField.isSynthetic()) {
@@ -86,7 +86,7 @@ class ObjectSerializer extends ObjectReflector {
             }
             myCollection.add(myField);
         }
-        final Class mySuperClass = parClass.getSuperclass();
+        final Class<?> mySuperClass = parClass.getSuperclass();
         if (mySuperClass != null) {
             myCollection.addAll(getFields(mySuperClass));
         }

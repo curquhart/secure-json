@@ -94,7 +94,7 @@ checkstyle {
 }
 
 compileJava {
-    options.compilerArgs << '-Xlint:unchecked'
+    options.compilerArgs << '-Xlint:all'
 }
 
 jacocoTestCoverageVerification {

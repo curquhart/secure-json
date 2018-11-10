@@ -107,12 +107,11 @@ class JSONWriter implements Closeable, AutoCloseable {
         parSecureBuffer.append(JSONSymbolCollection.Token.R_BRACE.getShortSymbol());
     }
 
-    private void writeMap(final ICharacterWriter parSecureBuffer, final Map parInput) throws IOException,
+    private void writeMap(final ICharacterWriter parSecureBuffer, final Map<?, ?> parInput) throws IOException,
             InvalidTypeException {
         parSecureBuffer.append(JSONSymbolCollection.Token.L_CURLY.getShortSymbol());
         boolean myIsFirst = true;
-        for (final Object myObject : parInput.entrySet()) {
-            final Map.Entry myEntry = (Map.Entry) myObject;
+        for (final Map.Entry<?, ?> myEntry : parInput.entrySet()) {
             final Object myKey = myEntry.getKey();
             if (!(myKey instanceof CharSequence)) {
                 throw new InvalidTypeException();
@@ -132,8 +131,8 @@ class JSONWriter implements Closeable, AutoCloseable {
         parSecureBuffer.append(JSONSymbolCollection.Token.R_CURLY.getShortSymbol());
     }
 
-    private void writeCollection(final ICharacterWriter parSecureBuffer, final Collection parInput) throws IOException,
-            InvalidTypeException {
+    private void writeCollection(final ICharacterWriter parSecureBuffer, final Collection<?> parInput)
+            throws IOException, InvalidTypeException {
         parSecureBuffer.append(JSONSymbolCollection.Token.L_BRACE.getShortSymbol());
         boolean myIsFirst = true;
         for (final Object myElement : parInput) {

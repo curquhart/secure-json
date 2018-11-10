@@ -22,6 +22,8 @@ import java.io.IOException;
  * Base class for JSON encode-specific errors.
  */
 public class JSONEncodeException extends JSONException {
+    private static final long serialVersionUID = 1L;
+
     /**
      * @exclude
      */
@@ -42,6 +44,8 @@ public class JSONEncodeException extends JSONException {
      * Exception representing an invalid data type.
      */
     public static class InvalidTypeException extends JSONEncodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
