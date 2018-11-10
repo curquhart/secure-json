@@ -19,7 +19,6 @@ package com.chelseaurquhart.securejson;
 import com.chelseaurquhart.securejson.util.StringUtil;
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
@@ -44,16 +43,19 @@ import java.util.Set;
 import java.util.TreeMap;
 
 // We have to run single-threaded to prevent our security manager from buggering up.
+@SuppressWarnings("PMD.CommentRequired")
 @Test(singleThreaded = true)
 public final class ObjectReaderTest {
     private static final Settings UNSTRICT_SETTINGS = new Settings(new SecureJSON.Builder().strictStrings(false));
 
     @BeforeTest
+    @SuppressWarnings("PMD.JUnit4TestShouldUseBeforeAnnotation")
     static void setUp() {
         SJSecurityManager.setUp();
     }
 
     @AfterTest
+    @SuppressWarnings("PMD.JUnit4TestShouldUseAfterAnnotation")
     static void tearDown() {
         SJSecurityManager.tearDown();
     }
@@ -92,6 +94,7 @@ public final class ObjectReaderTest {
         Assert.assertTrue(mySimpleDeserializationClass.absPosition);
     }
 
+    @Test
     public void testSimpleDeserializationSecurityViolation() throws IOException {
         try {
             SJSecurityManager.SECURITY_VIOLATIONS.add(new ReflectPermission("suppressAccessChecks"));
@@ -303,6 +306,7 @@ public final class ObjectReaderTest {
     }
 
     @SuppressWarnings("unchecked")
+    @Test
     public void testConcreteConstruction() throws IOException, JSONException {
         final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<>(
                 NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
@@ -410,6 +414,7 @@ public final class ObjectReaderTest {
         private int presetVal = 5;
         private int integerVal;
         private transient int transientIntVal;
+        @SuppressWarnings("PMD.AvoidUsingShortType")
         private short shortVal;
         private String stringVal;
         private CharSequence charSeqVal;
@@ -463,7 +468,6 @@ public final class ObjectReaderTest {
             @Serialize(name = "3", relativeTo = Relativity.ABSOLUTE)
             private int level3;
             private int rel;
-            @SuppressFBWarnings(value = "UwF")
             private Level4 level4;
         }
 
@@ -485,6 +489,7 @@ public final class ObjectReaderTest {
         }
 
         private static final class InvalidClassTest {
+            @SuppressWarnings("PMD.UnusedPrivateField")
             private Calendar calendar;
         }
     }

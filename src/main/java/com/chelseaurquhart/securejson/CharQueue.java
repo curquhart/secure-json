@@ -24,23 +24,23 @@ import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
  * @exclude
  */
 class CharQueue {
-    private char[] chars;
-    private int readIndex = 0;
-    private int writeIndex = 0;
-    private int capacity;
+    private static final int SINGLE_CHAR_LEN = 1;
+
+    private transient char[] chars;
+    private transient int readIndex;
+    private transient int writeIndex;
 
     CharQueue(final int parCapacity) {
-        capacity = parCapacity;
         chars = new char[parCapacity];
     }
 
     void add(final char parChar) {
-        if (capacity == 1) {
+        if (chars.length == SINGLE_CHAR_LEN) {
             if (writeIndex != 0) {
                 throw new JSONRuntimeException(new IllegalStateException());
             }
             chars[0] = parChar;
-            writeIndex = 1;
+            writeIndex = SINGLE_CHAR_LEN;
             return;
         }
 
@@ -49,7 +49,7 @@ class CharQueue {
         }
 
         chars[writeIndex] = parChar;
-        writeIndex = (writeIndex + 1) % chars.length;
+        writeIndex = (writeIndex + SINGLE_CHAR_LEN) % chars.length;
     }
 
     char pop() {
@@ -60,12 +60,11 @@ class CharQueue {
         final char myRes = chars[readIndex];
         chars[readIndex] = '\u0000';
 
-        if (capacity == 1) {
+        if (chars.length == SINGLE_CHAR_LEN) {
             writeIndex = 0;
-            return myRes;
+        } else {
+            readIndex = (readIndex + SINGLE_CHAR_LEN) % chars.length;
         }
-
-        readIndex = (readIndex + 1) % chars.length;
 
         return myRes;
     }
@@ -79,11 +78,14 @@ class CharQueue {
     }
 
     int size() {
-        if (capacity == 1) {
-            return writeIndex;
+        final int myRet;
+        if (chars.length == SINGLE_CHAR_LEN) {
+            myRet = writeIndex;
+        } else {
+            myRet = Math.abs(readIndex - writeIndex);
         }
 
-        return Math.abs(readIndex - writeIndex);
+        return myRet;
     }
 
     boolean isEmpty() {
@@ -91,6 +93,6 @@ class CharQueue {
     }
 
     int capacity() {
-        return capacity;
+        return chars.length;
     }
 }

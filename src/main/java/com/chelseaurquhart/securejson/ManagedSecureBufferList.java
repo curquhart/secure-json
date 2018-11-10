@@ -25,7 +25,7 @@ import java.util.List;
  * @exclude
  */
 class ManagedSecureBufferList implements Closeable, AutoCloseable {
-    private final List<ManagedSecureCharBuffer> secureBuffers;
+    private final transient List<ManagedSecureCharBuffer> secureBuffers;
 
     ManagedSecureBufferList() {
         secureBuffers = new ArrayList<>();

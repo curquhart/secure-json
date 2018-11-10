@@ -37,14 +37,15 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     private static final BigDecimal MIN_VALUE = new BigDecimal("-1.0e300", MathContext.UNLIMITED);
     private static final BigDecimal MAX_VALUE = new BigDecimal("1.0e300", MathContext.UNLIMITED);
 
-    private final MathContext mathContext;
-    private final Settings settings;
+    private final transient MathContext mathContext;
+    private final transient Settings settings;
 
     NumberReader(final Settings parSettings) {
         this(DEFAULT_MATH_CONTEXT, parSettings);
     }
 
     NumberReader(final MathContext parMathContext, final Settings parSettings) {
+        super();
         this.mathContext = parMathContext;
         settings = parSettings;
     }
@@ -107,18 +108,13 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         // if not decimal or negative exponent, always return a double.
         if (!myForceDouble) {
             try {
-                return myDecimal.shortValueExact();
-            } catch (ArithmeticException e) {
-                // Allowed empty block: trying multiple conversions.
-            }
-            try {
                 return myDecimal.intValueExact();
-            } catch (ArithmeticException e) {
+            } catch (final ArithmeticException myException) {
                 // Allowed empty block: trying multiple conversions.
             }
             try {
                 return myDecimal.longValueExact();
-            } catch (ArithmeticException e) {
+            } catch (final ArithmeticException myException) {
                 // Allowed empty block: trying multiple conversions.
             }
         }

@@ -16,14 +16,15 @@
 
 package com.chelseaurquhart.securejson;
 
-import java.io.IOException;
-
+/**
+ * Helper "IterableCharSequence" for helping to compare error messages when we need to inject an offset.
+ */
 class PresetIterableCharSequence extends IterableCharSequence {
-    PresetIterableCharSequence() throws IOException {
+    PresetIterableCharSequence() {
         this(0);
     }
 
-    PresetIterableCharSequence(final int parOffset) throws IOException {
+    PresetIterableCharSequence(final int parOffset) {
         super("", parOffset);
     }
 }

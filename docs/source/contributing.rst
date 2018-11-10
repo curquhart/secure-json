@@ -30,6 +30,8 @@ Responsibilities
   be marked deprecated and an issue created to remind the author to remove it.
 * Ensure you sign all commits. If this is unfamiliar territory, see https://help.github.com/articles/signing-commits/
   for a helpful tutorial.
+* Lint rules can be disabled as needed (if reasonable!) in any source dir except src/main. In src/main, a compelling
+  reason will be required.
 
 Here are a couple of friendly tutorials you can follow to get started: http://makeapullrequest.com/ and
 http://www.firsttimersonly.com/

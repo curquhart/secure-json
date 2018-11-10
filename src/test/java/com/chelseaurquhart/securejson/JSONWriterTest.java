@@ -30,11 +30,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class JSONWriterTest {
     static final String DATA_PROVIDER_NAME = "JSONWriterTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
-    private static Object[] dataProvider(final Method parMethod) {
+    static Object[] dataProvider(final Method parMethod) {
         return new Object[]{
             new Parameters(
                 "null",

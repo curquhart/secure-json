@@ -24,6 +24,12 @@ import java.util.Properties;
  * @exclude
  */
 final class Messages {
+    private static final String RESOURCE_NAME = "com/chelseaurquhart/securejson/messages.properties";
+
+    private static Messages INSTANCE;
+
+    private final transient Properties properties;
+
     /**
      * @exclude
      */
@@ -58,12 +64,6 @@ final class Messages {
     static String get(final Key parKey) throws IOException {
         return getInstance().properties.getProperty(parKey.toString());
     }
-
-    private static final String RESOURCE_NAME = "com/chelseaurquhart/securejson/messages.properties";
-
-    private static Messages INSTANCE;
-
-    private final Properties properties;
 
     private static Messages getInstance() throws IOException {
         if (INSTANCE == null) {

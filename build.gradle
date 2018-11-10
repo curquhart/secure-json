@@ -114,7 +114,6 @@ dependencies {
     testCompile 'org.testng:testng:6.14.3'
     compile group: 'net.jodah', name: 'typetools', version: '0.5.0'
     testCompile group: 'net.jodah', name: 'typetools', version: '0.5.0'
-    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.8'
 }
 
 jacoco {
@@ -125,6 +124,20 @@ checkstyle {
     configFile file("config/checkstyle.xml")
 }
 
+pmd {
+    consoleOutput = true
+    ruleSets = []
+
+    toolVersion = "6.8.0"
+    ruleSetFiles = files("config/pmd.xml")
+}
+
+if (JavaVersion.current().java8Compatible) {
+    spotbugs {
+        includeFilter = file("config/findbugs.exclude.xml")
+    }
+}
+
 compileJava {
     options.compilerArgs << '-Xlint:all'
 }
@@ -133,7 +146,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.75
+                minimum = 0.85
             }
         }
     }

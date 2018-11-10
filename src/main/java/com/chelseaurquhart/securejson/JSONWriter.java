@@ -31,9 +31,9 @@ import java.util.Map;
  */
 class JSONWriter implements Closeable, AutoCloseable {
     private static final int INITIAL_CAPACITY = 512;
-    private final List<ManagedSecureCharBuffer> secureBuffers;
-    private final IObjectMutator objectMutator;
-    private final Settings settings;
+    private final transient List<ManagedSecureCharBuffer> secureBuffers;
+    private final transient IObjectMutator objectMutator;
+    private final transient Settings settings;
 
     JSONWriter(final Settings parSettings) {
         this(null, parSettings);
@@ -163,8 +163,8 @@ class JSONWriter implements Closeable, AutoCloseable {
                     parSecureBuffer.append(myToken.getValue().toString());
                     break;
                 default:
-                    if (((myNextChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE)
-                            || (myNextChar > JSONSymbolCollection.MAX_ALLOWED_ASCII_CODE))) {
+                    if (myNextChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE
+                            || myNextChar > JSONSymbolCollection.MAX_ALLOWED_ASCII_CODE) {
                         parSecureBuffer.append(JSONSymbolCollection.Token.ESCAPE.getShortSymbol());
                         parSecureBuffer.append(JSONSymbolCollection.Token.UNICODE.getShortSymbol());
                         parSecureBuffer.append(
@@ -180,6 +180,7 @@ class JSONWriter implements Closeable, AutoCloseable {
                     } else {
                         parSecureBuffer.append(myNextChar);
                     }
+                    break;
             }
         }
     }

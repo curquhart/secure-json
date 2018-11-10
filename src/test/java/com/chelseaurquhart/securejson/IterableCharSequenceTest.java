@@ -18,6 +18,7 @@ package com.chelseaurquhart.securejson;
 
 import org.testng.annotations.Test;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class IterableCharSequenceTest {
     private IterableCharSequenceTest() {
     }

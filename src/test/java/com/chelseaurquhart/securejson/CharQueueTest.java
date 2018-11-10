@@ -21,6 +21,7 @@ import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class CharQueueTest {
     private CharQueueTest() {
     }

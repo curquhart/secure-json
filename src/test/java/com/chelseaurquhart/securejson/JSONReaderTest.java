@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromString(final NumberProvider.Parameters parParameters) {
@@ -79,7 +80,7 @@ public final class JSONReaderTest {
     static final String DATA_PROVIDER_NAME = "JSONReaderTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
-    private static Object[] dataProvider(final Method parMethod) throws IOException {
+    static Object[] dataProvider(final Method parMethod) throws IOException {
         return new Object[]{
             new Parameters(
                 "null",
@@ -259,9 +260,9 @@ public final class JSONReaderTest {
                 "list with numbers",
                 "  [1,4 ,  -3,1.14159]  ",
                 Arrays.asList(
-                    (short) 1,
-                    (short) 4,
-                    (short) -3,
+                    1,
+                    4,
+                    -3,
                     1.14159d
                 ),
                 null
@@ -326,7 +327,7 @@ public final class JSONReaderTest {
                 "map with string:int",
                 "{\"1\":123}",
                 new HashMap<CharSequence, Object>() {{
-                        put("1", (short) 123);
+                        put("1", 123);
                     }},
                 null
             ),
@@ -358,7 +359,7 @@ public final class JSONReaderTest {
                 "much nesting",
                 "{\"1\"   :    [1,2,3],\"2\":[false,{\"22\":\"456\"}]}",
                 new HashMap<CharSequence, Object>() {{
-                        put("1", Arrays.asList((short) 1, (short) 2, (short) 3));
+                        put("1", Arrays.asList(1, 2, 3));
                         put("2", Arrays.asList(false, new HashMap<CharSequence, Object>() {{
                                 put("22", "456");
                             }}));

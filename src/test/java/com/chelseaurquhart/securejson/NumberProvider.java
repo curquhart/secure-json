@@ -27,6 +27,10 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+/**
+ * Provider of numeric data, used by multiple test suites.
+ */
+@SuppressWarnings("PMD.AddEmptyString")
 public final class NumberProvider {
     private static final MathContext HUGE_PRECISION_MATH_CONTEXT = new MathContext((int) Math.pow(2, 17),
         RoundingMode.UNNECESSARY);
@@ -50,22 +54,22 @@ public final class NumberProvider {
             buildParameters(
                 "short min - 1",
                 "" + (Short.MIN_VALUE - 1),
-                Short.MIN_VALUE - 1,
+                (int) Short.MIN_VALUE - 1,
                 Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "short min",
                 "" + Short.MIN_VALUE,
-                Short.MIN_VALUE,
-                Short.class,
+                (int) Short.MIN_VALUE,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "short min + 1",
                 "" + (Short.MIN_VALUE + 1),
-                (short) (Short.MIN_VALUE + 1),
-                Short.class,
+                (Short.MIN_VALUE + 1),
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
@@ -113,21 +117,21 @@ public final class NumberProvider {
             buildParameters(
                 "short max - 1",
                 "" + (Short.MAX_VALUE - 1),
-                (short) (Short.MAX_VALUE - 1),
-                Short.class,
+                Short.MAX_VALUE - 1,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "short max",
                 "" + Short.MAX_VALUE,
-                Short.MAX_VALUE,
-                Short.class,
+                (int) Short.MAX_VALUE,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "short max + 1",
                 "" + (Short.MAX_VALUE + 1),
-                Short.MAX_VALUE + 1,
+                (int) Short.MAX_VALUE + 1,
                 Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
@@ -277,8 +281,8 @@ public final class NumberProvider {
             buildParameters(
                 "negative zero",
                 "-0",
-                (short) -0,
-                Short.class,
+                -0,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
@@ -298,8 +302,8 @@ public final class NumberProvider {
             buildParameters(
                 "zero",
                 "0",
-                (short) 0,
-                Short.class,
+                0,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
@@ -312,15 +316,15 @@ public final class NumberProvider {
             buildParameters(
                 "0e1",
                 "0e1",
-                (short) 0,
-                Short.class,
+                0,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "0e+1",
                 "0e+1",
-                (short) 0,
-                Short.class,
+                0,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
@@ -396,15 +400,15 @@ public final class NumberProvider {
             buildParameters(
                 "simple standard notation with no decimal, negative",
                 "-1",
-                (short) -1,
-                Short.class,
+                -1,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "simple standard notation with no decimal, positive",
                 "1",
-                (short) 1,
-                Short.class,
+                1,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
@@ -445,15 +449,15 @@ public final class NumberProvider {
             buildParameters(
                 "simple scientific notation no decimal no sign",
                 "1e2",
-                (short) 100,
-                Short.class,
+                100,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
                 "simple scientific notation 2 digits no decimal no sign",
                 "22e1",
-                (short) 220,
-                Short.class,
+                220,
+                Integer.class,
                 NumberReader.DEFAULT_MATH_CONTEXT
             ),
             buildParameters(
@@ -521,18 +525,6 @@ public final class NumberProvider {
         );
     }
 
-    private static String concat(final String parDelimiter, final String[] parInput) {
-        final StringBuilder myStringBuilder = new StringBuilder();
-        for (int myIndex = 0; myIndex < parInput.length - 1; myIndex++) {
-            myStringBuilder.append(parInput[myIndex]).append(parDelimiter);
-        }
-        if (parInput.length > 0) {
-            myStringBuilder.append(parInput[parInput.length - 1]);
-        }
-
-        return myStringBuilder.toString();
-    }
-
     private static CharSequence newSecureCharBuffer(final CharSequence parInput) {
         if (parInput == null || parInput.length() == 0) {
             return null;
@@ -545,6 +537,9 @@ public final class NumberProvider {
         return mySecureBuffer;
     }
 
+    /**
+     * Parameters for numeric tests.
+     */
     static class Parameters {
         final String testName;
         final CharSequence number;

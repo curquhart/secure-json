@@ -24,10 +24,6 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.AbstractMap;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -35,21 +31,21 @@ import java.util.Objects;
  */
 final class JSONReader implements Closeable, AutoCloseable {
     @SuppressWarnings("rawtypes")
-    private final IReader<?>[] readers;
+    private final transient IReader<?>[] readers;
 
     private JSONReader(final Builder parBuilder) {
         final IReader<CharSequence> myStringReader;
         final IReader<Number> myNumberReader;
 
-        if (parBuilder.stringReader == null) {
-            myStringReader = new StringReader(parBuilder.settings);
+        if (parBuilder.stringReaderImpl == null) {
+            myStringReader = new StringReader(parBuilder.settingsImpl);
         } else {
-            myStringReader = parBuilder.stringReader;
+            myStringReader = parBuilder.stringReaderImpl;
         }
-        if (parBuilder.numberReader == null) {
-            myNumberReader = new NumberReader(parBuilder.settings);
+        if (parBuilder.numberReaderImpl == null) {
+            myNumberReader = new NumberReader(parBuilder.settingsImpl);
         } else {
-            myNumberReader = parBuilder.numberReader;
+            myNumberReader = parBuilder.numberReaderImpl;
         }
 
         readers = new IReader<?>[] {
@@ -70,99 +66,104 @@ final class JSONReader implements Closeable, AutoCloseable {
     }
 
     Object read(final ICharacterIterator parIterator) throws IOException, JSONException {
-        final Deque<Map.Entry<IReader<?>, Object>> myStack = new ArrayDeque<>();
+        final PairStack<IReader<?>, Object> myStack = new PairStack<>();
 
-        final Data myData = new Data();
+        final ReaderData myReaderData = new ReaderData();
         while (parIterator.hasNext()) {
             moveToNextToken(parIterator);
 
-            myData.result = null;
+            myReaderData.result = null;
 
-            final IReader<?> myReader = isStart(parIterator);
+            final IReader<?> myReader = getReaderStartingNextChar(parIterator);
             if (myReader != null) {
-                myData.result = myReader.read(parIterator);
+                myReaderData.result = myReader.read(parIterator);
                 if (myReader.isContainerType()) {
-                    myStack.push(new AbstractMap.SimpleImmutableEntry<IReader<?>, Object>(myReader, myData.result));
+                    myStack.push(myReader, myReaderData.result);
                     continue;
                 }
 
-                myData.hasResult = true;
+                myReaderData.hasResult = true;
             } else if (myStack.isEmpty()) {
                 throw new InvalidTokenException(parIterator);
             } else {
-                myData.hasResult = false;
+                myReaderData.hasResult = false;
             }
             moveToNextToken(parIterator);
-            if (myData.hasResult) {
-                myData.separatorForObject = null;
+            if (myReaderData.hasResult) {
+                myReaderData.separatorForObject = null;
             }
 
-            myData.isFinished = true;
-            readStack(parIterator, myStack, myData);
+            myReaderData.isFinished = true;
+            readStack(parIterator, myStack, myReaderData);
 
-            if (myData.isFinished) {
+            if (myReaderData.isFinished) {
                 if (parIterator.hasNext()) {
                     throw new ExtraCharactersException(parIterator);
                 }
-                return myData.result;
+                return myReaderData.result;
             }
         }
 
         throw new EmptyJSONException(parIterator);
     }
 
-    private void readStack(final ICharacterIterator parIterator, final Deque<Map.Entry<IReader<?>, Object>> parStack,
-                           final Data parData) throws IOException, JSONException {
+    private void readStack(final ICharacterIterator parIterator, final PairStack<IReader<?>, Object> parStack,
+                           final ReaderData parReaderData) throws IOException, JSONException {
         while (!parStack.isEmpty()) {
-            readStackEntry(parIterator, parStack, parData);
+            readStackEntry(parIterator, parStack, parReaderData);
 
-            if (!parData.isFinished) {
+            if (!parReaderData.isFinished) {
                 break;
             }
         }
     }
 
     private void readStackEntry(final ICharacterIterator parIterator,
-                                final Deque<Map.Entry<IReader<?>, Object>> parStack, final Data parData)
+                                final PairStack<IReader<?>, Object> parStack, final ReaderData parReaderData)
             throws IOException, JSONException {
-        final Map.Entry<IReader<?>, Object> myHead = parStack.peek();
-        if (parData.separatorForObject != myHead) {
-            parData.separatorForObject = null;
-        }
+        final PairStack.Pair<IReader<?>, Object> myHead = parStack.peek();
         if (!parIterator.hasNext() || myHead == null) {
             throw new MalformedJSONException(parIterator);
         }
-        final IReader.SymbolType mySymbolType = myHead.getKey().getSymbolType(parIterator);
-        if (parData.hasResult) {
-            myHead.getKey().addValue(parIterator, myHead.getValue(), parData.result);
+
+        // unwrap - Pair will be repurposed so we must retain certainty that we don't depend on it!
+        final IReader<?> myReader = myHead.first;
+        final Object myValue = myHead.second;
+
+        if (parReaderData.separatorForObject != myReader) {
+            parReaderData.separatorForObject = null;
+        }
+        final IReader.SymbolType mySymbolType = myReader.getSymbolType(parIterator);
+        if (parReaderData.hasResult) {
+            myReader.addValue(parIterator, myValue, parReaderData.result);
         }
         if (mySymbolType == IReader.SymbolType.END) {
-            readStackEnd(parIterator, myHead, parData, parStack);
+            readStackEnd(parIterator, myReader, myValue, parReaderData, parStack);
         } else if (mySymbolType == IReader.SymbolType.SEPARATOR) {
-            readStackPart(parIterator, myHead, parData);
+            readStackPart(parIterator, myReader, parReaderData);
         } else if (parIterator.hasNext() && isValidToken(parIterator.peek())) {
-            parData.isFinished = false;
+            parReaderData.isFinished = false;
         } else {
             throw new MalformedJSONException(parIterator);
         }
     }
 
-    private void readStackPart(final ICharacterIterator parIterator, final Map.Entry<IReader<?>, Object> parHead,
-                               final Data parData) throws IOException, JSONException {
+    private void readStackPart(final ICharacterIterator parIterator, final IReader<?> parReader,
+                               final ReaderData parReaderData) throws IOException, JSONException {
         parIterator.next();
         moveToNextToken(parIterator);
-        if (parHead.getKey().getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
+        if (parReader.getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
             throw new InvalidTokenException(parIterator);
         }
         // keep reading
-        parData.isFinished = false;
-        parData.separatorForObject = parHead;
+        parReaderData.isFinished = false;
+        parReaderData.separatorForObject = parReader;
     }
 
-    private void readStackEnd(final ICharacterIterator parIterator, final Map.Entry<IReader<?>, Object> parHead,
-                              final Data parData, final Deque<Map.Entry<IReader<?>, Object>> parStack)
+    private void readStackEnd(final ICharacterIterator parIterator, final IReader<?> parReader, final Object parValue,
+                              final ReaderData parReaderData, final PairStack<IReader<?>, Object> parStack)
             throws IOException, JSONException {
-        if (parData.separatorForObject == parHead) {
+        if (parReaderData.separatorForObject == parReader) {
             throw new InvalidTokenException(parIterator);
         }
         parStack.pop();
@@ -170,13 +171,14 @@ final class JSONReader implements Closeable, AutoCloseable {
         moveToNextToken(parIterator);
         // feed it to its parent. Because map stores its data as a wrapper, we need to ask the reader
         // to provide a proper value (ex Map instead of Container)
-        parData.result = parHead.getKey().normalizeCollection(parHead.getValue());
+        parReaderData.result = parReader.normalizeCollection(parValue);
         // keep reading
-        parData.hasResult = true;
+        parReaderData.hasResult = true;
     }
 
     @SuppressWarnings("unchecked")
-    private IReader<?> isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
+    private IReader<?> getReaderStartingNextChar(final ICharacterIterator parIterator) throws IOException,
+            JSONException {
         for (final IReader<?> myReader : readers) {
             if (myReader.isStart(parIterator)) {
                 return myReader;
@@ -219,23 +221,26 @@ final class JSONReader implements Closeable, AutoCloseable {
         return JSONSymbolCollection.TOKENS.containsKey(parChar) || JSONSymbolCollection.NUMBERS.containsKey(parChar);
     }
 
+    /**
+     * Builder for JSONReader.
+     */
     static class Builder {
-        private final Settings settings;
-        private IReader<CharSequence> stringReader;
-        private IReader<Number> numberReader;
+        private final transient Settings settingsImpl;
+        private transient IReader<CharSequence> stringReaderImpl;
+        private transient IReader<Number> numberReaderImpl;
 
         Builder(final Settings parSettings) {
-            settings = Objects.requireNonNull(parSettings);
+            settingsImpl = Objects.requireNonNull(parSettings);
         }
 
         Builder stringReader(final IReader<CharSequence> parStringReader) {
-            stringReader = Objects.requireNonNull(parStringReader);
+            stringReaderImpl = Objects.requireNonNull(parStringReader);
 
             return this;
         }
 
         Builder numberReader(final IReader<Number> parNumberReader) {
-            numberReader = Objects.requireNonNull(parNumberReader);
+            numberReaderImpl = Objects.requireNonNull(parNumberReader);
 
             return this;
         }
@@ -245,10 +250,13 @@ final class JSONReader implements Closeable, AutoCloseable {
         }
     }
 
-    private static class Data {
-        private Object separatorForObject;
-        private boolean isFinished;
-        private Object result;
-        private boolean hasResult;
+    /**
+     * Data for use by the JSON Reader.
+     */
+    private static class ReaderData {
+        private transient IReader<?> separatorForObject;
+        private transient boolean isFinished;
+        private transient Object result;
+        private transient boolean hasResult;
     }
 }

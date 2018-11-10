@@ -24,12 +24,13 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class ManagedSecureCharBufferTest {
     private static final String SUBSEQUENCE_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestCharSequence";
     private static final String EQUALS_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestEquals";
 
     @DataProvider(name = SUBSEQUENCE_DATA_PROVIDER_NAME)
-    private static Object[] dataProvider(final Method parMethod)  {
+    static Object[] dataProvider(final Method parMethod)  {
         return new Object[]{
             new Parameters(
                 "simple single byte buffer",
@@ -388,13 +389,14 @@ public final class ManagedSecureCharBufferTest {
     }
 
     @DataProvider(name = EQUALS_DATA_PROVIDER_NAME)
-    private static Object[] equalsDataProvider() {
+    static Object[] equalsDataProvider() {
         return new Object[]{
             new Parameters(
                 "empty string",
                 new IConsumer<ManagedSecureCharBuffer>() {
                         @Override
                         public void accept(final ManagedSecureCharBuffer parInput) {
+                            // NOOP
                         }
                     }, "", true),
             new Parameters(
@@ -434,6 +436,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                         @Override
                         public void accept(final ManagedSecureCharBuffer parInput) {
+                            // NOOP
                         }
                     }, null, false),
             new Parameters(

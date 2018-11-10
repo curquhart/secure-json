@@ -27,14 +27,14 @@ import java.util.Map;
 final class JSONSymbolCollection {
     static final int MIN_ALLOWED_ASCII_CODE = 32;
     static final int MAX_ALLOWED_ASCII_CODE = 126;
-    static final short UNICODE_DIGITS = 4;
-    static final short UNICODE_DIGIT_FIRST = UNICODE_DIGITS * 3;
-    static final short UNICODE_DIGIT_SECOND = UNICODE_DIGITS * 2;
-    static final short UNICODE_DIGIT_THIRD = UNICODE_DIGITS;
-    static final short HEX_MIN_ALPHA = 10;
-    static final short HEX_MAX = 15;
-    static final short BITS_IN_BYTE = 8;
-    static final short TWO_BYTE = 255;
+    static final int UNICODE_DIGITS = 4;
+    static final int UNICODE_DIGIT_FIRST = UNICODE_DIGITS * 3;
+    static final int UNICODE_DIGIT_SECOND = UNICODE_DIGITS * 2;
+    static final int UNICODE_DIGIT_THIRD = UNICODE_DIGITS;
+    static final int HEX_MIN_ALPHA = 10;
+    static final int HEX_MAX = 15;
+    static final int BITS_IN_BYTE = 8;
+    static final int TWO_BYTE = 255;
 
     static final Map<Character, Token> END_TOKENS = listToMap(
         Token.R_BRACE,
@@ -145,6 +145,10 @@ final class JSONSymbolCollection {
         ESCAPE('\\', "\\\\"),
         UNKNOWN(null, null);
 
+        private final Object symbol;
+        private final Object value;
+        private final char shortSymbol;
+
         private static final Map<Character, Token> SHORT_TOKEN_MAP = new HashMap<>();
 
         static {
@@ -174,10 +178,6 @@ final class JSONSymbolCollection {
 
             return parDefault;
         }
-
-        private final Object symbol;
-        private final Object value;
-        private final char shortSymbol;
 
         Token(final Object parSymbol) {
             this(parSymbol, parSymbol);

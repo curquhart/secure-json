@@ -32,17 +32,18 @@ import java.util.Objects;
  *   a) not be stored in numeric types or
  *   b) should be retrieved from HugeDecimal.charSequenceValue()
  */
-public class HugeDecimal extends Number implements CharSequence {
+public final class HugeDecimal extends Number implements CharSequence, IJSONSerializeAware {
     private static final long serialVersionUID = 1L;
 
-    private CharSequence chars;
+    private transient CharSequence chars;
     private final transient NumberReader numberReader;
-    private final Number number;
+    private final transient Number number;
 
     /**
      * @exclude
      */
     HugeDecimal(final CharSequence parChars, final NumberReader parNumberReader) {
+        super();
         chars = parChars;
         numberReader = parNumberReader;
         number = null;
@@ -52,6 +53,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @exclude
      */
     HugeDecimal(final Number parValue) {
+        super();
         if (parValue instanceof HugeDecimal) {
             final HugeDecimal myValueHugeDecimal = (HugeDecimal) parValue;
             chars = myValueHugeDecimal.chars;
@@ -71,7 +73,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @throws JSONRuntimeException On error.
      */
     @Override
-    public final int intValue() {
+    public int intValue() {
         if (number != null) {
             return number.intValue();
         }
@@ -90,7 +92,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @throws JSONRuntimeException On error.
      */
     @Override
-    public final long longValue() {
+    public long longValue() {
         if (number != null) {
             return number.longValue();
         }
@@ -109,7 +111,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @throws JSONRuntimeException On error.
      */
     @Override
-    public final float floatValue() {
+    public float floatValue() {
         if (number != null) {
             return number.floatValue();
         }
@@ -128,7 +130,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @throws JSONRuntimeException On error.
      */
     @Override
-    public final double doubleValue() {
+    public double doubleValue() {
         if (number != null) {
             return number.doubleValue();
         }
@@ -145,7 +147,7 @@ public class HugeDecimal extends Number implements CharSequence {
      *
      * @return Our raw character sequence value.
      */
-    public final CharSequence charSequenceValue() {
+    public CharSequence charSequenceValue() {
         if (number != null) {
             return number.toString();
         }
@@ -160,7 +162,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @throws IOException On IO error with resource file.
      * @throws JSONException On sequence read failure.
      */
-    public final BigInteger bigIntegerValue() throws IOException, JSONException {
+    public BigInteger bigIntegerValue() throws IOException, JSONException {
         if (number != null) {
             if (number instanceof BigInteger) {
                 return (BigInteger) number;
@@ -183,7 +185,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * @throws IOException On IO error with resource file.
      * @throws JSONException On sequence read failure.
      */
-    public final BigDecimal bigDecimalValue() throws IOException, JSONException {
+    public BigDecimal bigDecimalValue() throws IOException, JSONException {
         if (number != null) {
             if (number instanceof BigDecimal) {
                 return (BigDecimal) number;
@@ -199,7 +201,7 @@ public class HugeDecimal extends Number implements CharSequence {
     }
 
     @Override
-    public final boolean equals(final Object parObject) {
+    public boolean equals(final Object parObject) {
         if (this == parObject) {
             return true;
         }
@@ -229,12 +231,12 @@ public class HugeDecimal extends Number implements CharSequence {
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return Objects.hash(chars);
     }
 
     @Override
-    public final int length() {
+    public int length() {
         if (number != null && chars == null) {
             chars = number.toString();
         }
@@ -242,7 +244,7 @@ public class HugeDecimal extends Number implements CharSequence {
     }
 
     @Override
-    public final char charAt(final int parIndex) {
+    public char charAt(final int parIndex) {
         if (number != null && chars == null) {
             chars = number.toString();
         }
@@ -250,11 +252,16 @@ public class HugeDecimal extends Number implements CharSequence {
     }
 
     @Override
-    public final CharSequence subSequence(final int parStart, final int parEnd) {
+    public CharSequence subSequence(final int parStart, final int parEnd) {
         if (number != null && chars == null) {
             chars = number.toString();
         }
         return chars.subSequence(parStart, parEnd);
+    }
+
+    @Override
+    public Object toJSONable() {
+        return number;
     }
 
     private void writeObject(final ObjectOutputStream parObjectOutputStream) throws IOException {

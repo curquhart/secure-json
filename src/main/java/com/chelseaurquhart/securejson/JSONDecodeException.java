@@ -30,7 +30,7 @@ public class JSONDecodeException extends JSONException {
     JSONDecodeException(final ICharacterIterator parCharSequence, final Messages.Key parMessageKey)
             throws IOException {
         super(Messages.get(Messages.Key.ERROR_JSON_DECODE)
-            .replace(":offset", "" + parCharSequence.getOffset())
+            .replace(":offset", String.valueOf(parCharSequence.getOffset()))
             .replace(":message", Messages.get(parMessageKey)));
     }
 

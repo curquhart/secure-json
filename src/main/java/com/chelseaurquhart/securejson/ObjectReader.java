@@ -72,10 +72,11 @@ class ObjectReader<T> extends ObjectSerializer {
         Map.class
     ));
 
-    private final Class<T> clazz;
-    private final Settings settings;
+    private final transient Class<T> clazz;
+    private final transient Settings settings;
 
     ObjectReader(final Class<T> parClazz, final Settings parSettings) {
+        super();
         clazz = parClazz;
         settings = parSettings;
     }
@@ -184,7 +185,7 @@ class ObjectReader<T> extends ObjectSerializer {
                 boolean myFoundSubData = false;
                 if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
                     if (myValue != null) {
-                        final Object myAcceptedValue = new ObjectReader<>(myField.getType(), settings).accept(myValue);
+                        final Object myAcceptedValue = buildObjectReader(myField.getType()).accept(myValue);
                         setValueIfNotNull(parField, mySubInstance, buildValue(myField.getGenericType(),
                             myField.getType(), myAcceptedValue, parAbsMap));
                         myFoundSubData = myAcceptedValue != null;
@@ -193,7 +194,7 @@ class ObjectReader<T> extends ObjectSerializer {
                     final Set<Class<?>> myClassStack;
                     final boolean myCreatedStack;
                     if (parClassStack == null) {
-                        myClassStack = new IdentityHashSet<>();
+                        myClassStack = buildIdentityHashSet();
                         myCreatedStack = true;
                     } else {
                         myClassStack = parClassStack;
@@ -236,6 +237,14 @@ class ObjectReader<T> extends ObjectSerializer {
         }
 
         return myFoundData;
+    }
+
+    private Set<Class<?>> buildIdentityHashSet() {
+        return new IdentityHashSet<>();
+    }
+
+    private ObjectReader<?> buildObjectReader(final Class<?> parType) {
+        return new ObjectReader<>(parType, settings);
     }
 
     private boolean canRecursivelyAccept(final Class<?> parFieldType) {
@@ -313,7 +322,6 @@ class ObjectReader<T> extends ObjectSerializer {
     private Object buildMapValue(final Type parGenericType, final Class<?> parType, final Map<?, ?> parValue)
             throws IOException, JSONException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
-        final Type[] myArgs = getGenericTypes(myType, 2);
         final Class<?>[] myClasses = getGenericArgClasses(myType, 2, parType);
 
         if (!CharSequence.class.isAssignableFrom(myClasses[0]) && myClasses[0] != Object.class) {
@@ -326,6 +334,7 @@ class ObjectReader<T> extends ObjectSerializer {
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
+        final Type[] myArgs = getGenericTypes(myType, 2);
         for (final Map.Entry<?, ?> myEntry : parValue.entrySet()) {
             final Object myKey = buildStringValue(myClasses[0], (CharSequence) myEntry.getKey(),
                 settings.isStrictMapKeyTypes());
@@ -339,16 +348,15 @@ class ObjectReader<T> extends ObjectSerializer {
     @SuppressWarnings("unchecked")
     private Object buildCollectionValue(final Type parGenericType, final Class<?> parType,
                                         final Collection<?> parValue) throws IOException, JSONException {
-        final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
-        final Type[] myArgs = getGenericTypes(myType, 1);
-        final Class<?>[] myClasses = getGenericArgClasses(myType, 1, parType);
-
         final Collection<Object> myCollection;
         try {
             myCollection = construct(getConcreteClass((Class<Collection<Object>>) parType));
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
+        final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
+        final Type[] myArgs = getGenericTypes(myType, 1);
+        final Class<?>[] myClasses = getGenericArgClasses(myType, 1, parType);
         for (final Object myEntry : parValue) {
             myCollection.add(buildValue(myArgs[0], myClasses[0], myEntry, null));
         }
@@ -476,8 +484,13 @@ class ObjectReader<T> extends ObjectSerializer {
         return myResult;
     }
 
+    /**
+     * IdentityHashMap-backed set.
+     *
+     * @param <T> The element type.
+     */
     static class IdentityHashSet<T> implements Set<T> {
-        private final IdentityHashMap<T, Void> identityHashMap = new IdentityHashMap<>();
+        private final transient IdentityHashMap<T, Void> identityHashMap = new IdentityHashMap<>();
 
         @Override
         public int size() {

@@ -22,11 +22,12 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class MessagesTest {
     private static final String DATA_PROVIDER_NAME = "MessagesTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME)
-    private static Object[] dataProvider() {
+    static Object[] dataProvider() {
         return Messages.Key.values();
     }
 

@@ -26,8 +26,8 @@ import java.util.Map;
  * @exclude
  */
 class MapReader implements IReader<MapReader.Container> {
-    private final JSONReader jsonReader;
-    private final IReader<CharSequence> stringReader;
+    private final transient JSONReader jsonReader;
+    private final transient IReader<CharSequence> stringReader;
 
     MapReader(final JSONReader parJsonReader, final IReader<CharSequence> parStringReader) {
         jsonReader = parJsonReader;
@@ -134,9 +134,12 @@ class MapReader implements IReader<MapReader.Container> {
         return (Container) parValue;
     }
 
+    /**
+     * Container for Map data.
+     */
     static final class Container {
-        private Map<CharSequence, Object> map;
-        private CharSequence key;
+        private transient Map<CharSequence, Object> map;
+        private transient CharSequence key;
 
         private Container(final CharSequence parKey) {
             key = parKey;

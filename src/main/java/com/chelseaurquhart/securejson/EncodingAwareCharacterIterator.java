@@ -44,12 +44,12 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
     private static final char UTF_BIG_ENDIAN = '\ufeff';
     private static final char UTF_LITTLE_ENDIAN = '\ufffe';
+    private static final char NULL = '\u0000';
 
-
-    private CharQueue charQueue;
-    private int offset;
-    private State state = State.UNINITIALIZED;
-    private Encoding encoding;
+    private transient CharQueue charQueue;
+    private transient int offset;
+    private transient State state = State.UNINITIALIZED;
+    private transient Encoding encoding;
 
     EncodingAwareCharacterIterator() {
         this(0);
@@ -159,7 +159,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     }
 
     private Encoding findPartialUtf32Encoding() throws IOException, JSONException {
-        final char myUtf32Char = '\u0000';
+        final char myUtf32Char = NULL;
 
         if (hasNext() && peek() == myUtf32Char) {
             next();
@@ -289,7 +289,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             if (myChar == null) {
                 // EOF
                 return -1;
-            } else if (myChar != '\u0000') {
+            } else if (myChar != NULL) {
                 charQueue.add(myChar);
                 return myReadNulls;
             }
@@ -300,6 +300,12 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return myReadNulls;
     }
 
+    /**
+     * Reads the next available character.
+     *
+     * @return The next available character or NULL if there are no more.
+     * @throws IOException On read failure.
+     */
     protected abstract Character readNextChar() throws IOException;
 
     private enum Encoding {

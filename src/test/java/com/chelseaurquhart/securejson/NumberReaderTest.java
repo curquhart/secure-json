@@ -22,6 +22,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.math.MathContext;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class NumberReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testRead(final NumberProvider.Parameters parParameters) {
@@ -39,7 +40,7 @@ public final class NumberReaderTest {
 
     @Test
     public void testDefaults() throws IOException, JSONException {
-        Assert.assertEquals((short) 220, charSequenceToNumber("22e1", NumberReader.DEFAULT_MATH_CONTEXT));
+        Assert.assertEquals(220, charSequenceToNumber("22e1", NumberReader.DEFAULT_MATH_CONTEXT));
     }
 
     private Number charSequenceToNumber(final CharSequence parNumber, final MathContext parMathContext)
