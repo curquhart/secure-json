@@ -8,7 +8,7 @@ testJava7:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon -b build.java7.gradle check
+    - gradle --no-daemon check
 
 testJava8:
   tags:
