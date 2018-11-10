@@ -83,7 +83,7 @@ public final class SecureJSON {
             throws JSONEncodeException {
         Objects.requireNonNull(parConsumer);
 
-        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
+        try (JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput));
         } catch (final JSONRuntimeException | IOException myException) {
             throw JSONEncodeException.fromException(myException);
@@ -120,7 +120,7 @@ public final class SecureJSON {
             throws JSONEncodeException {
         Objects.requireNonNull(parConsumer);
 
-        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
+        try (JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             parConsumer.accept(myJsonWriter.write(parInput).getBytes());
         } catch (final JSONRuntimeException | IOException myException) {
             throw JSONEncodeException.fromException(myException);
@@ -148,7 +148,7 @@ public final class SecureJSON {
     public void toJSON(final Object parInput, final OutputStream parOutputStream) throws JSONEncodeException {
         Objects.requireNonNull(parOutputStream);
 
-        try (final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
+        try (JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
             myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, StandardCharsets.UTF_8));
         } catch (final JSONRuntimeException | IOException myException) {
             throw JSONEncodeException.fromException(myException);
@@ -189,7 +189,7 @@ public final class SecureJSON {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
 
-        try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
+        try (JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
             throw JSONDecodeException.fromException(myException);
@@ -273,7 +273,7 @@ public final class SecureJSON {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
 
-        try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
+        try (JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
         } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
             throw JSONDecodeException.fromException(myException);
@@ -362,7 +362,7 @@ public final class SecureJSON {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
 
-        try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
+        try (JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
         } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
             throw JSONDecodeException.fromException(myException);

@@ -296,7 +296,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testFullBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
@@ -308,7 +308,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testOverflowBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
@@ -321,7 +321,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testUnderflowBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
@@ -331,7 +331,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testCharSequenceByReference() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             final MutatableString myCharSequence = new MutatableString();
 
@@ -364,7 +364,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testToStringException() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('a');
             myManagedSecureCharBuffer.append('b');
@@ -374,7 +374,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(dataProvider = SUBSEQUENCE_DATA_PROVIDER_NAME)
     public void testSubSequence(final Parameters parParameters) throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
             try {
                 final CharSequence mySequence = myManagedSecureCharBuffer.subSequence(
                     parParameters.start, parParameters.end);
@@ -456,7 +456,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(dataProvider = EQUALS_DATA_PROVIDER_NAME)
     public void testEqual(final Parameters parParameters) throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
             if (parParameters.expectedEquals) {
                 Assert.assertTrue(isEqual(myManagedSecureCharBuffer, parParameters.expected));
             } else {
