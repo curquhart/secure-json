@@ -286,7 +286,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
                 throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_WRITE_TO_READONLY_BUFFER));
             }
             compositionFirst.put((byte) (parChar >> JSONSymbolCollection.BITS_IN_BYTE));
-            compositionSecond.put((byte) ((parChar & JSONSymbolCollection.TWO_BYTE)));
+            compositionSecond.put((byte) (parChar & JSONSymbolCollection.TWO_BYTE));
         }
 
         @Override

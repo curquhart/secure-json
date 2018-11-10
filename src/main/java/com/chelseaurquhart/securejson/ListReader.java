@@ -102,6 +102,7 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public void close() {
+        // no resources to close.
     }
 
     private Container objectToContainer(final Object parValue) {
