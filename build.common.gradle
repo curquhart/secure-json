@@ -109,6 +109,7 @@ jacocoTestCoverageVerification {
 
 test {
     useTestNG()
+    jvmArgs '--illegal-access=deny'
 }
 
 // don't verify until the report has been generated so that we can have a visual representation.

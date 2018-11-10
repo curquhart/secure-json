@@ -102,7 +102,9 @@ class ObjectSerializer extends ObjectReflector {
                 try {
                     parField.setAccessible(true);
                     return parField.get(parInstance);
-                } catch (final SecurityException | IllegalAccessException myException) {
+                    // RuntimeException because we need to catch InaccessibleObjectException
+                    // but also compile pre-java 9.
+                } catch (final IllegalAccessException | RuntimeException myException) {
                     throw new JSONRuntimeException(myException);
                 } finally {
                     parField.setAccessible(myOriginalValue);
@@ -123,7 +125,9 @@ class ObjectSerializer extends ObjectReflector {
                 try {
                     parField.setAccessible(true);
                     parField.set(parInstance, parValue);
-                } catch (final SecurityException | IllegalAccessException | IllegalArgumentException myException) {
+                    // RuntimeException because we need to catch InaccessibleObjectException
+                    // but also compile pre-java 9.
+                } catch (final IllegalAccessException | RuntimeException myException) {
                     throw new JSONRuntimeException(myException);
                 } finally {
                     parField.setAccessible(myOriginalValue);
@@ -145,9 +149,16 @@ class ObjectSerializer extends ObjectReflector {
         return AccessController.doPrivileged(new PrivilegedAction<U>() {
                 @Override
                 public U run() {
+                    // RuntimeException because we need to catch InaccessibleObjectException
+                    // but also compile pre-java 9.
                     final boolean myOriginalValue = isAccessible(myConstructor, null);
                     try {
                         myConstructor.setAccessible(true);
+                    } catch (final RuntimeException myException) {
+                        throw new JSONRuntimeException(myException);
+                    }
+
+                    try {
                         return myConstructor.newInstance();
                     } catch (final InstantiationException | IllegalAccessException
                             | InvocationTargetException | SecurityException myException) {
