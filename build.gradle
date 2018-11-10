@@ -3,13 +3,18 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        mavenCentral()
     }
     if (JavaVersion.current().java8Compatible) {
         dependencies {
             classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.4"
-            classpath "gradle.plugin.com.github.ksoichiro:gradle-console-reporter:0.5.0"
             classpath "com.github.jengelman.gradle.plugins:shadow:4.0.2"
             classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2"
+        }
+        if (!JavaVersion.current().java11) {
+            dependencies {
+                classpath "gradle.plugin.com.github.ksoichiro:gradle-console-reporter:0.5.0"
+            }
         }
     }
 }
@@ -25,7 +30,9 @@ apply plugin: 'pmd'
 // We don't want to apply that.
 if (JavaVersion.current().java8Compatible) {
     apply plugin: 'com.github.spotbugs'
-    apply plugin: 'com.github.ksoichiro.console.reporter'
+    if (!JavaVersion.current().java11) {
+        apply plugin: 'com.github.ksoichiro.console.reporter'
+    }
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'org.sonarqube'
 }
