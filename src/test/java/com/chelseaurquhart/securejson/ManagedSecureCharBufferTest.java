@@ -458,9 +458,9 @@ public final class ManagedSecureCharBufferTest {
     public void testEqual(final Parameters parParameters) throws IOException {
         try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
             if (parParameters.expectedEquals) {
-                Assert.assertTrue(myManagedSecureCharBuffer.equals(parParameters.expected));
+                Assert.assertTrue(isEqual(myManagedSecureCharBuffer, parParameters.expected));
             } else {
-                Assert.assertFalse(myManagedSecureCharBuffer.equals(parParameters.expected));
+                Assert.assertFalse(isEqual(myManagedSecureCharBuffer, parParameters.expected));
             }
         }
     }
@@ -492,6 +492,25 @@ public final class ManagedSecureCharBufferTest {
         public CharSequence subSequence(final int parStart, final int parEnd) {
             return string.subSequence(parStart, parEnd);
         }
+    }
+
+    static boolean isEqual(final CharSequence parLhs, final CharSequence parRhs) {
+        if (parLhs == null || parRhs == null) {
+            return parLhs == parRhs;
+        }
+
+        final int myLength = parLhs.length();
+        if (parRhs.length() != myLength) {
+            return false;
+        }
+
+        for (int myIndex = 0; myIndex < myLength; myIndex++) {
+            if (parLhs.charAt(myIndex) != parRhs.charAt(myIndex)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static final class Parameters {
