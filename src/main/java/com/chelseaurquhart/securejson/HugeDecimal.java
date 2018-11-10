@@ -68,6 +68,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * Get our integer value.
      *
      * @return An integer representation of our value.
+     * @throws JSONRuntimeException On error.
      */
     @Override
     public final int intValue() {
@@ -77,7 +78,7 @@ public class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().intValue();
-        } catch (final IOException myException) {
+        } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -86,6 +87,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * Get our long value.
      *
      * @return A long representation of our value.
+     * @throws JSONRuntimeException On error.
      */
     @Override
     public final long longValue() {
@@ -95,7 +97,7 @@ public class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().longValue();
-        } catch (final IOException myException) {
+        } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -104,6 +106,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * Get our float value.
      *
      * @return A float representation of our value.
+     * @throws JSONRuntimeException On error.
      */
     @Override
     public final float floatValue() {
@@ -113,7 +116,7 @@ public class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().floatValue();
-        } catch (final IOException myException) {
+        } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -122,6 +125,7 @@ public class HugeDecimal extends Number implements CharSequence {
      * Get our double value.
      *
      * @return A double representation of our value.
+     * @throws JSONRuntimeException On error.
      */
     @Override
     public final double doubleValue() {
@@ -131,7 +135,7 @@ public class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().doubleValue();
-        } catch (final IOException myException) {
+        } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -153,9 +157,10 @@ public class HugeDecimal extends Number implements CharSequence {
      * Get our value converted to a BigInteger.
      *
      * @return a BigInteger representation of our character sequence.
-     * @throws IOException On error.
+     * @throws IOException On IO error with resource file.
+     * @throws JSONException On sequence read failure.
      */
-    public final BigInteger bigIntegerValue() throws IOException {
+    public final BigInteger bigIntegerValue() throws IOException, JSONException {
         if (number != null) {
             if (number instanceof BigInteger) {
                 return (BigInteger) number;
@@ -175,9 +180,10 @@ public class HugeDecimal extends Number implements CharSequence {
      * Get our value converted to a BigDecimal.
      *
      * @return a BigDecimal representation of our character sequence.
-     * @throws IOException On error.
+     * @throws IOException On IO error with resource file.
+     * @throws JSONException On sequence read failure.
      */
-    public final BigDecimal bigDecimalValue() throws IOException {
+    public final BigDecimal bigDecimalValue() throws IOException, JSONException {
         if (number != null) {
             if (number instanceof BigDecimal) {
                 return (BigDecimal) number;
@@ -216,7 +222,7 @@ public class HugeDecimal extends Number implements CharSequence {
         } else {
             try {
                 return bigDecimalValue().equals(myThat.bigDecimalValue());
-            } catch (final IOException myException) {
+            } catch (final IOException | JSONException myException) {
                 throw new JSONRuntimeException(myException);
             }
         }

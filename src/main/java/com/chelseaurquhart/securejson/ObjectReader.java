@@ -81,11 +81,12 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    final T accept(final Object parInput) throws IOException {
+    final T accept(final Object parInput) throws IOException, JSONException {
         return buildInstance(parInput, null);
     }
 
-    private T buildInstance(final Object parInput, final Map<CharSequence, Object> parAbsMap) throws IOException {
+    private T buildInstance(final Object parInput, final Map<CharSequence, Object> parAbsMap) throws IOException,
+            JSONException {
         final T myInstance = construct(clazz);
 
         if (myInstance instanceof IJSONDeserializeAware) {
@@ -107,7 +108,8 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    private <U> Class<? extends U> getConcreteClass(final Class<? extends U> parClazz) throws IOException {
+    private <U> Class<? extends U> getConcreteClass(final Class<? extends U> parClazz) throws IOException,
+            JSONException {
         try {
             if (parClazz == Map.class || parClazz == AbstractMap.class) {
                 return (Class<? extends U>) LinkedHashMap.class;
@@ -131,7 +133,7 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     private void accept(final Object parInstance, final Map<CharSequence, Object> parRelMap,
-                        final Map<CharSequence, Object> parAbsMap) throws IOException {
+                        final Map<CharSequence, Object> parAbsMap) throws IOException, JSONException {
         for (final Field myField : getFields(clazz)) {
             accept(parInstance, myField, parRelMap, parAbsMap);
         }
@@ -139,7 +141,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     private void accept(final Object parInstance, final Field parField, final Map<CharSequence, Object> parRelMap,
                         final Map<CharSequence, Object> parAbsMap)
-            throws IOException {
+            throws IOException, JSONException {
         final SerializationSettings mySerializationSettings = getSerializationSettings(parField);
         final Class<?> myType = parField.getType();
         final Object myValue;
@@ -156,7 +158,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     private <U> boolean recursivelyAccept(final Object parInstance, final Field parField, final Class<U> parType,
                                        final Map<CharSequence, Object> parAbsMap, final Set<Class<?>> parClassStack)
-            throws IOException {
+            throws IOException, JSONException {
         if (!canRecursivelyAccept(parType)) {
             return false;
         }
@@ -252,7 +254,7 @@ class ObjectReader<T> extends ObjectSerializer {
     @SuppressWarnings("unchecked")
     private Object buildValue(final Type parGenericType, final Class<?> parType, final Object parValue,
                               final Map<CharSequence, Object> parAbsMap)
-            throws IOException {
+            throws IOException, JSONException {
         final Class<?> myType;
         if (parType == Object.class && parValue != null) {
             myType = deAnonymize(parValue.getClass());
@@ -309,7 +311,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     @SuppressWarnings("unchecked")
     private Object buildMapValue(final Type parGenericType, final Class<?> parType, final Map<?, ?> parValue)
-            throws IOException {
+            throws IOException, JSONException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
         final Type[] myArgs = getGenericTypes(myType, 2);
         final Class[] myClasses = getGenericArgClasses(myType, 2, parType);
@@ -336,7 +338,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     @SuppressWarnings("unchecked")
     private Object buildCollectionValue(final Type parGenericType, final Class<?> parType,
-                                        final Collection<?> parValue) throws IOException {
+                                        final Collection<?> parValue) throws IOException, JSONException {
         final Type myType = TypeResolver.resolveGenericType(parType, parGenericType);
         final Type[] myArgs = getGenericTypes(myType, 1);
         final Class[] myClasses = getGenericArgClasses(myType, 1, parType);
@@ -356,7 +358,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     @SuppressWarnings("unchecked")
     private Object buildArrayValue(final Class<?> parType, final Object parValue)
-            throws IOException {
+            throws IOException, JSONException {
         final Class myClass = parType.getComponentType();
 
         final int myLength = Array.getLength(parValue);

@@ -61,13 +61,13 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     }
 
     @Override
-    public final Character peek() throws IOException {
+    public final Character peek() throws IOException, JSONException {
         cacheAndGetNextChar();
 
         return charQueue.peek();
     }
 
-    private Encoding findEncoding() throws IOException {
+    private Encoding findEncoding() throws IOException, JSONException {
         // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
         // the only special characters we need to handle.
 
@@ -111,7 +111,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         }
     }
 
-    private Encoding findUtf16Or32LittleEndianEncoding(final char parUtf16BomChar0) throws IOException {
+    private Encoding findUtf16Or32LittleEndianEncoding(final char parUtf16BomChar0) throws IOException, JSONException {
         next();
         // little-endian
         if (!hasNext() || next() != parUtf16BomChar0) {
@@ -126,7 +126,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return Encoding.UTF16LE;
     }
 
-    private Encoding findEncodingWithoutBOM() throws IOException {
+    private Encoding findEncodingWithoutBOM() throws IOException, JSONException {
         final Encoding myPartialEncoding = findPartialUtf32Encoding();
         if (myPartialEncoding == Encoding.UTF32) {
             final Encoding myEncoding = findEncoding();
@@ -158,7 +158,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         }
     }
 
-    private Encoding findPartialUtf32Encoding() throws IOException {
+    private Encoding findPartialUtf32Encoding() throws IOException, JSONException {
         final char myUtf32Char = '\u0000';
 
         if (hasNext() && peek() == myUtf32Char) {
@@ -173,7 +173,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return Encoding.UTF8_IMPLICIT;
     }
 
-    private Character cacheAndGetNextChar() throws IOException {
+    private Character cacheAndGetNextChar() throws IOException, JSONException {
         if (state == State.UNINITIALIZED) {
             state = State.CHECKING_CHARSET;
             encoding = findEncoding();
@@ -195,7 +195,11 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     @Override
     public final boolean hasNext() {
         try {
-            return cacheAndGetNextChar() != null;
+            try {
+                return cacheAndGetNextChar() != null;
+            } catch (final JSONException myException) {
+                throw new JSONRuntimeException(myException);
+            }
         } catch (final IOException myException) {
             throw new JSONRuntimeException(myException);
         }
@@ -222,9 +226,14 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
         try {
             offset++;
-            final Character myChar = readAndProcessNextChar();
+            final Character myChar;
+            try {
+                myChar = readAndProcessNextChar();
+            } catch (final JSONDecodeException myException) {
+                throw new JSONRuntimeException(myException);
+            }
             if (myChar == null) {
-                throw new NoSuchElementException();
+                throw new JSONRuntimeException(new NoSuchElementException());
             }
             return myChar;
         } catch (final IOException myException) {
@@ -232,7 +241,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         }
     }
 
-    private Character readAndProcessNextChar() throws IOException {
+    private Character readAndProcessNextChar() throws IOException, JSONDecodeException {
         if (encoding == null || encoding == Encoding.UTF8) {
             return readNextChar();
         }
@@ -267,7 +276,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return myChar;
     }
 
-    private EOFMarker forceReadNullChars(final int parCount) throws IOException {
+    private EOFMarker forceReadNullChars(final int parCount) throws IOException, InvalidTokenException {
         final int myReadChars = readNullChars(parCount);
         if (myReadChars == -1) {
             return EOFMarker.EOF;

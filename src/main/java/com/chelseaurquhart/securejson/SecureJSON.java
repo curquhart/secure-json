@@ -191,7 +191,7 @@ public final class SecureJSON {
 
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
-        } catch (final JSONRuntimeException | IOException | ClassCastException myException) {
+        } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
             throw JSONDecodeException.fromException(myException);
         }
     }
@@ -275,7 +275,7 @@ public final class SecureJSON {
 
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
-        } catch (final JSONRuntimeException | IOException | ClassCastException myException) {
+        } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
             throw JSONDecodeException.fromException(myException);
         }
     }
@@ -364,7 +364,7 @@ public final class SecureJSON {
 
         try (final JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
             parConsumer.accept((T) myJsonReader.read(parInput));
-        } catch (final JSONRuntimeException | IOException | ClassCastException myException) {
+        } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
             throw JSONDecodeException.fromException(myException);
         }
     }
@@ -429,7 +429,7 @@ public final class SecureJSON {
                 try {
                     parConsumer.accept(new ObjectReader<>(parClass, settings)
                         .accept(parOutput));
-                } catch (final IOException myException) {
+                } catch (final IOException | JSONException myException) {
                     throw new JSONRuntimeException(myException);
                 }
             }

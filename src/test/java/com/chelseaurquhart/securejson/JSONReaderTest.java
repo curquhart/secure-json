@@ -21,6 +21,7 @@ import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersExcepti
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
 import com.chelseaurquhart.securejson.util.StringUtil;
 import org.testng.Assert;
@@ -417,7 +418,7 @@ public final class JSONReaderTest {
             Assert.assertNull(parExpectedException, "Expected exception was not thrown");
             Assert.assertEquals(StringUtil.deepCharSequenceToString(myActual),
                 StringUtil.deepCharSequenceToString(parExpected));
-        } catch (final IOException | JSONException.JSONRuntimeException myException) {
+        } catch (final IOException | JSONException | JSONRuntimeException myException) {
             Assert.assertNotNull(parExpectedException);
             Assert.assertEquals(Util.unwrapException(myException).getMessage(),
                 parExpectedException.getMessage());

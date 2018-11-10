@@ -85,7 +85,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.bigDecimalValue(), parParameters.expectedBigDecimal);
-                } catch (final IOException myException) {
+                } catch (final IOException | JSONException myException) {
                     throw new JSONException.JSONRuntimeException(myException);
                 } catch (final NumberFormatException | ArithmeticException myException) {
                     Assert.assertNull(parParameters.expectedBigDecimal);
@@ -101,7 +101,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.bigIntegerValue(), parParameters.expectedBigInteger);
-                } catch (final IOException myException) {
+                } catch (final IOException | JSONException myException) {
                     throw new JSONException.JSONRuntimeException(myException);
                 } catch (final NumberFormatException | ArithmeticException myException) {
                     Assert.assertNull(parParameters.expectedBigInteger);

@@ -34,7 +34,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
             == JSONSymbolCollection.Token.QUOTE;
     }
@@ -45,8 +45,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     @Override
-    public CharSequence read(final ICharacterIterator parInput)
-            throws IOException {
+    public CharSequence read(final ICharacterIterator parInput) throws IOException, JSONException {
         if (JSONSymbolCollection.Token.forSymbolOrDefault(parInput.peek(), null) != JSONSymbolCollection.Token.QUOTE) {
             throw new MalformedStringException(parInput);
         }
@@ -113,7 +112,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         return false;
     }
 
-    private char readUnicode(final ICharacterIterator parInput) throws IOException {
+    private char readUnicode(final ICharacterIterator parInput) throws IOException, MalformedUnicodeValueException {
         int myValue = 0;
         for (int myIndex = 0; myIndex < JSONSymbolCollection.UNICODE_DIGITS; myIndex++) {
             final char myChar = Character.toLowerCase(parInput.next());

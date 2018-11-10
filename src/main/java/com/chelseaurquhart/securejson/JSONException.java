@@ -16,12 +16,10 @@
 
 package com.chelseaurquhart.securejson;
 
-import java.io.IOException;
-
 /**
  * Base class for all SecureJSON exceptions.
  */
-public class JSONException extends IOException {
+public class JSONException extends Exception {
     /**
      * @exclude
      */

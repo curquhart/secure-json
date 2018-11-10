@@ -18,8 +18,6 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
-
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -136,7 +134,7 @@ class ObjectSerializer extends ObjectReflector {
         });
     }
 
-    <U> U construct(final Class<U> parClazz) throws IOException {
+    <U> U construct(final Class<U> parClazz) throws JSONDecodeException {
         final Constructor<? extends U> myConstructor;
         try {
             myConstructor = parClazz.getDeclaredConstructor();

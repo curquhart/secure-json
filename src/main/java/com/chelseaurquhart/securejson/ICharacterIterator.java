@@ -23,7 +23,7 @@ import java.util.Iterator;
  * @exclude
  */
 interface ICharacterIterator extends Iterator<Character> {
-    Character peek() throws IOException;
+    Character peek() throws IOException, JSONException;
 
     int getOffset();
 }

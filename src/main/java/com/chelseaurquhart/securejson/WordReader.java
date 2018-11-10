@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 class WordReader implements IReader<Object> {
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.WORD_TOKENS.get(parIterator.peek()) != null;
     }
 
@@ -35,8 +35,7 @@ class WordReader implements IReader<Object> {
     }
 
     @Override
-    public Object read(final ICharacterIterator parIterator)
-            throws IOException {
+    public Object read(final ICharacterIterator parIterator) throws IOException, JSONException {
 
         final JSONSymbolCollection.Token myWordToken = JSONSymbolCollection.WORD_TOKENS.get(parIterator.peek());
         if (myWordToken != null) {
@@ -59,7 +58,7 @@ class WordReader implements IReader<Object> {
     }
 
     private void readAndValidateWord(final ICharacterIterator parIterator, final JSONSymbolCollection.Token parToken)
-            throws IOException {
+            throws IOException, JSONException {
         final CharSequence myWord = parToken.toString().toLowerCase();
         final int myCheckingLength = myWord.length();
 

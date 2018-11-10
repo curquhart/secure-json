@@ -30,7 +30,7 @@ public final class NumberReaderTest {
             Assert.assertNull(parParameters.expectedException);
             Assert.assertSame(myNumber.getClass(), parParameters.expectedNumberClass);
             Assert.assertEquals(myNumber, parParameters.expected);
-        } catch (final IOException | JSONException.JSONRuntimeException myException) {
+        } catch (final IOException | JSONException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
@@ -38,17 +38,17 @@ public final class NumberReaderTest {
     }
 
     @Test
-    public void testDefaults() throws IOException {
+    public void testDefaults() throws IOException, JSONException {
         Assert.assertEquals((short) 220, charSequenceToNumber("22e1", NumberReader.DEFAULT_MATH_CONTEXT));
     }
 
     private Number charSequenceToNumber(final CharSequence parNumber, final MathContext parMathContext)
-            throws IOException {
+            throws IOException, JSONException {
         return new NumberReader(parMathContext, Settings.DEFAULTS).charSequenceToNumber(parNumber, 0);
     }
 
     @Test(expectedExceptions = NotImplementedException.class)
-    public void testAddValue() throws IOException {
+    public void testAddValue() throws IOException, JSONException {
         final IReader myNumberReader = new NumberReader(Settings.DEFAULTS);
         myNumberReader.addValue(null, null, null);
     }

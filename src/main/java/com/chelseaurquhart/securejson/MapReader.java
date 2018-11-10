@@ -35,13 +35,13 @@ class MapReader implements IReader<MapReader.Container> {
     }
 
     @Override
-    public boolean isStart(final ICharacterIterator parIterator) throws IOException {
+    public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
             == JSONSymbolCollection.Token.L_CURLY;
     }
 
     @Override
-    public SymbolType getSymbolType(final ICharacterIterator parIterator) throws IOException {
+    public SymbolType getSymbolType(final ICharacterIterator parIterator) throws IOException, JSONException {
         if (!parIterator.hasNext()) {
             throw new MalformedMapException(parIterator);
         }
@@ -62,7 +62,7 @@ class MapReader implements IReader<MapReader.Container> {
     }
 
     @Override
-    public Container read(final ICharacterIterator parIterator) throws IOException {
+    public Container read(final ICharacterIterator parIterator) throws IOException, JSONException {
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
 
@@ -80,7 +80,7 @@ class MapReader implements IReader<MapReader.Container> {
 
     @Override
     public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
-            throws IOException {
+            throws IOException, JSONException {
         final Container myContainer = objectToContainer(parCollection);
         myContainer.put(myContainer.key, parValue);
         jsonReader.moveToNextToken(parIterator);
@@ -113,7 +113,7 @@ class MapReader implements IReader<MapReader.Container> {
         stringReader.close();
     }
 
-    private CharSequence readKey(final ICharacterIterator parIterator) throws IOException {
+    private CharSequence readKey(final ICharacterIterator parIterator) throws IOException, JSONException {
         final CharSequence myKey = stringReader.read(parIterator);
         jsonReader.moveToNextToken(parIterator);
         if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
