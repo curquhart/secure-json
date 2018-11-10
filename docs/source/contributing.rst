@@ -20,7 +20,7 @@ coverage on any contributed code.
 ----------------
 Responsibilities
 ----------------
-* Ensure Java 7, 8, and 10 compatibility for every change. The build process must work on Linux and Mac OS.
+* Ensure Java 7, 8, 10, and 11 compatibility for every change. The build process must work on Linux and Mac OS.
 * Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get
   community feedback. This is for both your benefit and the author's- you don't want to build a feature only to find out
   it's in progress already.

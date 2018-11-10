@@ -40,12 +40,11 @@ javadocs:
     - gradle --no-daemon javadoc
 
 # Lets support this in the pipeline, but call it experimental to be clear that we're using an experimental Gradle version.
-testJava11Experimental:
+testJava11:
   tags:
     - docker
   image: gradle:4.10-jdk11
   stage: test
-  allow_failure: true
   script:
     - unset SONAR_TOKEN
     - gradle wrapper --gradle-version=5.0-20181110000025+0000
