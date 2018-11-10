@@ -145,16 +145,16 @@ final class JSONReader implements Closeable, AutoCloseable {
         }
     }
 
-    private void readStackPart(ICharacterIterator parIterator, Map.Entry<IReader, Object> myHead, final Data parData)
-            throws IOException, JSONException {
+    private void readStackPart(final ICharacterIterator parIterator, final Map.Entry<IReader, Object> parHead,
+                               final Data parData) throws IOException, JSONException {
         parIterator.next();
         moveToNextToken(parIterator);
-        if (myHead.getKey().getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
+        if (parHead.getKey().getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
             throw new InvalidTokenException(parIterator);
         }
         // keep reading
         parData.isFinished = false;
-        parData.separatorForObject = myHead;
+        parData.separatorForObject = parHead;
     }
 
     private void readStackEnd(final ICharacterIterator parIterator, final Map.Entry<IReader, Object> parHead,
