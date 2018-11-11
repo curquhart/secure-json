@@ -322,7 +322,6 @@ public final class SecureJSON {
             throws JSONDecodeException {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
-        Objects.requireNonNull(parClass);
 
         fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
@@ -411,7 +410,6 @@ public final class SecureJSON {
             throws JSONDecodeException {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
-        Objects.requireNonNull(parClass);
 
         fromJSON(parInput, getConsumer(parConsumer, parClass));
     }

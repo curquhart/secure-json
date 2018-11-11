@@ -50,6 +50,7 @@ sourceSets {
         java {
             srcDirs 'src/shared/java'
         }
+        compileClasspath += sourceSets.main.output
     }
 
     cli {
