@@ -56,8 +56,8 @@ class JSONWriter implements Closeable, AutoCloseable {
     void write(final Object parInput, final ICharacterWriter parSecureBuffer) throws IOException, InvalidTypeException {
         final Object myInput = mutateInput(parInput);
 
-        if (myInput instanceof IJSONAware) {
-            write(((IJSONAware) myInput).toJSONable(), parSecureBuffer);
+        if (myInput instanceof IJSONSerializeAware) {
+            write(((IJSONSerializeAware) myInput).toJSONable(), parSecureBuffer);
             return;
         }
 
