@@ -82,12 +82,14 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         switch (myNextChar) {
             case UTF8_BOM_CHAR0:
                 next();
-                if (!hasNext() || next() != UTF8_BOM_CHAR1) {
+                if (!hasNext() || peek() != UTF8_BOM_CHAR1) {
                     throw new MalformedJSONException(this);
                 }
-                if (!hasNext() || next() != UTF8_BOM_CHAR2) {
+                next();
+                if (!hasNext() || peek() != UTF8_BOM_CHAR2) {
                     throw new MalformedJSONException(this);
                 }
+                next();
                 return Encoding.UTF8;
             case UTF_BIG_ENDIAN:
                 next();
@@ -104,9 +106,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             case UTF16_BOM_CHAR0:
                 next();
                 // big-endian
-                if (!hasNext() || next() != UTF16_BOM_CHAR1) {
+                if (!hasNext() || peek() != UTF16_BOM_CHAR1) {
                     throw new MalformedJSONException(this);
                 }
+                next();
                 return Encoding.UTF16BE;
             case UTF16_BOM_CHAR1:
                 return findUtf16Or32LittleEndianEncoding(UTF16_BOM_CHAR0);
@@ -118,9 +121,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private Encoding findUtf16Or32LittleEndianEncoding(final char parUtf16BomChar0) throws IOException, JSONException {
         next();
         // little-endian
-        if (!hasNext() || next() != parUtf16BomChar0) {
+        if (!hasNext() || peek() != parUtf16BomChar0) {
             throw new MalformedJSONException(this);
         }
+        next();
         if (findPartialUtf32Encoding() == Encoding.UTF32) {
             return Encoding.UTF32LE;
         }
