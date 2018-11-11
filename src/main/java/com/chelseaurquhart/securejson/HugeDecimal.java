@@ -32,7 +32,7 @@ import java.util.Objects;
  *   a) not be stored in numeric types or
  *   b) should be retrieved from HugeDecimal.charSequenceValue()
  */
-public final class HugeDecimal extends Number implements CharSequence, IJSONSerializeAware {
+public final class HugeDecimal extends Number implements CharSequence {
     private static final long serialVersionUID = 1L;
 
     private transient CharSequence chars;
@@ -257,11 +257,6 @@ public final class HugeDecimal extends Number implements CharSequence, IJSONSeri
             chars = number.toString();
         }
         return chars.subSequence(parStart, parEnd);
-    }
-
-    @Override
-    public Object toJSONable() {
-        return number;
     }
 
     private void writeObject(final ObjectOutputStream parObjectOutputStream) throws IOException {

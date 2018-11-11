@@ -16,8 +16,13 @@
 
 package com.chelseaurquhart.securejson;
 
+
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedUnicodeValueException;
+
 import org.testng.annotations.DataProvider;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 
 /**
@@ -35,9 +40,10 @@ public final class StringProvider {
      *
      * @param parMethod The method being executed.
      * @return A collection of parameters.
+     * @throws IOException On message read failure.
      */
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
-    public static Object[] dataProvider(final Method parMethod) {
+    public static Object[] dataProvider(final Method parMethod) throws IOException {
         return new Object[]{
             buildParameters(
                 "simple string",
@@ -64,6 +70,18 @@ public final class StringProvider {
                 "\"\\u1234\\u5678\\uabcd\"",
                 "\u1234\u5678\uabcd"
             ),
+            buildParameters(
+                "string with invalid escape characters",
+                "\"abc\\a\"",
+                null
+            )
+                .exception(new MalformedStringException(new PresetIterableCharSequence(5))),
+            buildParameters(
+                "string with bad unicode escape sequence",
+                "\"abc\\u123\"",
+                null
+            )
+                .exception(new MalformedUnicodeValueException(new PresetIterableCharSequence(9))),
         };
     }
 

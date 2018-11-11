@@ -45,9 +45,5 @@ public class JSONException extends Exception {
         JSONRuntimeException(final Exception parInput) {
             super(parInput);
         }
-
-        JSONRuntimeException(final String parMessage) {
-            super(parMessage);
-        }
     }
 }

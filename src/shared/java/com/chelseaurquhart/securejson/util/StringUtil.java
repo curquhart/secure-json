@@ -16,6 +16,8 @@
 
 package com.chelseaurquhart.securejson.util;
 
+import com.chelseaurquhart.securejson.IJSONSerializeAware;
+
 import java.nio.CharBuffer;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -63,6 +65,8 @@ public final class StringUtil {
             for (int myIndex = 0; myIndex < myInputArray.length; myIndex++) {
                 myInputArray[myIndex] = deepCharSequenceToString(myInputArray[myIndex]);
             }
+        } else if (parInput instanceof IJSONSerializeAware) {
+            return deepCharSequenceToString(((IJSONSerializeAware) parInput).toJSONable());
         }
 
         return parInput;

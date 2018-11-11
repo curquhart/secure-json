@@ -50,6 +50,7 @@ sourceSets {
         java {
             srcDirs 'src/shared/java'
         }
+        compileClasspath += sourceSets.main.output
     }
 
     cli {
@@ -77,26 +78,38 @@ sourceSets {
     }
 }
 
-if (JavaVersion.current().java9Compatible) {
-    compileJava {
-        sourceCompatibility = 1.7
-        targetCompatibility = 1.7
-        options.compilerArgs.addAll(['--release', '7'])
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+if (JavaVersion.current().java8Compatible) {
+    def stdOut = new ByteArrayOutputStream()
+    try {
+        exec {
+            commandLine '/usr/libexec/java_home', '-v', '1.7'
+            standardOutput = stdOut
+        }
+
+        def bootstrapPath = "${stdOut.toString().trim()}/jre/lib/rt.jar"
+        project.tasks.withType(AbstractCompile, { ac ->
+            ac.options.bootstrapClasspath = files(bootstrapPath)
+        })
+        println "Using bootstrap path: ${bootstrapPath}"
+    } catch (final Exception e) {
+        println "Failed to get Java 7 home. Bootstrap path will not be set: ${e.getMessage()}"
     }
-} else {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
 }
 
 if (JavaVersion.current().java9Compatible) {
+    compileJava {
+        options.compilerArgs.addAll(['--release', '7'])
+    }
+
     compileJava9Java {
         sourceCompatibility = 9
         targetCompatibility = 9
         options.compilerArgs.addAll(['--release', '9'])
     }
-}
 
-if (JavaVersion.current().java9Compatible) {
     jar {
         into('META-INF/versions/9') {
             from sourceSets.java9.output
@@ -146,7 +159,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.85
+                minimum = 0.90
             }
         }
     }

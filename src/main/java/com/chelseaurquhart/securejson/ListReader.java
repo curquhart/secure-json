@@ -40,10 +40,6 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public SymbolType getSymbolType(final ICharacterIterator parIterator) throws IOException, JSONException {
-        if (!parIterator.hasNext()) {
-            throw new MalformedListException(parIterator);
-        }
-
         final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(),
             JSONSymbolCollection.Token.UNKNOWN);
 

@@ -17,9 +17,11 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
+import com.chelseaurquhart.securejson.JSONDecodeException.EmptyJSONException;
 import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException;
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedMapException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
@@ -36,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 @SuppressWarnings("PMD.CommentRequired")
 public final class JSONReaderTest {
@@ -82,181 +85,187 @@ public final class JSONReaderTest {
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
     static Object[] dataProvider(final Method parMethod) throws IOException {
         return new Object[]{
-            new Parameters(
+            new Parameters<>(
+                "empty input",
+                "",
+                null,
+                new EmptyJSONException(new PresetIterableCharSequence())
+            ),
+            new Parameters<>(
                 "null",
                 "null",
                 null,
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "padded null",
                 " null   ",
                 null,
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean true",
                 "true",
                 true,
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean padded true",
                 "  true  ",
                 true,
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean false",
                 "false",
                 false,
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean padded false",
                 "   false   ",
                 false,
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean true with suffix",
                 "truemore",
                 false,
                 new InvalidTokenException(new PresetIterableCharSequence(4))
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean true with extra token",
                 "true]",
                 false,
                 new ExtraCharactersException(new PresetIterableCharSequence(4))
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean false with suffix",
                 "falsemore",
                 false,
                 new InvalidTokenException(new PresetIterableCharSequence(5))
             ),
-            new Parameters(
+            new Parameters<>(
                 "boolean false with extra token",
                 "false]",
                 false,
                 new ExtraCharactersException(new PresetIterableCharSequence(5))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list",
                 "[]",
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF8 BOM",
                 new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf, '[', ']'},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF16 BOM big-endian",
                 new byte[]{(byte) 0xfe, (byte) 0xff, 0, '[', 0, ']'},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF16 NO BOM big-endian",
                 new byte[]{0, '[', 0, ']'},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF8 with BOM",
                 new byte[]{0, '[', ']'},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF16 BOM little-endian",
                 new byte[]{(byte) 0xff, (byte) 0xfe, '[', 0, ']', 0},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF16 NO BOM little-endian",
                 new byte[]{'[', 0, ']', 0},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 BOM big-endian",
                 new byte[]{0, 0, (byte) 0xfe, (byte) 0xff, 0, 0, 0, '[', 0, 0, 0, ']'},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 NO BOM big-endian",
                 new byte[]{0, 0, 0, '[', 0, 0, 0, ']'},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 NO BOM big-endian, malformed",
                 new byte[]{0, 0, 0, '[', 0, 0, ']'},
                 new ArrayList<>(),
                 new InvalidTokenException(new PresetIterableCharSequence(6))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 BOM little-endian",
                 new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 NO BOM little-endian",
                 new byte[]{'[', 0, 0, 0, ']', 0, 0, 0},
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF8 BOM, extra token",
                 new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf, '[', ']', ']'},
                 new ArrayList<>(),
                 new ExtraCharactersException(new PresetIterableCharSequence(5))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF16 BOM big-endian, extra token",
                 new byte[]{(byte) 0xfe, (byte) 0xff, 0, '[', 0, ']', 0, ']'},
                 new ArrayList<>(),
                 new ExtraCharactersException(new PresetIterableCharSequence(7))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF16 BOM little-endian, extra token",
                 new byte[]{(byte) 0xff, (byte) 0xfe, '[', 0, ']', 0, ']', 0},
                 new ArrayList<>(),
                 new ExtraCharactersException(new PresetIterableCharSequence(7))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 BOM big-endian, extra token",
                 new byte[]{0, 0, (byte) 0xfe, (byte) 0xff, 0, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0, ']'},
                 new ArrayList<>(),
                 new ExtraCharactersException(new PresetIterableCharSequence(15))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list, UTF32 BOM little-endian, extra token",
                 new byte[]{(byte) 0xff, (byte) 0xfe, 0, 0, '[', 0, 0, 0, ']', 0, 0, 0, ']', 0, 0, 0},
                 new ArrayList<>(),
                 new ExtraCharactersException(new PresetIterableCharSequence(15))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list padded",
                 "  [   ]  ",
                 new ArrayList<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list extra token",
                 "[]]",
                 false,
                 new ExtraCharactersException(new PresetIterableCharSequence(2))
             ),
-            new Parameters(
+            new Parameters<>(
                 "list with numbers",
                 "  [1,4 ,  -3,1.14159]  ",
                 Arrays.asList(
@@ -267,55 +276,85 @@ public final class JSONReaderTest {
                 ),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "list with trailing comma",
                 "  [1,4 ,]  ",
                 null,
                 new InvalidTokenException(new PresetIterableCharSequence(8))
             ),
-            new Parameters(
+            new Parameters<>(
                 "list with missing closing bracket",
                 "  [1,4  ",
                 null,
                 new MalformedJSONException(new PresetIterableCharSequence(8))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty list with missing closing bracket",
                 "  [",
                 null,
                 new MalformedListException(new PresetIterableCharSequence(3))
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty padded list with missing closing bracket",
                 "  [  ",
                 null,
                 new MalformedListException(new PresetIterableCharSequence(5))
             ),
-            new Parameters(
+            new Parameters<>(
+                "empty map with missing closing brace",
+                "  {",
+                null,
+                new MalformedMapException(new PresetIterableCharSequence(3))
+            ),
+            new Parameters<>(
+                "empty padded map with missing closing brace",
+                "  {  ",
+                null,
+                new MalformedMapException(new PresetIterableCharSequence(5))
+            ),
+            new Parameters<>(
+                "nested lists",
+                "  [[1,2],3]  ",
+                new ArrayList<Object>() {{
+                        add(new ArrayList<Integer>() {{
+                                add(1);
+                                add(2);
+                            }});
+                        add(3);
+                    }},
+                null
+            ),
+            new Parameters<>(
+                "nested lists malformed comma",
+                "  [[1,2],  ,]  ",
+                null,
+                new InvalidTokenException(new PresetIterableCharSequence(11))
+            ),
+            new Parameters<>(
                 "invalid token",
                 "***",
                 null,
                 new InvalidTokenException(new PresetIterableCharSequence())
             ),
-            new Parameters(
+            new Parameters<>(
                 "empty map",
                 "{}",
                 new HashMap<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with padding",
                 "  {  }  ",
                 new HashMap<>(),
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with numeric keys",
                 "{1:\"test\"}",
                 null,
                 new MalformedStringException(new PresetIterableCharSequence(1))
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with string:string",
                 "{\"1\":\"test\"}",
                 new HashMap<CharSequence, Object>() {{
@@ -323,7 +362,7 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with string:int",
                 "{\"1\":123}",
                 new HashMap<CharSequence, Object>() {{
@@ -331,7 +370,7 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with string:null",
                 "{\"1\":null}",
                 new HashMap<CharSequence, Object>() {{
@@ -339,7 +378,7 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with string:bool",
                 "{\"1\":true}",
                 new HashMap<CharSequence, Object>() {{
@@ -347,7 +386,7 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "map with string:bool padded",
                 "{\"1\"   :    true}",
                 new HashMap<CharSequence, Object>() {{
@@ -355,7 +394,7 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "much nesting",
                 "{\"1\"   :    [1,2,3],\"2\":[false,{\"22\":\"456\"}]}",
                 new HashMap<CharSequence, Object>() {{
@@ -366,7 +405,7 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "spaces around comma in map",
                 "{\"asd\":\"sdf\"   ,  \"dfg\":\"fgh\"}",
                 new HashMap<CharSequence, Object>() {{
@@ -375,12 +414,23 @@ public final class JSONReaderTest {
                     }},
                 null
             ),
-            new Parameters(
+            new Parameters<>(
                 "spaces around comma in list",
                 "[\"abc\"  ,  \"def\"]",
                 Arrays.asList("abc", "def"),
                 null
             ),
+            new Parameters<Deserializable>(
+                "custom object",
+                "[\"abc\"  ,  \"def\"]",
+                new Deserializable() {{
+                        input = new LinkedList<Object>() {{
+                                add("abc");
+                                add("def");
+                            }};
+                    }},
+                null
+            ).clazz(Deserializable.class),
         };
     }
 
@@ -436,14 +486,15 @@ public final class JSONReaderTest {
         }
     }
 
-    static class Parameters {
+    static class Parameters<T> {
         private String testName;
         private byte[] inputBytes;
         private CharSequence inputString;
-        private Object expected;
+        private T expected;
+        private Class<T> expectedClass;
         private Exception expectedException;
 
-        Parameters(final String parTestName, final byte[] parInputBytes, final Object parExpected,
+        Parameters(final String parTestName, final byte[] parInputBytes, final T parExpected,
                    final Exception parExpectedException) {
             testName = parTestName;
             inputBytes = parInputBytes;
@@ -451,7 +502,7 @@ public final class JSONReaderTest {
             expectedException = parExpectedException;
         }
 
-        Parameters(final String parTestName, final CharSequence parInputString, final Object parExpected,
+        Parameters(final String parTestName, final CharSequence parInputString, final T parExpected,
                    final Exception parExpectedException) {
             testName = parTestName;
             final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length(),
@@ -460,6 +511,12 @@ public final class JSONReaderTest {
             inputString = mySecureBuffer;
             expected = parExpected;
             expectedException = parExpectedException;
+        }
+
+        Parameters<T> clazz(final Class<T> parClass) {
+            expectedClass = parClass;
+
+            return this;
         }
 
         CharSequence getInputString() {
@@ -474,11 +531,7 @@ public final class JSONReaderTest {
             return inputString;
         }
 
-        public String getTestName() {
-            return testName;
-        }
-
-        public byte[] getInputBytes() {
+        byte[] getInputBytes() {
             return inputBytes;
         }
 
@@ -486,13 +539,34 @@ public final class JSONReaderTest {
             return expected;
         }
 
-        public Exception getExpectedException() {
+        Exception getExpectedException() {
             return expectedException;
         }
 
         @Override
         public String toString() {
             return testName;
+        }
+
+        Class<T> getExpectedClass() {
+            return expectedClass;
+        }
+    }
+
+    static class Deserializable implements IJSONAware {
+        transient Object input;
+
+        private Deserializable() {
+        }
+
+        @Override
+        public void fromJSONable(final Object parInput) {
+            input = parInput;
+        }
+
+        @Override
+        public Object toJSONable() {
+            return input;
         }
     }
 }

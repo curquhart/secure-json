@@ -35,7 +35,7 @@ public final class JSONWriterTest {
     static final String DATA_PROVIDER_NAME = "JSONWriterTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
-    static Object[] dataProvider(final Method parMethod) {
+    static Object[] dataProvider(final Method parMethod) throws IOException {
         return new Object[]{
             new Parameters(
                 "null",
@@ -108,38 +108,101 @@ public final class JSONWriterTest {
                 1.0e43,
                 "1.0E43"
             ),
+            new Parameters(
+                "HugeDecimal with number",
+                new HugeDecimal(123),
+                "123"
+            ),
+            new Parameters(
+                "HugeDecimal with sequence",
+                new HugeDecimal("123", new NumberReader(Settings.DEFAULTS)),
+                "123"
+            ),
+            new Parameters(
+                "Object returns number",
+                // we must use IJSONSerializeAware or our Object serializer will process it.
+                new IJSONSerializeAware() {
+                    @Override
+                    public Object toJSONable() {
+                        return 123;
+                    }
+                },
+                "123"
+            ),
+            new Parameters(
+                "Object returns null",
+                new IJSONSerializeAware() {
+                    @Override
+                    public Object toJSONable() {
+                        return null;
+                    }
+                },
+                "null"
+            ),
+            new Parameters(
+                "Invalid type",
+                new Object(),
+                "null",
+                "{}"
+            )
+                .exception(new InvalidTypeException())
         };
     }
 
     @Test(dataProvider = DATA_PROVIDER_NAME)
-    public void testWrite(final Parameters parParameters) throws IOException, InvalidTypeException {
+    public void testWrite(final Parameters parParameters) throws IOException {
         try (JSONWriter myWriter = new JSONWriter(Settings.DEFAULTS)) {
-            Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
-                StringUtil.deepCharSequenceToString(parParameters.expected));
+            try {
+                Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
+                        StringUtil.deepCharSequenceToString(parParameters.expected));
+                Assert.assertNull(parParameters.expectedException);
+            } catch (final JSONException myException) {
+                Assert.assertNotNull(parParameters.expectedException);
+                Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+                    parParameters.expectedException.getMessage());
+            }
         }
     }
 
     static class Parameters {
         private String testName;
         private CharSequence expected;
+        private CharSequence expectedSecureJSON;
         private Object inputObject;
+        private Exception expectedException;
 
         Parameters(final String parTestName, final Object parObject, final CharSequence parExpected) {
+            this(parTestName, parObject, parExpected, null);
+        }
+
+        Parameters(final String parTestName, final Object parObject, final CharSequence parExpected,
+                   final CharSequence parExpectedSecureJSON) {
             testName = parTestName;
             inputObject = parObject;
             expected = parExpected;
+            if (parExpectedSecureJSON == null) {
+                expectedSecureJSON = parExpected;
+            } else {
+                expectedSecureJSON = parExpectedSecureJSON;
+            }
         }
 
-        public String getTestName() {
-            return testName;
-        }
-
-        public CharSequence getExpected() {
+        CharSequence getExpected() {
             return expected;
         }
 
-        public Object getInputObject() {
+        CharSequence getSecureJSONExpected() {
+            return expectedSecureJSON;
+        }
+
+        Object getInputObject() {
             return inputObject;
+        }
+
+        Parameters exception(final Exception parException) {
+            expectedException = parException;
+
+            return this;
         }
 
         @Override

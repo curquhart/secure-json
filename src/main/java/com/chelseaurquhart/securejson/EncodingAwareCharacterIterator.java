@@ -67,23 +67,29 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return charQueue.peek();
     }
 
+    Encoding getEncoding() {
+        return encoding;
+    }
+
     private Encoding findEncoding() throws IOException, JSONException {
         // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
         // the only special characters we need to handle.
 
         if (!hasNext()) {
-            throw new JSONException(Messages.get(Messages.Key.ERROR_MALFORMED_JSON));
+            return Encoding.UTF8;
         }
         final char myNextChar = peek();
         switch (myNextChar) {
             case UTF8_BOM_CHAR0:
                 next();
-                if (!hasNext() || next() != UTF8_BOM_CHAR1) {
+                if (!hasNext() || peek() != UTF8_BOM_CHAR1) {
                     throw new MalformedJSONException(this);
                 }
-                if (!hasNext() || next() != UTF8_BOM_CHAR2) {
+                next();
+                if (!hasNext() || peek() != UTF8_BOM_CHAR2) {
                     throw new MalformedJSONException(this);
                 }
+                next();
                 return Encoding.UTF8;
             case UTF_BIG_ENDIAN:
                 next();
@@ -100,9 +106,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
             case UTF16_BOM_CHAR0:
                 next();
                 // big-endian
-                if (!hasNext() || next() != UTF16_BOM_CHAR1) {
+                if (!hasNext() || peek() != UTF16_BOM_CHAR1) {
                     throw new MalformedJSONException(this);
                 }
+                next();
                 return Encoding.UTF16BE;
             case UTF16_BOM_CHAR1:
                 return findUtf16Or32LittleEndianEncoding(UTF16_BOM_CHAR0);
@@ -114,9 +121,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     private Encoding findUtf16Or32LittleEndianEncoding(final char parUtf16BomChar0) throws IOException, JSONException {
         next();
         // little-endian
-        if (!hasNext() || next() != parUtf16BomChar0) {
+        if (!hasNext() || peek() != parUtf16BomChar0) {
             throw new MalformedJSONException(this);
         }
+        next();
         if (findPartialUtf32Encoding() == Encoding.UTF32) {
             return Encoding.UTF32LE;
         }
@@ -244,7 +252,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         switch (encoding) {
             case UTF16BE:
                 // support UTF8 with UTF16 BOM. >.<
-                readNullChars(UTF16_BYTES - 1);
+                if (readNullChars(UTF16_BYTES - 1) == 0) {
+                    // We read a BOM, but we do not have nulls in the data. This means it is actually UTF8.
+                    encoding = Encoding.UTF8;
+                }
                 if (charQueue.isEmpty()) {
                     myChar = readNextChar();
                 } else {
@@ -308,7 +319,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
      */
     protected abstract Character readNextChar() throws IOException;
 
-    private enum Encoding {
+    enum Encoding {
         UTF8,
         UTF16BE,
         UTF16LE,

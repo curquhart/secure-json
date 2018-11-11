@@ -89,9 +89,6 @@ final class JSONReader implements Closeable, AutoCloseable {
                 myReaderData.hasResult = false;
             }
             moveToNextToken(parIterator);
-            if (myReaderData.hasResult) {
-                myReaderData.separatorForObject = null;
-            }
 
             myReaderData.isFinished = true;
             readStack(parIterator, myStack, myReaderData);
@@ -130,9 +127,6 @@ final class JSONReader implements Closeable, AutoCloseable {
         final IReader<?> myReader = myHead.first;
         final Object myValue = myHead.second;
 
-        if (parReaderData.separatorForObject != myReader) {
-            parReaderData.separatorForObject = null;
-        }
         final IReader.SymbolType mySymbolType = myReader.getSymbolType(parIterator);
         if (parReaderData.hasResult) {
             myReader.addValue(parIterator, myValue, parReaderData.result);
@@ -157,15 +151,11 @@ final class JSONReader implements Closeable, AutoCloseable {
         }
         // keep reading
         parReaderData.isFinished = false;
-        parReaderData.separatorForObject = parReader;
     }
 
     private void readStackEnd(final ICharacterIterator parIterator, final IReader<?> parReader, final Object parValue,
                               final ReaderData parReaderData, final PairStack<IReader<?>, Object> parStack)
             throws IOException, JSONException {
-        if (parReaderData.separatorForObject == parReader) {
-            throw new InvalidTokenException(parIterator);
-        }
         parStack.pop();
         parIterator.next();
         moveToNextToken(parIterator);
@@ -254,7 +244,6 @@ final class JSONReader implements Closeable, AutoCloseable {
      * Data for use by the JSON Reader.
      */
     private static class ReaderData {
-        private transient IReader<?> separatorForObject;
         private transient boolean isFinished;
         private transient Object result;
         private transient boolean hasResult;
