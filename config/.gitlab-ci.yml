@@ -59,7 +59,6 @@ Publish Java 10 OpenJDK:
   stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
-    - ./gradlew --no-daemon check
     - ./gradlew --no-daemon jar shadowJar
   artifacts:
     paths:
