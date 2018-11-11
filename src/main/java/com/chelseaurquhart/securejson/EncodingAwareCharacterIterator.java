@@ -76,7 +76,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         // the only special characters we need to handle.
 
         if (!hasNext()) {
-            throw new JSONException(Messages.get(Messages.Key.ERROR_MALFORMED_JSON));
+            return Encoding.UTF8;
         }
         final char myNextChar = peek();
         switch (myNextChar) {

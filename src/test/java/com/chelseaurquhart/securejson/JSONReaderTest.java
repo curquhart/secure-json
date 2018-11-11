@@ -17,6 +17,7 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.InvalidTokenException;
+import com.chelseaurquhart.securejson.JSONDecodeException.EmptyJSONException;
 import com.chelseaurquhart.securejson.JSONDecodeException.ExtraCharactersException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException;
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedListException;
@@ -82,6 +83,12 @@ public final class JSONReaderTest {
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
     static Object[] dataProvider(final Method parMethod) throws IOException {
         return new Object[]{
+            new Parameters(
+                "empty input",
+                "",
+                null,
+                new EmptyJSONException(new PresetIterableCharSequence())
+            ),
             new Parameters(
                 "null",
                 "null",
