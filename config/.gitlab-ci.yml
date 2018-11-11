@@ -8,7 +8,7 @@ testJava7:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - ./gradlew --no-daemon check
 
 testJava8:
   tags:
@@ -17,7 +17,7 @@ testJava8:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - ./gradlew --no-daemon check
 
 testJava10:
   tags:
@@ -26,7 +26,7 @@ testJava10:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - ./gradlew --no-daemon check
 
 javadocs:
   # we aren't doing anything with these here, but we use them in the Maven releases, so we want the pipeline to run them
@@ -37,9 +37,8 @@ javadocs:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon javadoc
+    - ./gradlew --no-daemon javadoc
 
-# Lets support this in the pipeline, but call it experimental to be clear that we're using an experimental Gradle version.
 testJava11:
   tags:
     - docker
@@ -47,7 +46,7 @@ testJava11:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle wrapper --gradle-version=5.0-20181110000025+0000
+    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
     - ./gradlew --no-daemon check
 
 verifyJSONTestSuite:
@@ -57,7 +56,7 @@ verifyJSONTestSuite:
   stage: test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon verifyJSONTestSuite
+    - ./gradlew --no-daemon verifyJSONTestSuite
 
 sonarqube:
   tags:
@@ -66,4 +65,5 @@ sonarqube:
   stage: test
   only:
     - master
-  script: gradle --no-daemon sonarqube -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+  script:
+    - ./gradlew --no-daemon sonarqube -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
