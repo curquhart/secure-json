@@ -164,24 +164,23 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         boolean myFoundExponent = false;
         boolean myFoundDecimal = false;
         boolean myFoundNonZeroDigit = false;
-        boolean myForceDouble = false;
 
         char myLastChar = 0;
         final int myLength = parSource.length();
-        int myLengthOffset = 0;
-        int myIndex = 0;
-        while (myIndex < myLength) {
-            final char myChar = parSource.charAt(myIndex);
+        final NumberData myData = new NumberData();
+
+        while (myData.index < myLength) {
+            final char myChar = parSource.charAt(myData.index);
             final JSONSymbolCollection.Token myToken;
             try {
                 myToken = JSONSymbolCollection.Token.forSymbol(myChar);
             } catch (final IllegalArgumentException myException) {
-                throw buildException(parSource, myIndex + parOffset);
+                throw buildException(parSource, myData.index + parOffset);
             }
-            parBuffer[myIndex + myLengthOffset] = myChar;
+            parBuffer[myData.index + myData.lengthOffset] = myChar;
             final char myNextChar;
-            if (myLength > myIndex + 1) {
-                myNextChar = parSource.charAt(myIndex + 1);
+            if (myLength > myData.index + 1) {
+                myNextChar = parSource.charAt(myData.index + 1);
             } else {
                 myNextChar = 0;
             }
@@ -192,16 +191,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
             switch (myToken) {
                 case ZERO:
-                    if (myLength != 1 && !myFoundNonZeroDigit && !myFoundDecimal) {
-                        if (myLength <= myIndex + 1) {
-                            if (myLastToken != JSONSymbolCollection.Token.MINUS) {
-                                throw buildException(parSource, myIndex + parOffset);
-                            }
-                        } else if (myNextToken != JSONSymbolCollection.Token.DECIMAL
-                                && myNextToken != JSONSymbolCollection.Token.EXPONENT) {
-                            throw buildException(parSource, myIndex + parOffset + 1);
-                        }
-                    }
+                    validateZeroPosition(myLength, myData.index, myLastToken, myNextToken, myFoundNonZeroDigit,
+                        myFoundDecimal, parSource, parOffset);
                     break;
                 case ONE:
                 case TWO:
@@ -215,59 +206,110 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                     myFoundNonZeroDigit = true;
                     break;
                 case DECIMAL:
-                    if (myFoundDecimal || myFoundExponent || myIndex == 0 || myIndex == myLength - 1) {
-                        throw buildException(parSource, myIndex + parOffset);
-                    }
+                    validateDecimalPositionWithData(myFoundDecimal, myFoundExponent, myData, myLength, parSource,
+                            parOffset);
                     myFoundDecimal = true;
-                    myForceDouble = true;
                     break;
                 case EXPONENT:
-                    if (myFoundExponent || myLastToken == JSONSymbolCollection.Token.DECIMAL
-                            || myIndex == myLength - 1 || myIndex == 0) {
-                        throw buildException(parSource, myIndex + parOffset);
-                    }
+                    validateExponentPositionWithData(myFoundExponent, myLastToken, myNextToken, myNextChar, myLength,
+                        parBuffer, myData, parOffset, parSource);
                     myFoundExponent = true;
-                    if (myNextToken == JSONSymbolCollection.Token.MINUS) {
-                        myForceDouble = true;
-                        parBuffer[++myIndex + myLengthOffset] = myNextChar;
-                        if (myIndex == myLength - 1) {
-                            throw buildException(parSource, myIndex + parOffset);
-                        }
-                    } else if (myNextToken == JSONSymbolCollection.Token.PLUS) {
-                        myIndex++;
-                        if (myIndex == myLength - 1) {
-                            throw buildException(parSource, myIndex + parOffset);
-                        }
-                        myLengthOffset--;
-                    }
                     break;
                 case MINUS:
-                    if (myIndex == myLength - 1) {
-                        throw buildException(parSource, myIndex + parOffset);
-                    }
-
-                    if (myNextToken == JSONSymbolCollection.Token.DECIMAL
-                            || myNextToken == JSONSymbolCollection.Token.EXPONENT) {
-                        throw buildException(parSource, myIndex + parOffset + 1);
-                    } else if (myIndex == 0) {
-                        // 0 is ok, anything else is not.
-                        break;
-                    }
-                    throw buildException(parSource, myIndex + parOffset);
+                    validateMinusPosition(myData.index, myLength, myNextToken, parOffset, parSource);
+                    break;
                 default:
-                    throw buildException(parSource, myIndex + parOffset);
+                    throw buildException(parSource, myData.index + parOffset);
             }
 
             myLastChar = myChar;
-            myIndex++;
+            myData.index++;
         }
 
         return new AbstractMap.SimpleImmutableEntry<>(
-            new BigDecimal(parBuffer, 0, myLength + myLengthOffset, mathContext), myForceDouble);
+            new BigDecimal(parBuffer, 0, myLength + myData.lengthOffset, mathContext), myData.forceDouble);
+    }
+
+    private void validateMinusPosition(final int parIndex, final int parLength,
+                                       final JSONSymbolCollection.Token parNextToken, final int parOffset,
+                                       final CharSequence parSource) throws IOException, MalformedNumberException {
+        if (parIndex == parLength - 1) {
+            throw buildException(parSource, parIndex + parOffset);
+        }
+
+        if (parNextToken == JSONSymbolCollection.Token.DECIMAL
+                || parNextToken == JSONSymbolCollection.Token.EXPONENT) {
+            throw buildException(parSource, parIndex + parOffset + 1);
+        } else if (parIndex != 0) {
+            throw buildException(parSource, parIndex + parOffset);
+        }
+    }
+
+    private void validateExponentPositionWithData(final boolean parFoundExponent,
+                                                  final JSONSymbolCollection.Token parLastToken,
+                                                  final JSONSymbolCollection.Token parNextToken, final char parNextChar,
+                                                  final int parLength, final char[] parBuffer, final NumberData parData,
+                                                  final int parOffset, final CharSequence parSource)
+            throws IOException, MalformedNumberException {
+        if (parFoundExponent || parLastToken == JSONSymbolCollection.Token.DECIMAL || parData.index == parLength - 1
+                || parData.index == 0) {
+            throw buildException(parSource, parData.index + parOffset);
+        }
+
+        if (parNextToken == JSONSymbolCollection.Token.MINUS) {
+            parData.forceDouble = true;
+            parBuffer[++parData.index + parData.lengthOffset] = parNextChar;
+            if (parData.index == parLength - 1) {
+                throw buildException(parSource, parData.index + parOffset);
+            }
+        } else if (parNextToken == JSONSymbolCollection.Token.PLUS) {
+            parData.index++;
+            if (parData.index == parLength - 1) {
+                throw buildException(parSource, parData.index + parOffset);
+            }
+            parData.lengthOffset--;
+        }
+    }
+
+    private void validateDecimalPositionWithData(final boolean parFoundDecimal, final boolean parFoundExponent,
+                                                 final NumberData parData, final int parLength,
+                                                 final CharSequence parSource, final int parOffset) throws IOException,
+            MalformedNumberException {
+        if (parFoundDecimal || parFoundExponent || parData.index == 0 || parData.index == parLength - 1) {
+            throw buildException(parSource, parData.index + parOffset);
+        }
+        parData.forceDouble = true;
+    }
+
+    private void validateZeroPosition(final int parLength, final int parIndex,
+                                      final JSONSymbolCollection.Token parLastToken,
+                                      final JSONSymbolCollection.Token parNextToken,
+                                      final boolean parFoundNonZeroDigit, final boolean parFoundDecimal,
+                                      final CharSequence parSource, final int parOffset) throws IOException,
+            MalformedNumberException {
+        if (parLength != 1 && !parFoundNonZeroDigit && !parFoundDecimal) {
+            if (parLength <= parIndex + 1) {
+                if (parLastToken != JSONSymbolCollection.Token.MINUS) {
+                    throw buildException(parSource, parIndex + parOffset);
+                }
+            } else if (parNextToken != JSONSymbolCollection.Token.DECIMAL
+                    && parNextToken != JSONSymbolCollection.Token.EXPONENT) {
+                throw buildException(parSource, parIndex + parOffset + 1);
+            }
+        }
     }
 
     private MalformedNumberException buildException(final CharSequence parSource, final int parOffset)
             throws IOException {
         return new MalformedNumberException(new IterableCharSequence(parSource, parOffset));
+    }
+
+    /**
+     * Mutable data container for number reads.
+     */
+    private class NumberData {
+        private boolean forceDouble;
+        private int lengthOffset;
+        private int index;
     }
 }

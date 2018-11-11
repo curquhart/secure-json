@@ -173,15 +173,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
 
     @Override
     public CharSequence subSequence(final int parStart, final int parEnd) {
-        if (parStart < 0 || parEnd < 0 || parEnd < parStart) {
-            final String myMessage;
-            try {
-                myMessage = Messages.get(Messages.Key.ERROR_BAD_SEQUENCE_ARGS);
-            } catch (final IOException myException) {
-                throw new JSONRuntimeException(myException);
-            }
-            throw new ArrayIndexOutOfBoundsException(myMessage);
-        }
+        validateBounds(parStart, parEnd);
 
         int myStart = parStart;
         int myOffset = 0;
@@ -219,6 +211,19 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         }
 
         return new ManagedSecureCharBuffer(initialCapacity, myBuffers, writeBuffers, settings);
+    }
+
+    private void validateBounds(final int parStart, final int parEnd) {
+        if (parStart < 0 || parEnd < 0 || parEnd < parStart) {
+            final String myMessage;
+            try {
+                myMessage = Messages.get(Messages.Key.ERROR_BAD_SEQUENCE_ARGS);
+            } catch (final IOException myException) {
+                throw new JSONRuntimeException(myException);
+            }
+            throw new ArrayIndexOutOfBoundsException(myMessage);
+        }
+
     }
 
     @Override

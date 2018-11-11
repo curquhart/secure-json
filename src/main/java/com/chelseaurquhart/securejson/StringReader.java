@@ -55,33 +55,11 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         addSecureBuffer(mySecureBuffer);
 
         while (parInput.hasNext()) {
-            char myChar = parInput.next();
+            final char myChar = parInput.next();
             final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(myChar,
                 JSONSymbolCollection.Token.UNKNOWN);
             if (myChar == '\\') {
-                if (!parInput.hasNext()) {
-                    throw new MalformedStringException(parInput);
-                }
-                myChar = parInput.next();
-
-                if (myChar == 'u') {
-                    mySecureBuffer.append(readUnicode(parInput));
-                } else {
-                    if (myChar == 't') {
-                        myChar = '\t';
-                    } else if (myChar == 'r') {
-                        myChar = '\r';
-                    } else if (myChar == 'b') {
-                        myChar = '\b';
-                    } else if (myChar == 'n') {
-                        myChar = '\n';
-                    } else if (myChar == 'f') {
-                        myChar = '\f';
-                    } else if (myChar != '\\' && myChar != '"' && myChar != '/') {
-                        throw new MalformedUnicodeValueException(parInput);
-                    }
-                    mySecureBuffer.append(myChar);
-                }
+                readEscape(parInput, mySecureBuffer);
             } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
                 throw new MalformedUnicodeValueException(parInput);
             } else {
@@ -94,6 +72,33 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
 
         // did not find trailing quote
         throw new MalformedStringException(parInput);
+    }
+
+    private void readEscape(final ICharacterIterator parInput, final ManagedSecureCharBuffer parSecureBuffer)
+            throws IOException, MalformedStringException, MalformedUnicodeValueException {
+        if (!parInput.hasNext()) {
+            throw new MalformedStringException(parInput);
+        }
+        char myChar = parInput.next();
+
+        if (myChar == 'u') {
+            parSecureBuffer.append(readUnicode(parInput));
+        } else {
+            if (myChar == 't') {
+                myChar = '\t';
+            } else if (myChar == 'r') {
+                myChar = '\r';
+            } else if (myChar == 'b') {
+                myChar = '\b';
+            } else if (myChar == 'n') {
+                myChar = '\n';
+            } else if (myChar == 'f') {
+                myChar = '\f';
+            } else if (myChar != '\\' && myChar != '"' && myChar != '/') {
+                throw new MalformedUnicodeValueException(parInput);
+            }
+            parSecureBuffer.append(myChar);
+        }
     }
 
     @Override
