@@ -55,14 +55,16 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         addSecureBuffer(mySecureBuffer);
 
         while (parInput.hasNext()) {
-            final char myChar = parInput.next();
+            final char myChar = parInput.peek();
             final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(myChar,
                 JSONSymbolCollection.Token.UNKNOWN);
             if (myChar == '\\') {
+                parInput.next();
                 readEscape(parInput, mySecureBuffer);
             } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
-                throw new MalformedUnicodeValueException(parInput);
+                throw new MalformedStringException(parInput);
             } else {
+                parInput.next();
                 if (myToken == JSONSymbolCollection.Token.QUOTE) {
                     return mySecureBuffer;
                 }
@@ -75,13 +77,14 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     private void readEscape(final ICharacterIterator parInput, final ManagedSecureCharBuffer parSecureBuffer)
-            throws IOException, MalformedStringException, MalformedUnicodeValueException {
+            throws IOException, JSONException {
         if (!parInput.hasNext()) {
             throw new MalformedStringException(parInput);
         }
-        char myChar = parInput.next();
+        char myChar = parInput.peek();
 
         if (myChar == 'u') {
+            parInput.next();
             parSecureBuffer.append(readUnicode(parInput));
         } else {
             if (myChar == 't') {
@@ -95,8 +98,9 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
             } else if (myChar == 'f') {
                 myChar = '\f';
             } else if (myChar != '\\' && myChar != '"' && myChar != '/') {
-                throw new MalformedUnicodeValueException(parInput);
+                throw new MalformedStringException(parInput);
             }
+            parInput.next();
             parSecureBuffer.append(myChar);
         }
     }
@@ -117,13 +121,15 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         return false;
     }
 
-    private char readUnicode(final ICharacterIterator parInput) throws IOException, MalformedUnicodeValueException {
+    private char readUnicode(final ICharacterIterator parInput) throws IOException, JSONException {
         int myValue = 0;
         for (int myIndex = 0; myIndex < JSONSymbolCollection.UNICODE_DIGITS; myIndex++) {
-            final char myChar = Character.toLowerCase(parInput.next());
+            final char myChar = Character.toLowerCase(parInput.peek());
             if (Character.isDigit(myChar)) {
+                parInput.next();
                 myValue = (myValue << JSONSymbolCollection.UNICODE_DIGITS) + myChar - '0';
             } else if (myChar >= 'a' && myChar <= 'f') {
+                parInput.next();
                 myValue = (myValue << JSONSymbolCollection.UNICODE_DIGITS) + TWO_DIGIT_MIN + myChar - 'a';
             } else {
                 throw new MalformedUnicodeValueException(parInput);
