@@ -73,22 +73,53 @@ class ObjectReader<T> extends ObjectSerializer {
         Map.class
     ));
 
-    private static final Map<Class<?>, Class<?>> CLASS_MAP;
+    private static final Map<Class<?>, IFunction<Number, Number>> CLASS_MAP;
 
     static {
         CLASS_MAP = new HashMap<>();
-        CLASS_MAP.put(byte.class, Byte.class);
-        CLASS_MAP.put(Byte.class, Byte.class);
-        CLASS_MAP.put(short.class, Short.class);
-        CLASS_MAP.put(Short.class, Short.class);
-        CLASS_MAP.put(int.class, Integer.class);
-        CLASS_MAP.put(Integer.class, Integer.class);
-        CLASS_MAP.put(float.class, Float.class);
-        CLASS_MAP.put(Float.class, Float.class);
-        CLASS_MAP.put(double.class, Double.class);
-        CLASS_MAP.put(Double.class, Double.class);
-        CLASS_MAP.put(long.class, Long.class);
-        CLASS_MAP.put(Long.class, Long.class);
+        CLASS_MAP.put(byte.class, new IFunction<Number, Number>() {
+            @Override
+            public Number accept(final Number parInput) {
+                return parInput.byteValue();
+            }
+        });
+        CLASS_MAP.put(short.class, new IFunction<Number, Number>() {
+            @Override
+            public Number accept(final Number parInput) {
+                return parInput.shortValue();
+            }
+        });
+        CLASS_MAP.put(int.class, new IFunction<Number, Number>() {
+            @Override
+            public Number accept(final Number parInput) {
+                return parInput.intValue();
+            }
+        });
+        CLASS_MAP.put(float.class, new IFunction<Number, Number>() {
+            @Override
+            public Number accept(final Number parInput) {
+                return parInput.floatValue();
+            }
+        });
+        CLASS_MAP.put(double.class, new IFunction<Number, Number>() {
+            @Override
+            public Number accept(final Number parInput) {
+                return parInput.doubleValue();
+            }
+        });
+        CLASS_MAP.put(long.class, new IFunction<Number, Number>() {
+            @Override
+            public Number accept(final Number parInput) {
+                return parInput.longValue();
+            }
+        });
+
+        CLASS_MAP.put(Byte.class, CLASS_MAP.get(byte.class));
+        CLASS_MAP.put(Short.class, CLASS_MAP.get(short.class));
+        CLASS_MAP.put(Integer.class, CLASS_MAP.get(int.class));
+        CLASS_MAP.put(Float.class, CLASS_MAP.get(float.class));
+        CLASS_MAP.put(Double.class, CLASS_MAP.get(double.class));
+        CLASS_MAP.put(Long.class, CLASS_MAP.get(long.class));
     }
 
     private final transient Class<T> clazz;
@@ -189,30 +220,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
         final ObjectData myData = new ObjectData();
         for (final Field myField : getFields(parType)) {
-            final SerializationSettings mySerializationSettings = getSerializationSettings(myField);
-
-            final Object myValue;
-            if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
-                myValue = extractFromMap(parAbsMap, mySerializationSettings.getTarget());
-            } else {
-                myValue = null;
-            }
-            final Class<?> myFieldType = myField.getType();
-            if (canRecursivelyAccept(myFieldType)) {
-                recursivelyAcceptWithData(myInstance, mySerializationSettings, myFieldType, myValue, parField, myField,
-                    myData, parAbsMap, parClassStack);
-            } else if (myValue != null) {
-                if (myInstance instanceof IJSONDeserializeAware) {
-                    ((IJSONDeserializeAware) myInstance).fromJSONable(myValue);
-                } else {
-                    final Object myResolvedValue = buildValue(myField.getGenericType(), myFieldType, myValue,
-                        parAbsMap);
-                    if (myResolvedValue != null) {
-                        setValueIfNotNull(myField, myInstance, myResolvedValue);
-                        myData.foundData = true;
-                    }
-                }
-            }
+            recursivelyAcceptWithData(myInstance, myField, parField, myData, parAbsMap, parClassStack);
         }
 
         if (myData.foundData) {
@@ -220,6 +228,35 @@ class ObjectReader<T> extends ObjectSerializer {
         }
 
         return myData.foundData;
+    }
+
+    private void recursivelyAcceptWithData(final Object parInstance, final Field parParentField, final Field parField,
+                                           final ObjectData parData, final Map<CharSequence, Object> parAbsMap,
+                                           final Set<Class<?>> parClassStack) throws JSONException, IOException {
+        final SerializationSettings mySerializationSettings = getSerializationSettings(parParentField);
+
+        final Object myValue;
+        if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
+            myValue = extractFromMap(parAbsMap, mySerializationSettings.getTarget());
+        } else {
+            myValue = null;
+        }
+        final Class<?> myFieldType = parParentField.getType();
+        if (canRecursivelyAccept(myFieldType)) {
+            recursivelyAcceptWithData(parInstance, mySerializationSettings, myFieldType, myValue, parField,
+                    parParentField, parData, parAbsMap, parClassStack);
+        } else if (myValue != null) {
+            if (parInstance instanceof IJSONDeserializeAware) {
+                ((IJSONDeserializeAware) parInstance).fromJSONable(myValue);
+            } else {
+                final Object myResolvedValue = buildValue(parParentField.getGenericType(), myFieldType, myValue,
+                        parAbsMap);
+                if (myResolvedValue != null) {
+                    setValueIfNotNull(parParentField, parInstance, myResolvedValue);
+                    parData.foundData = true;
+                }
+            }
+        }
     }
 
     private void recursivelyAcceptWithData(final Object parInstance,
@@ -467,24 +504,9 @@ class ObjectReader<T> extends ObjectSerializer {
     private Object buildNumberValue(final Class<?> parType, final Number parValue) throws JSONException {
         // Convert to the expected data type.
         try {
-            final Class<?> myType = CLASS_MAP.get(parType);
-            if (myType == Short.class) {
-                return parValue.shortValue();
-            }
-            if (myType == Integer.class) {
-                return parValue.intValue();
-            }
-            if (myType == Long.class) {
-                return parValue.longValue();
-            }
-            if (myType == Float.class) {
-                return parValue.floatValue();
-            }
-            if (myType == Double.class) {
-                return parValue.doubleValue();
-            }
-            if (myType == Byte.class) {
-                return parValue.byteValue();
+            final IFunction<Number, Number> myConverter = CLASS_MAP.get(parType);
+            if (myConverter != null) {
+                return myConverter.accept(parValue);
             }
             final Class<?> myValueClass = parValue.getClass();
             if (parType == BigInteger.class && myValueClass == BigDecimal.class) {
