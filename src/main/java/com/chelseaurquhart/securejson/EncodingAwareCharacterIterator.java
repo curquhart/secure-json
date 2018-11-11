@@ -67,6 +67,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return charQueue.peek();
     }
 
+    Encoding getEncoding() {
+        return encoding;
+    }
+
     private Encoding findEncoding() throws IOException, JSONException {
         // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
         // the only special characters we need to handle.
@@ -244,7 +248,10 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         switch (encoding) {
             case UTF16BE:
                 // support UTF8 with UTF16 BOM. >.<
-                readNullChars(UTF16_BYTES - 1);
+                if (readNullChars(UTF16_BYTES - 1) == 0) {
+                    // We read a BOM, but we do not have nulls in the data. This means it is actually UTF8.
+                    encoding = Encoding.UTF8;
+                }
                 if (charQueue.isEmpty()) {
                     myChar = readNextChar();
                 } else {
@@ -308,7 +315,7 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
      */
     protected abstract Character readNextChar() throws IOException;
 
-    private enum Encoding {
+    enum Encoding {
         UTF8,
         UTF16BE,
         UTF16LE,
