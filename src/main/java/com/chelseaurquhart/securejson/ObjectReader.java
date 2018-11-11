@@ -32,6 +32,7 @@ import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -71,6 +72,24 @@ class ObjectReader<T> extends ObjectSerializer {
         List.class,
         Map.class
     ));
+
+    private static final Map<Class<?>, Class<?>> CLASS_MAP;
+
+    static {
+        CLASS_MAP = new HashMap<>();
+        CLASS_MAP.put(byte.class, Byte.class);
+        CLASS_MAP.put(Byte.class, Byte.class);
+        CLASS_MAP.put(short.class, Short.class);
+        CLASS_MAP.put(Short.class, Short.class);
+        CLASS_MAP.put(int.class, Integer.class);
+        CLASS_MAP.put(Integer.class, Integer.class);
+        CLASS_MAP.put(float.class, Float.class);
+        CLASS_MAP.put(Float.class, Float.class);
+        CLASS_MAP.put(double.class, Double.class);
+        CLASS_MAP.put(Double.class, Double.class);
+        CLASS_MAP.put(long.class, Long.class);
+        CLASS_MAP.put(Long.class, Long.class);
+    }
 
     private final transient Class<T> clazz;
     private final transient Settings settings;
@@ -158,7 +177,7 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     private <U> boolean recursivelyAccept(final Object parInstance, final Field parField, final Class<U> parType,
-                                       final Map<CharSequence, Object> parAbsMap, final Set<Class<?>> parClassStack)
+                                          final Map<CharSequence, Object> parAbsMap, final Set<Class<?>> parClassStack)
             throws IOException, JSONException {
         if (!canRecursivelyAccept(parType)) {
             return false;
@@ -168,7 +187,7 @@ class ObjectReader<T> extends ObjectSerializer {
             myInstance = construct(getConcreteClass(parType));
         }
 
-        boolean myFoundData = false;
+        final ObjectData myData = new ObjectData();
         for (final Field myField : getFields(parType)) {
             final SerializationSettings mySerializationSettings = getSerializationSettings(myField);
 
@@ -180,44 +199,8 @@ class ObjectReader<T> extends ObjectSerializer {
             }
             final Class<?> myFieldType = myField.getType();
             if (canRecursivelyAccept(myFieldType)) {
-                final Object mySubInstance = construct(getConcreteClass(myFieldType));
-
-                boolean myFoundSubData = false;
-                if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
-                    if (myValue != null) {
-                        final Object myAcceptedValue = buildObjectReader(myField.getType()).accept(myValue);
-                        setValueIfNotNull(parField, mySubInstance, buildValue(myField.getGenericType(),
-                            myField.getType(), myAcceptedValue, parAbsMap));
-                        myFoundSubData = myAcceptedValue != null;
-                    }
-                } else {
-                    final Set<Class<?>> myClassStack;
-                    final boolean myCreatedStack;
-                    if (parClassStack == null) {
-                        myClassStack = buildIdentityHashSet();
-                        myCreatedStack = true;
-                    } else {
-                        myClassStack = parClassStack;
-                        myCreatedStack = false;
-                    }
-                    try {
-                        // stack (well technically set, backed by IdentityHashMap) exists to watch for recursion
-                        if (!myClassStack.contains(myFieldType)) {
-                            myClassStack.add(myFieldType);
-                            if (recursivelyAccept(myInstance, myField, myFieldType, parAbsMap, myClassStack)) {
-                                myFoundSubData = true;
-                            }
-                        }
-                    } finally {
-                        if (myCreatedStack) {
-                            myClassStack.clear();
-                        }
-                    }
-                }
-
-                if (myFoundSubData) {
-                    myFoundData = true;
-                }
+                recursivelyAcceptWithData(myInstance, mySerializationSettings, myFieldType, myValue, parField, myField,
+                    myData, parAbsMap, parClassStack);
             } else if (myValue != null) {
                 if (myInstance instanceof IJSONDeserializeAware) {
                     ((IJSONDeserializeAware) myInstance).fromJSONable(myValue);
@@ -226,17 +209,63 @@ class ObjectReader<T> extends ObjectSerializer {
                         parAbsMap);
                     if (myResolvedValue != null) {
                         setValueIfNotNull(myField, myInstance, myResolvedValue);
-                        myFoundData = true;
+                        myData.foundData = true;
                     }
                 }
             }
         }
 
-        if (myFoundData) {
+        if (myData.foundData) {
             setValueIfNotNull(parField, parInstance, myInstance);
         }
 
-        return myFoundData;
+        return myData.foundData;
+    }
+
+    private void recursivelyAcceptWithData(final Object parInstance,
+                                           final SerializationSettings parSerializationSettings,
+                                           final Class<?> parFieldType, final Object parValue,
+                                           final Field parParentField, final Field parField, final ObjectData parData,
+                                           final Map<CharSequence, Object> parAbsMap, final Set<Class<?>> parClassStack)
+            throws IOException, JSONException {
+        final Object mySubInstance = construct(getConcreteClass(parFieldType));
+
+        boolean myFoundSubData = false;
+        if (parSerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
+            if (parValue != null) {
+                final Object myAcceptedValue = buildObjectReader(parField.getType()).accept(parValue);
+                setValueIfNotNull(parParentField, mySubInstance, buildValue(parField.getGenericType(),
+                        parField.getType(), myAcceptedValue, parAbsMap));
+                myFoundSubData = myAcceptedValue != null;
+            }
+        } else {
+            final Set<Class<?>> myClassStack;
+            final boolean myCreatedStack;
+            if (parClassStack == null) {
+                myClassStack = buildIdentityHashSet();
+                myCreatedStack = true;
+            } else {
+                myClassStack = parClassStack;
+                myCreatedStack = false;
+            }
+            try {
+                // stack (well technically set, backed by IdentityHashMap) exists to watch for recursion
+                if (!myClassStack.contains(parFieldType)) {
+                    myClassStack.add(parFieldType);
+                    if (recursivelyAccept(parInstance, parField, parFieldType, parAbsMap, myClassStack)) {
+                        myFoundSubData = true;
+                    }
+                }
+            } finally {
+                if (myCreatedStack) {
+                    myClassStack.clear();
+                }
+            }
+        }
+
+        if (myFoundSubData) {
+            parData.foundData = true;
+        }
     }
 
     private Set<Class<?>> buildIdentityHashSet() {
@@ -273,24 +302,43 @@ class ObjectReader<T> extends ObjectSerializer {
 
         if (parValue == null) {
             return null;
-        } else if (Map.class.isAssignableFrom(myType) && parValue instanceof Map) {
+        } else if (isMap(myType, parValue)) {
             return buildMapValue(parGenericType, myType, (Map) parValue);
-        } else if (Collection.class.isAssignableFrom(myType) && parValue instanceof Collection) {
+        } else if (isCollection(myType, parValue)) {
             return buildCollectionValue(parGenericType, myType, (Collection) parValue);
-        } else if (myType.isArray() && parValue.getClass().isArray()) {
+        } else if (isArray(myType, parValue)) {
             return buildArrayValue(myType, parValue);
-        } else if ((Boolean.class.isAssignableFrom(myType) && parValue instanceof Boolean)
-                || myType == boolean.class) {
+        } else if (isBoolean(myType, parValue)) {
             return parValue;
-        } else if ((Number.class.isAssignableFrom(myType) && parValue instanceof Number)
-                || myType == short.class || myType == int.class || myType == long.class
-                || myType == float.class || myType == double.class) {
+        } else if (isNumber(myType, parValue)) {
             return buildNumberValue(myType, (Number) parValue);
         } else if (CharSequence.class.isAssignableFrom(myType)) {
             return buildStringValue(myType, (CharSequence) parValue, settings.isStrictStrings());
         } else {
             return new ObjectReader<>(myType, settings).buildInstance(parValue, parAbsMap);
         }
+    }
+
+    private boolean isArray(final Class<?> parType, final Object parValue) {
+        return parType.isArray() && parValue.getClass().isArray();
+    }
+
+    private boolean isCollection(final Class<?> parType, final Object parValue) {
+        return Collection.class.isAssignableFrom(parType) && parValue instanceof Collection;
+    }
+
+    private boolean isBoolean(final Class<?> parType, final Object parValue) {
+        return (Boolean.class.isAssignableFrom(parType) && parValue instanceof Boolean) || parType == boolean.class;
+    }
+
+    private boolean isMap(final Class<?> parType, final Object parValue) {
+        return Map.class.isAssignableFrom(parType) && parValue instanceof Map;
+    }
+
+    private boolean isNumber(final Class<?> parType, final Object parValue) {
+        return (Number.class.isAssignableFrom(parType) && parValue instanceof Number)
+            || parType == short.class || parType == int.class || parType == long.class
+            || parType == float.class || parType == double.class || parType == byte.class;
     }
 
     private Class<?> deAnonymize(final Class<?> parClass) {
@@ -419,20 +467,24 @@ class ObjectReader<T> extends ObjectSerializer {
     private Object buildNumberValue(final Class<?> parType, final Number parValue) throws JSONException {
         // Convert to the expected data type.
         try {
-            if (parType == short.class || parType == Short.class) {
+            final Class<?> myType = CLASS_MAP.get(parType);
+            if (myType == Short.class) {
                 return parValue.shortValue();
             }
-            if (parType == int.class || parType == Integer.class) {
+            if (myType == Integer.class) {
                 return parValue.intValue();
             }
-            if (parType == long.class || parType == Long.class) {
+            if (myType == Long.class) {
                 return parValue.longValue();
             }
-            if (parType == float.class || parType == Float.class) {
+            if (myType == Float.class) {
                 return parValue.floatValue();
             }
-            if (parType == double.class || parType == Double.class) {
+            if (myType == Double.class) {
                 return parValue.doubleValue();
+            }
+            if (myType == Byte.class) {
+                return parValue.byteValue();
             }
             final Class<?> myValueClass = parValue.getClass();
             if (parType == BigInteger.class && myValueClass == BigDecimal.class) {
@@ -560,5 +612,12 @@ class ObjectReader<T> extends ObjectSerializer {
         public void clear() {
             identityHashMap.clear();
         }
+    }
+
+    /**
+     * Mutable data for the object reader to pass around.
+     */
+    private static class ObjectData {
+        boolean foundData;
     }
 }

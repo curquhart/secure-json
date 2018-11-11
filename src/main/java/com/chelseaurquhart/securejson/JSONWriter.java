@@ -54,12 +54,7 @@ class JSONWriter implements Closeable, AutoCloseable {
     }
 
     void write(final Object parInput, final ICharacterWriter parSecureBuffer) throws IOException, InvalidTypeException {
-        final Object myInput;
-        if (objectMutator != null) {
-            myInput = objectMutator.accept(parInput);
-        } else {
-            myInput = parInput;
-        }
+        final Object myInput = mutateInput(parInput);
 
         if (myInput instanceof IJSONAware) {
             write(((IJSONAware) myInput).toJSONable(), parSecureBuffer);
@@ -90,6 +85,17 @@ class JSONWriter implements Closeable, AutoCloseable {
         } else {
             throw new InvalidTypeException();
         }
+    }
+
+    private Object mutateInput(final Object parInput) {
+        final Object myOutput;
+        if (objectMutator != null) {
+            myOutput = objectMutator.accept(parInput);
+        } else {
+            myOutput = parInput;
+        }
+
+        return myOutput;
     }
 
     private void writeArray(final ICharacterWriter parSecureBuffer, final Object parInput) throws IOException,
