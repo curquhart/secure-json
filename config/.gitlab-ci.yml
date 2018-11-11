@@ -1,45 +1,39 @@
 stages:
-  - test
+  - JDK Test
+  - Documentation
 
-testJava7:
+testJava7JDK:
   tags:
     - docker
   image: gradle:4.10-jdk7
-  stage: test
+  stage: JDK Test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - gradle --no-daemon test
 
-testJava8:
+testJava8JDK:
   tags:
     - docker
   image: gradle:4.10-jdk8
-  stage: test
+  stage: JDK Test
   script:
     - unset SONAR_TOKEN
-    - ./gradlew --no-daemon check
+    - ./gradlew --no-daemon test
 
-testJava10:
+testJava10JDK:
   tags:
     - docker
   image: gradle:4.10-jdk10
-  stage: test
+  stage: JDK Test
   script:
     - unset SONAR_TOKEN
     - ./gradlew --no-daemon check
+    - ./gradlew --no-daemon jar shadowJar
+  artifacts:
+    paths:
+      - build/libs
 
-javadocs:
-  # we aren't doing anything with these here, but we use them in the Maven releases, so we want the pipeline to run them
-  # to verify no errors on a regular basis.
-  tags:
-  - docker
-  image: gradle:4.10-jdk10
-  stage: test
-  script:
-    - unset SONAR_TOKEN
-    - ./gradlew --no-daemon javadoc
-
-testJava11:
+testJava11JDK:
   tags:
     - docker
   image: gradle:4.10-jdk11
@@ -49,21 +43,32 @@ testJava11:
     - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
     - ./gradlew --no-daemon check
 
-testJava12Experimental:
+testJava12ExperimentalJDK:
   tags:
-    - docker
+  - docker
   image: openjdk:12-ea-jdk
-  stage: test
+  stage: JDK Test
   allow_failure: true
   script:
-    - unset SONAR_TOKEN
-    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
-    - ./gradlew --no-daemon check
+  - unset SONAR_TOKEN
+  - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
+  - ./gradlew --no-daemon check
 
-verifyJSONTestSuite:
+javadocs:
+  # we aren't doing anything with these here, but we use them in the Maven releases, so we want the pipeline to run them
+  # to verify no errors on a regular basis.
+  tags:
+  - docker
+  image: gradle:4.10-jdk10
+  stage: Documentation
+  script:
+  - unset SONAR_TOKEN
+  - ./gradlew --no-daemon javadoc
+
+verifyJSONTestSuiteJava7JRE:
   tags:
     - docker
-  image: gradle:4.10-jdk10
+  image: java:7-jre
   stage: test
   script:
     - unset SONAR_TOKEN

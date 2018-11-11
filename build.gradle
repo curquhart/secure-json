@@ -1,40 +1,54 @@
 buildscript {
+    ext.shadowEnabled = JavaVersion.current().java8Compatible
+    ext.sonarQubeEnabled = JavaVersion.current().java8Compatible
+    ext.spotBugsEnabled = JavaVersion.current().java8Compatible && JavaVersion.current().getMajorVersion() != '12'
+    ext.consoleCoverageReporterEnabled = JavaVersion.current().java8Compatible && !JavaVersion.current().java11Compatible
+    ext.checkStyleEnabled = JavaVersion.current().getMajorVersion() != '12'
+
     repositories {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
         mavenCentral()
     }
-    if (JavaVersion.current().java8Compatible) {
+
+    if (spotBugsEnabled) {
         dependencies {
             classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.4"
-            classpath "com.github.jengelman.gradle.plugins:shadow:4.0.2"
-            classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2"
         }
-        if (!JavaVersion.current().java11) {
-            dependencies {
-                classpath "gradle.plugin.com.github.ksoichiro:gradle-console-reporter:0.5.0"
-            }
+    }
+    if (consoleCoverageReporterEnabled) {
+        dependencies {
+            classpath "gradle.plugin.com.github.ksoichiro:gradle-console-reporter:0.5.0"
+        }
+    }
+
+    if (shadowEnabled) {
+        dependencies {
+            classpath "com.github.jengelman.gradle.plugins:shadow:4.0.2"
+        }
+    }
+
+    if (sonarQubeEnabled) {
+        dependencies {
+            classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2"
         }
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
-apply plugin: 'checkstyle'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'pmd'
 
-// In our settings, we're going to highjack resolution if < java 8 to point to gradle core 4.10.2.
-// We don't want to apply that.
-if (JavaVersion.current().java8Compatible) {
-    apply plugin: 'com.github.spotbugs'
-    if (!JavaVersion.current().java11) {
-        apply plugin: 'com.github.ksoichiro.console.reporter'
+if (checkStyleEnabled) {
+    apply plugin: 'checkstyle'
+
+    checkstyle {
+        toolVersion = "8.14"
+        configFile file("config/checkstyle.xml")
     }
-    apply plugin: 'com.github.johnrengelman.shadow'
-    apply plugin: 'org.sonarqube'
 }
 
 def versionNumber = rootProject.file('version.txt').text.trim()
@@ -75,6 +89,38 @@ sourceSets {
                 compileClasspath += sourceSets.main.output
             }
         }
+    }
+}
+
+if (consoleCoverageReporterEnabled) {
+    apply plugin: 'com.github.ksoichiro.console.reporter'
+}
+
+if (sonarQubeEnabled) {
+    apply plugin: 'org.sonarqube'
+}
+
+if (spotBugsEnabled) {
+    apply plugin: 'com.github.spotbugs'
+
+    spotbugs {
+        includeFilter = file("config/findbugs.exclude.xml")
+    }
+
+    tasks.withType(com.github.spotbugs.SpotBugsTask) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+}
+
+if (shadowEnabled) {
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    shadowJar {
+        from sourceSets.cli.output
+        from sourceSets.shared.output
     }
 }
 
@@ -121,6 +167,10 @@ if (JavaVersion.current().java9Compatible) {
             )
         }
     }
+
+    test {
+        jvmArgs '--illegal-access=deny'
+    }
 }
 
 dependencies {
@@ -133,22 +183,12 @@ jacoco {
     toolVersion = "0.8.2"
 }
 
-checkstyle {
-    configFile file("config/checkstyle.xml")
-}
-
 pmd {
     consoleOutput = true
     ruleSets = []
 
     toolVersion = "6.8.0"
     ruleSetFiles = files("config/pmd.xml")
-}
-
-if (JavaVersion.current().java8Compatible) {
-    spotbugs {
-        includeFilter = file("config/findbugs.exclude.xml")
-    }
 }
 
 compileJava {
@@ -284,20 +324,5 @@ task verifyJSONTestSuite(dependsOn: [cloneJSONTestSuite, compileCliJava]) {
             main = 'com.chelseaurquhart.securejson.Verify'
             args = jsonFiles
         }
-    }
-}
-
-if (JavaVersion.current().java8Compatible) {
-    tasks.withType(com.github.spotbugs.SpotBugsTask) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-}
-
-if (JavaVersion.current().java9Compatible) {
-    test {
-        jvmArgs '--illegal-access=deny'
     }
 }
