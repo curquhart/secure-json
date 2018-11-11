@@ -25,7 +25,7 @@ Test Java 8 OpenJDK:
 Test Java 10 OpenJDK:
   tags:
     - docker
-  image: openjdk:10-jdk-slim
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:10-jdk-slim
   stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
@@ -55,11 +55,11 @@ Test Java 12 OpenJDK:
 Publish Java 10 OpenJDK:
   tags:
     - docker
-  image: openjdk:10-jdk-slim
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:10-jdk-slim
   stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
-    - ./gradlew --no-daemon jar shadowJar
+    - ./gradlew --no-daemon jar shadowJar -Prt=/rt-6-openjdk.jar
   artifacts:
     paths:
       - build/libs
@@ -88,7 +88,7 @@ Sonar Qube:
 Verify Java 7 OpenJDK JRE:
   tags:
     - docker
-  image: openjdk:7-jre-slim
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:7-jre-slim
   stage: JRE Verification
   dependencies:
     - Publish Java 10 OpenJDK
@@ -100,7 +100,7 @@ Verify Java 7 OpenJDK JRE:
 Verify Java 8 OpenJDK JRE:
   tags:
     - docker
-  image: openjdk:8-jre-slim
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:8-jre-slim
   stage: JRE Verification
   dependencies:
     - Publish Java 10 OpenJDK
@@ -112,7 +112,7 @@ Verify Java 8 OpenJDK JRE:
 Verify Java 10 OpenJDK JRE:
   tags:
     - docker
-  image: openjdk:10-jre-slim
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:10-jre-slim
   stage: JRE Verification
   dependencies:
     - Publish Java 10 OpenJDK
@@ -124,7 +124,7 @@ Verify Java 10 OpenJDK JRE:
 Verify Java 11 OpenJDK JRE:
   tags:
     - docker
-  image: openjdk:11-jre-slim
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:11-jre-slim
   stage: JRE Verification
   dependencies:
     - Publish Java 10 OpenJDK
@@ -136,7 +136,7 @@ Verify Java 11 OpenJDK JRE:
 Verify Java 8 IBM JRE:
   tags:
     - docker
-  image: ibmjava:8-jre
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-ibmjava:8-jre
   stage: JRE Verification
   dependencies:
     - Publish Java 10 OpenJDK
