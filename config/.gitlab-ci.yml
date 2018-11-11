@@ -49,6 +49,17 @@ testJava11:
     - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
     - ./gradlew --no-daemon check
 
+testJava12Experimental:
+  tags:
+    - docker
+  image: openjdk:12-ea-jdk
+  stage: test
+  allow_failure: true
+  script:
+    - unset SONAR_TOKEN
+    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
+    - ./gradlew --no-daemon check
+
 verifyJSONTestSuite:
   tags:
     - docker
