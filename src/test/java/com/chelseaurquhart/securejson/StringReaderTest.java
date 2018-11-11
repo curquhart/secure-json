@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.nio.CharBuffer;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class StringReaderTest {
     private StringReaderTest() {
     }

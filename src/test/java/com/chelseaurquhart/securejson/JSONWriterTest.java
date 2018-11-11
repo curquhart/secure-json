@@ -30,11 +30,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class JSONWriterTest {
     static final String DATA_PROVIDER_NAME = "JSONWriterTest";
 
     @DataProvider(name = DATA_PROVIDER_NAME, parallel = true)
-    private static Object[] dataProvider(final Method parMethod) {
+    static Object[] dataProvider(final Method parMethod) {
         return new Object[]{
             new Parameters(
                 "null",
@@ -112,7 +113,7 @@ public final class JSONWriterTest {
 
     @Test(dataProvider = DATA_PROVIDER_NAME)
     public void testWrite(final Parameters parParameters) throws IOException, InvalidTypeException {
-        try (final JSONWriter myWriter = new JSONWriter(Settings.DEFAULTS)) {
+        try (JSONWriter myWriter = new JSONWriter(Settings.DEFAULTS)) {
             Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
                 StringUtil.deepCharSequenceToString(parParameters.expected));
         }

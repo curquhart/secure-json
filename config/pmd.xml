@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<ruleset name="secure-json-rules">
+    <description>Custom set of rules</description>
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="MethodReturnsInternalArray"/>
+        <exclude name="PreserveStackTrace"/>
+        <exclude name="UseVarargs"/>
+        <exclude name="ArrayIsStoredDirectly"/>
+        <exclude name="LooseCoupling"/>
+        <exclude name="UnusedFormalParameter"/>
+    </rule>
+    <rule ref="category/java/documentation.xml">
+        <exclude name="CommentSize"/>
+    </rule>
+    <rule ref="category/java/documentation.xml/CommentRequired">
+        <properties>
+            <property name="fieldCommentRequirement" value="Ignored"/>
+            <property name="enumCommentRequirement" value="Ignored"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/performance.xml"/>
+    <rule ref="category/java/security.xml"/>
+</ruleset>

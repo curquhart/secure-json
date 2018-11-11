@@ -9,6 +9,6 @@ Secure JSON is a JSON reader and writer that works outside of the garbage-collec
 (including String) or InputStream. Serialization is to a bytebuffer-backed CharSequence and is destroyed immediately
 after it has been consumed.
 
-It is Java 7 and higher compatible (tests run against Java 7, Java 8, and Java 10).
+It is Java 7 and higher compatible (tests run against Java 7, Java 8, Java 10, and Java 11).
 
 Visit [securejson.readthedocs.io](https://securejson.readthedocs.io) for full documentation.

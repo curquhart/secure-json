@@ -22,6 +22,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class WordReaderTest {
     private WordReaderTest() {
     }

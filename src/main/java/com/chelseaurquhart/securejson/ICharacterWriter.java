@@ -22,7 +22,19 @@ import java.io.IOException;
  * @exclude
  */
 interface ICharacterWriter {
-    void append(final char parChar) throws IOException;
+    /**
+     * Add a character to this writer.
+     *
+     * @param parChar The character to append.
+     * @throws IOException On write failure.
+     */
+    void append(char parChar) throws IOException;
 
-    void append(final CharSequence parChars) throws IOException;
+    /**
+     * Append a sequence of characters to this writer.
+     *
+     * @param parChars The sequence to append.
+     * @throws IOException On write failure.
+     */
+    void append(CharSequence parChars) throws IOException;
 }

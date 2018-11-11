@@ -8,4 +8,5 @@
     <suppress checks="MethodLength|MagicNumber|ParameterNumber|JavadocType" files="test/java/.*(Test|NumberProvider|StringProvider)\.java$"/>
     <suppress checks="MethodLength|MagicNumber|ParameterNumber|JavadocType" files="objectSerializationTest/java/.*Test\.java$"/>
     <suppress checks="AvoidInlineConditionals|VisibilityModifier" files="test/java/.*(NumberProvider|StringProvider)\.java$"/>
+    <suppress checks="IllegalCatch" files="ObjectSerializer\.java$"/>
 </suppressions>

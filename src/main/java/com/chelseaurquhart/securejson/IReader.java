@@ -23,6 +23,12 @@ import java.io.IOException;
  * @exclude
  */
 interface IReader<T> extends Closeable {
+    /**
+     * Normalize the collection this reader is responsible for.
+     *
+     * @param parValue The input value.
+     * @return The normalized value.
+     */
     Object normalizeCollection(Object parValue);
 
     /**
@@ -35,14 +41,52 @@ interface IReader<T> extends Closeable {
         RESERVED
     }
 
+    /**
+     * Read the next T that this represents.
+     *
+     * @param parIterator The iterator to read from.
+     * @return An instanceof T
+     * @throws IOException On read failure.
+     * @throws JSONException On process failure.
+     */
     T read(ICharacterIterator parIterator) throws IOException, JSONException;
 
+    /**
+     * Add a value to the collection we are managing.
+     *
+     * @param parIterator The iterator to read from.
+     * @param parCollection The collection we are managing.
+     * @param parValue The value to add to the collection.
+     * @throws IOException On read failure.
+     * @throws JSONException On process failure.
+     */
     void addValue(ICharacterIterator parIterator, Object parCollection, Object parValue) throws IOException,
         JSONException;
 
+    /**
+     * Check if the next character in the iterator is the start token for this reader. This should not increment the
+     * input.
+     * @param parIterator The iterator to read.
+     * @return True if the next character in the iterator is the start of a token we manage. Otherwise false.
+     * @throws IOException On read failure.
+     * @throws JSONException On process failure.
+     */
     boolean isStart(ICharacterIterator parIterator) throws IOException, JSONException;
 
+    /**
+     * Check if this reader is managing a container.
+     *
+     * @return True if this reader manages a container. Otherwise false.
+     */
     boolean isContainerType();
 
+    /**
+     * Get the symbol type from the provided iterator. This is used for determining when we hit a separator, end of a
+     * sequence, etc.
+     * @param parIterator The iterator to read.
+     * @return The symbol type relative to this reader. Return UNKNOWN if it is not applicable.
+     * @throws IOException On read failure.
+     * @throws JSONException On process failure.
+     */
     SymbolType getSymbolType(ICharacterIterator parIterator) throws IOException, JSONException;
 }

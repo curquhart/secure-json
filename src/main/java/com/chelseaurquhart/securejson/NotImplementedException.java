@@ -23,6 +23,8 @@ import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
  * Base class for all SecureJSON exceptions.
  */
 public class NotImplementedException extends UnsupportedOperationException {
+    private static final long serialVersionUID = 1L;
+
     /**
      * @exclude
      */

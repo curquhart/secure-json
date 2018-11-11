@@ -11,6 +11,8 @@ Thank you for considering contributing to SecureJSON.
 Improving documentation, bug triaging, writing tutorials, or even simply requesting features are all examples of helpful
 contributions that mean a better library for everyone.
 
+Before we get into specifics, the issue tracker can be found on `GitHub <https://github.com/curquhart/secure-json/issues>`_.
+
 ------------
 Ground Rules
 ------------
@@ -20,7 +22,7 @@ coverage on any contributed code.
 ----------------
 Responsibilities
 ----------------
-* Ensure Java 7, 8, and 10 compatibility for every change. The build process must work on Linux and Mac OS.
+* Ensure Java 7, 8, 10, and 11 compatibility for every change. The build process must work on Linux and Mac OS.
 * Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get
   community feedback. This is for both your benefit and the author's- you don't want to build a feature only to find out
   it's in progress already.
@@ -28,6 +30,8 @@ Responsibilities
   be marked deprecated and an issue created to remind the author to remove it.
 * Ensure you sign all commits. If this is unfamiliar territory, see https://help.github.com/articles/signing-commits/
   for a helpful tutorial.
+* Lint rules can be disabled as needed (if reasonable!) in any source dir except src/main. In src/main, a compelling
+  reason will be required.
 
 Here are a couple of friendly tutorials you can follow to get started: http://makeapullrequest.com/ and
 http://www.firsttimersonly.com/

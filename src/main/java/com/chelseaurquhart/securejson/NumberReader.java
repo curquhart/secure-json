@@ -37,14 +37,15 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     private static final BigDecimal MIN_VALUE = new BigDecimal("-1.0e300", MathContext.UNLIMITED);
     private static final BigDecimal MAX_VALUE = new BigDecimal("1.0e300", MathContext.UNLIMITED);
 
-    private final MathContext mathContext;
-    private final Settings settings;
+    private final transient MathContext mathContext;
+    private final transient Settings settings;
 
     NumberReader(final Settings parSettings) {
         this(DEFAULT_MATH_CONTEXT, parSettings);
     }
 
     NumberReader(final MathContext parMathContext, final Settings parSettings) {
+        super();
         this.mathContext = parMathContext;
         settings = parSettings;
     }
@@ -107,18 +108,13 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         // if not decimal or negative exponent, always return a double.
         if (!myForceDouble) {
             try {
-                return myDecimal.shortValueExact();
-            } catch (ArithmeticException e) {
-                // Allowed empty block: trying multiple conversions.
-            }
-            try {
                 return myDecimal.intValueExact();
-            } catch (ArithmeticException e) {
+            } catch (final ArithmeticException myException) {
                 // Allowed empty block: trying multiple conversions.
             }
             try {
                 return myDecimal.longValueExact();
-            } catch (ArithmeticException e) {
+            } catch (final ArithmeticException myException) {
                 // Allowed empty block: trying multiple conversions.
             }
         }
@@ -157,13 +153,9 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
 
     // allow new BigDecimal as we only use it for verification.
     private boolean verifyNumber(final double parDoubleValue, final BigDecimal parDecimalValue) {
-        if (Double.isInfinite(parDoubleValue) || parDecimalValue.compareTo(MIN_VALUE) <= 0
-                || parDecimalValue.compareTo(MAX_VALUE) >= 0 || parDecimalValue.scale() > Double.MAX_EXPONENT
-                || parDecimalValue.scale() < Double.MIN_EXPONENT) {
-            return false;
-        }
-
-        return true;
+        return !(Double.isInfinite(parDoubleValue) || parDecimalValue.compareTo(MIN_VALUE) <= 0
+            || parDecimalValue.compareTo(MAX_VALUE) >= 0 || parDecimalValue.scale() > Double.MAX_EXPONENT
+            || parDecimalValue.scale() < Double.MIN_EXPONENT);
     }
 
     private Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset,
@@ -177,7 +169,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         char myLastChar = 0;
         final int myLength = parSource.length();
         int myLengthOffset = 0;
-        for (int myIndex = 0; myIndex < myLength; myIndex++) {
+        int myIndex = 0;
+        while (myIndex < myLength) {
             final char myChar = parSource.charAt(myIndex);
             final JSONSymbolCollection.Token myToken;
             try {
@@ -260,11 +253,13 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                         // 0 is ok, anything else is not.
                         break;
                     }
+                    throw buildException(parSource, myIndex + parOffset);
                 default:
                     throw buildException(parSource, myIndex + parOffset);
             }
 
             myLastChar = myChar;
+            myIndex++;
         }
 
         return new AbstractMap.SimpleImmutableEntry<>(

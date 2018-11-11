@@ -33,13 +33,13 @@ import java.util.List;
 final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
 
-    private final int initialCapacity;
-    private final List<CharSequence> buffers;
-    private final List<IWritableCharSequence> writeBuffers;
-    private byte[] bytes;
-    private final Settings settings;
-    private Capacity capacityRestriction;
-    private IWritableCharSequence writeBuffer;
+    private final transient int initialCapacity;
+    private final transient List<CharSequence> buffers;
+    private final transient List<IWritableCharSequence> writeBuffers;
+    private transient byte[] bytes;
+    private final transient Settings settings;
+    private transient Capacity capacityRestriction;
+    private transient IWritableCharSequence writeBuffer;
 
     ManagedSecureCharBuffer(final Settings parSettings) {
         this(0, parSettings);
@@ -72,7 +72,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         final int myMaxSize = initialCapacity + 1;
 
         if (writeBuffer == null || (capacityRestriction == Capacity.RESTRICTED
-                && writeBuffer.length() + 1 >= (writeBuffer).getCapacity())) {
+                && writeBuffer.length() + 1 >= writeBuffer.getCapacity())) {
             writeBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
             if (writeBuffer.isRestrictedToCapacity()) {
                 capacityRestriction = Capacity.RESTRICTED;
@@ -173,10 +173,6 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
 
     @Override
     public CharSequence subSequence(final int parStart, final int parEnd) {
-        int myOffset = 0;
-        int myStart = parStart;
-        int myRemainingLength = parEnd - parStart;
-        final LinkedList<CharSequence> myBuffers = new LinkedList<>();
         if (parStart < 0 || parEnd < 0 || parEnd < parStart) {
             final String myMessage;
             try {
@@ -187,6 +183,10 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             throw new ArrayIndexOutOfBoundsException(myMessage);
         }
 
+        int myStart = parStart;
+        int myOffset = 0;
+        int myRemainingLength = Math.max(0, parEnd - parStart);
+        final LinkedList<CharSequence> myBuffers = new LinkedList<>();
         for (final CharSequence myBuffer : buffers) {
             final int myLength = myBuffer.length();
             if (myLength < 0) {
@@ -203,7 +203,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
             if (myStart > 0) {
                 myStart -= myLength;
             }
-            if (myRemainingLength < 1) {
+            if (myRemainingLength == 0) {
                 break;
             }
         }
@@ -237,11 +237,11 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
      * @exclude
      */
     static class ObfuscatedByteBuffer implements CharSequence, IWritableCharSequence {
-        private final int offset;
-        private final int capacity;
-        private final Integer fixedLength;
-        private final ByteBuffer compositionFirst;
-        private final ByteBuffer compositionSecond;
+        private final transient int offset;
+        private final transient int capacity;
+        private final transient Integer fixedLength;
+        private final transient ByteBuffer compositionFirst;
+        private final transient ByteBuffer compositionSecond;
 
         ObfuscatedByteBuffer(final int parCapacity) {
             offset = 0;
@@ -286,7 +286,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
                 throw new UnsupportedOperationException(Messages.get(Messages.Key.ERROR_WRITE_TO_READONLY_BUFFER));
             }
             compositionFirst.put((byte) (parChar >> JSONSymbolCollection.BITS_IN_BYTE));
-            compositionSecond.put((byte) ((parChar & JSONSymbolCollection.TWO_BYTE)));
+            compositionSecond.put((byte) (parChar & JSONSymbolCollection.TWO_BYTE));
         }
 
         @Override

@@ -31,12 +31,16 @@ import java.util.Map;
 class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     @Override
     public Object accept(final Object parInput) {
-        final Map<CharSequence, Object> myRootMap = new LinkedHashMap<>();
+        final Map<CharSequence, Object> myRootMap = buildLinkedHashMap();
         try {
             return accept(parInput, myRootMap, myRootMap);
         } catch (final IOException | JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
+    }
+
+    private Map<CharSequence, Object> buildLinkedHashMap() {
+        return new LinkedHashMap<>();
     }
 
     private Object accept(final Object parInput, final Map<CharSequence, Object> parRelMap,
@@ -111,7 +115,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
             if (myIndex < parTarget.length - 1) {
                 Object myValue = myTargetMap.get(parTarget[myIndex]);
                 if (myValue == null) {
-                    myValue = new LinkedHashMap<>();
+                    myValue = buildLinkedHashMap();
                     myTargetMap.put(parTarget[myIndex], myValue);
                 } else if (!(myValue instanceof Map)) {
                     throw new JSONEncodeException(Messages.Key.ERROR_ATTEMPT_TO_ADD_MAP_ENTRY_TO_NON_MAP);

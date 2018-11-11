@@ -23,7 +23,19 @@ import java.util.Iterator;
  * @exclude
  */
 interface ICharacterIterator extends Iterator<Character> {
+    /**
+     * Get the next available character without increasing the internal position.
+     *
+     * @return The next available character or null if there isn't one.
+     * @throws IOException On read failure.
+     * @throws JSONException On decode failure.
+     */
     Character peek() throws IOException, JSONException;
 
+    /**
+     * Get the current offset.
+     *
+     * @return The current offset.
+     */
     int getOffset();
 }

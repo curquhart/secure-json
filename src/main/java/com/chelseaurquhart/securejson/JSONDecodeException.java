@@ -22,13 +22,15 @@ import java.io.IOException;
  * Base class for JSON decode-specific errors.
  */
 public class JSONDecodeException extends JSONException {
+    private static final long serialVersionUID = 1L;
+
     /**
      * @exclude
      */
     JSONDecodeException(final ICharacterIterator parCharSequence, final Messages.Key parMessageKey)
             throws IOException {
         super(Messages.get(Messages.Key.ERROR_JSON_DECODE)
-            .replace(":offset", "" + parCharSequence.getOffset())
+            .replace(":offset", String.valueOf(parCharSequence.getOffset()))
             .replace(":message", Messages.get(parMessageKey)));
     }
 
@@ -43,6 +45,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating that the input JSON could not be parsed.
      */
     public static class MalformedJSONException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -55,6 +59,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating that the input JSON didn't contain any tokens we could understand.
      */
     public static class EmptyJSONException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -67,6 +73,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating we could not parse a JSON string.
      */
     public static class MalformedStringException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -79,6 +87,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating that a character in the input sequence is invalid.
      */
     public static class MalformedUnicodeValueException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -91,6 +101,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating that the next token was either unexpected or unknown.
      */
     public static class InvalidTokenException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -103,6 +115,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating a malformed list.
      */
     public static class MalformedListException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -115,6 +129,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating a malformed map.
      */
     public static class MalformedMapException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -127,6 +143,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating a malformed number.
      */
     public static class MalformedNumberException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */
@@ -139,6 +157,8 @@ public class JSONDecodeException extends JSONException {
      * Exception indicating that there were extra characters found after the closing token.
      */
     public static class ExtraCharactersException extends JSONDecodeException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * @exclude
          */

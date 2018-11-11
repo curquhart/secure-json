@@ -20,8 +20,8 @@ package com.chelseaurquhart.securejson;
  * @exclude
  */
 class IterableCharSequence extends EncodingAwareCharacterIterator implements ICharacterIterator {
-    private final CharSequence chars;
-    private int offset;
+    private final transient CharSequence chars;
+    private transient int offset;
 
     IterableCharSequence(final CharSequence parChars) {
         this(parChars, 0);

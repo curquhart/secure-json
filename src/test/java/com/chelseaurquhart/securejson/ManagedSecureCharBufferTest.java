@@ -24,12 +24,13 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class ManagedSecureCharBufferTest {
     private static final String SUBSEQUENCE_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestCharSequence";
     private static final String EQUALS_DATA_PROVIDER_NAME = "ManagedSecureCharBufferTestEquals";
 
     @DataProvider(name = SUBSEQUENCE_DATA_PROVIDER_NAME)
-    private static Object[] dataProvider(final Method parMethod)  {
+    static Object[] dataProvider(final Method parMethod)  {
         return new Object[]{
             new Parameters(
                 "simple single byte buffer",
@@ -296,7 +297,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testFullBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
@@ -308,7 +309,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testOverflowBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
@@ -321,7 +322,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testUnderflowBuffer() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
@@ -331,7 +332,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testCharSequenceByReference() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             final MutatableString myCharSequence = new MutatableString();
 
@@ -364,7 +365,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testToStringException() throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
                 Settings.DEFAULTS)) {
             myManagedSecureCharBuffer.append('a');
             myManagedSecureCharBuffer.append('b');
@@ -374,7 +375,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(dataProvider = SUBSEQUENCE_DATA_PROVIDER_NAME)
     public void testSubSequence(final Parameters parParameters) throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
             try {
                 final CharSequence mySequence = myManagedSecureCharBuffer.subSequence(
                     parParameters.start, parParameters.end);
@@ -388,13 +389,14 @@ public final class ManagedSecureCharBufferTest {
     }
 
     @DataProvider(name = EQUALS_DATA_PROVIDER_NAME)
-    private static Object[] equalsDataProvider() {
+    static Object[] equalsDataProvider() {
         return new Object[]{
             new Parameters(
                 "empty string",
                 new IConsumer<ManagedSecureCharBuffer>() {
                         @Override
                         public void accept(final ManagedSecureCharBuffer parInput) {
+                            // NOOP
                         }
                     }, "", true),
             new Parameters(
@@ -434,6 +436,7 @@ public final class ManagedSecureCharBufferTest {
                 new IConsumer<ManagedSecureCharBuffer>() {
                         @Override
                         public void accept(final ManagedSecureCharBuffer parInput) {
+                            // NOOP
                         }
                     }, null, false),
             new Parameters(
@@ -456,7 +459,7 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(dataProvider = EQUALS_DATA_PROVIDER_NAME)
     public void testEqual(final Parameters parParameters) throws IOException {
-        try (final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
+        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
             if (parParameters.expectedEquals) {
                 Assert.assertTrue(isEqual(myManagedSecureCharBuffer, parParameters.expected));
             } else {

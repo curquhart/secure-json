@@ -41,9 +41,11 @@ public final class Verify {
      *
      * @param parArgs The program arguments to use.
      */
+    @SuppressWarnings({"PMD.DoNotCallSystemExit", "PMD.DataflowAnomalyAnalysis", "PMD.SystemPrintln"})
     public static void main(final String[] parArgs) {
         if (parArgs.length == 0) {
             System.out.println("Usage: java Verify ...file.json");
+
             System.exit(2);
         }
 
@@ -95,6 +97,7 @@ public final class Verify {
                     default:
                         System.out.printf("Invalid type: %s%n", myMatch.group(1));
                         System.exit(-1);
+                        break;
                 }
                 System.out.printf("%s: ", myFilename);
             }
@@ -112,6 +115,7 @@ public final class Verify {
                 default:
                     System.out.printf("Invalid status: %s%n", myStatus);
                     System.exit(-1);
+                    break;
             }
 
             if (myIsBatch) {
@@ -133,6 +137,7 @@ public final class Verify {
                     default:
                         System.out.printf("Invalid status: %s%n", myStatus);
                         System.exit(-1);
+                        break;
                 }
             }
 
@@ -146,6 +151,7 @@ public final class Verify {
         System.exit(myFinalExitCode);
     }
 
+    @SuppressWarnings("PMD.SystemPrintln")
     private static boolean isValidJSON(final byte[] parValue, final boolean parEnableConsole) {
         try {
             new SecureJSON().fromJSON(new ByteArrayInputStream(parValue), new IConsumer<Object>() {

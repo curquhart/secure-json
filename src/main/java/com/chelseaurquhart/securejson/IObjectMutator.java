@@ -25,5 +25,6 @@ interface IObjectMutator extends IFunction<Object, Object> {
      * @param parInput The input argument.
      * @return The processed object.
      */
+    @Override
     Object accept(Object parInput);
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<FindBugsFilter>
+    <Match>
+        <Class name="com.chelseaurquhart.securejson.ObjectReaderTest$NestingAbsClass$Level3">
+            <Bug code="NP,UwF"/>
+        </Class>
+        <Class name="com.chelseaurquhart.securejson.ObjectWriterTest">
+            <Bug code="UrF"/>
+        </Class>
+    </Match>
+</FindBugsFilter>

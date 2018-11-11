@@ -16,7 +16,6 @@
 
 package com.chelseaurquhart.securejson;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -25,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 // We have to run single-threaded to prevent our security manager from buggering up.
+@SuppressWarnings("PMD.CommentRequired")
 @Test(singleThreaded = true)
 public final class ObjectWriterTest {
     private ObjectWriterTest() {
@@ -34,16 +34,14 @@ public final class ObjectWriterTest {
     void testSimpleObject() {
         final ObjectWriter myObjectWriter = new ObjectWriter();
         Assert.assertEquals(myObjectWriter.accept(new Object() {
-            @SuppressFBWarnings(value = "UrF")
             private CharSequence a = "b";
-            @SuppressFBWarnings(value = "UrF")
             private transient CharSequence b = "c";
         }), new HashMap<CharSequence, Object>() {{
                 put("a", "b");
             }});
     }
 
-
+    @Test
     public void testSimpleObjectSecurityViolation() {
         try {
             SJSecurityManager.SECURITY_VIOLATIONS.add(new ReflectPermission("suppressAccessChecks"));
@@ -58,8 +56,6 @@ public final class ObjectWriterTest {
     void testJSONAwareList() {
         final ObjectWriter myObjectWriter = new ObjectWriter();
         Assert.assertEquals(myObjectWriter.accept(new IJSONSerializeAware() {
-            @SuppressFBWarnings(value = "Se")
-
             @Override
             public Object toJSONable() {
                 return new LinkedList<Object>() {{

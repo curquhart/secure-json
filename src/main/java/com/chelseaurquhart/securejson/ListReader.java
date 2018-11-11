@@ -26,7 +26,7 @@ import java.util.List;
  * @exclude
  */
 class ListReader implements IReader<ListReader.Container> {
-    private final JSONReader jsonReader;
+    private final transient JSONReader jsonReader;
 
     ListReader(final JSONReader parJsonReader) {
         jsonReader = parJsonReader;
@@ -102,14 +102,18 @@ class ListReader implements IReader<ListReader.Container> {
 
     @Override
     public void close() {
+        // no resources to close.
     }
 
     private Container objectToContainer(final Object parValue) {
         return (Container) parValue;
     }
 
+    /**
+     * A container for our List.
+     */
     static final class Container {
-        private List<Object> list;
+        private transient List<Object> list;
 
         private Container() {
         }

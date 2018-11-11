@@ -20,6 +20,8 @@ package com.chelseaurquhart.securejson;
  * Base class for all SecureJSON exceptions.
  */
 public class JSONException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     /**
      * @exclude
      */
@@ -38,6 +40,8 @@ public class JSONException extends Exception {
      * @exclude
      */
     static class JSONRuntimeException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
         JSONRuntimeException(final Exception parInput) {
             super(parInput);
         }

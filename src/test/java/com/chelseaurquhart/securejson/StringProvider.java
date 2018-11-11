@@ -20,6 +20,9 @@ import org.testng.annotations.DataProvider;
 
 import java.lang.reflect.Method;
 
+/**
+ * Provider of textual data, used by multiple test suites.
+ */
 public final class StringProvider {
     static final String DATA_PROVIDER_NAME = "StringProvider";
 
@@ -64,6 +67,7 @@ public final class StringProvider {
         };
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private static Parameters buildParameters(final String parTestName, final CharSequence parInputString,
                                               final String parExpected) {
 
@@ -86,6 +90,9 @@ public final class StringProvider {
         return mySecureBuffer;
     }
 
+    /**
+     * Parameters for textual tests.
+     */
     static class Parameters {
         final String testName;
         final CharSequence inputString;

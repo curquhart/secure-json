@@ -27,7 +27,7 @@ import java.io.InputStream;
 class IterableInputStream extends EncodingAwareCharacterIterator implements ICharacterIterator {
     private static final int UNSIGNED_CONVERT_DIGIT = 0xff;
 
-    private final InputStream inputStream;
+    private final transient InputStream inputStream;
 
     IterableInputStream(final InputStream parInputStream) {
         super();

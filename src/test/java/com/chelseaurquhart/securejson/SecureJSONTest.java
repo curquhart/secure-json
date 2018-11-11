@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+@SuppressWarnings("PMD.CommentRequired")
 public final class SecureJSONTest {
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
     public void testReadString(final JSONReaderTest.Parameters parParameters) {

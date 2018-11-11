@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+@SuppressWarnings({"PMD.CommentRequired", "PMD.AvoidUsingShortType"})
 public final class HugeDecimalTest {
     private HugeDecimalTest() {
     }

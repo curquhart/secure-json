@@ -29,6 +29,7 @@ final class SJSecurityManager extends SecurityManager {
 
     private static final SecurityManager ORIGINAL_SECURITY_MANAGER = System.getSecurityManager();
 
+    @SuppressWarnings("PMD.JUnit4TestShouldUseBeforeAnnotation")
     static void setUp() {
         System.setSecurityManager(new SecurityManager() {
             @Override
@@ -50,10 +51,12 @@ final class SJSecurityManager extends SecurityManager {
 
             @Override
             public void checkExit(final int parStatus) {
+                // NOOP
             }
         });
     }
 
+    @SuppressWarnings("PMD.JUnit4TestShouldUseAfterAnnotation")
     static void tearDown() {
         SECURITY_VIOLATIONS.clear();
         System.setSecurityManager(ORIGINAL_SECURITY_MANAGER);

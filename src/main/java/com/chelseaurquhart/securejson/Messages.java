@@ -24,6 +24,12 @@ import java.util.Properties;
  * @exclude
  */
 final class Messages {
+    private static final String RESOURCE_NAME = "com/chelseaurquhart/securejson/messages.properties";
+
+    private static Messages INSTANCE;
+
+    private final transient Properties properties;
+
     /**
      * @exclude
      */
@@ -59,12 +65,6 @@ final class Messages {
         return getInstance().properties.getProperty(parKey.toString());
     }
 
-    private static final String RESOURCE_NAME = "com/chelseaurquhart/securejson/messages.properties";
-
-    private static Messages INSTANCE;
-
-    private final Properties properties;
-
     private static Messages getInstance() throws IOException {
         if (INSTANCE == null) {
             loadOrReload();
@@ -86,8 +86,8 @@ final class Messages {
         properties = new Properties();
 
         final ClassLoader myLoader = Thread.currentThread().getContextClassLoader();
-        try (InputStream resourceStream = myLoader.getResourceAsStream(RESOURCE_NAME)) {
-            properties.load(resourceStream);
+        try (InputStream myResourceStream = myLoader.getResourceAsStream(RESOURCE_NAME)) {
+            properties.load(myResourceStream);
         }
     }
 }
