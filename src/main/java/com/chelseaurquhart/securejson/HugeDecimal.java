@@ -261,6 +261,10 @@ public final class HugeDecimal extends Number implements CharSequence, IJSONSeri
 
     @Override
     public Object toJSONable() {
+        if (number == null) {
+            return chars;
+        }
+
         return number;
     }
 
