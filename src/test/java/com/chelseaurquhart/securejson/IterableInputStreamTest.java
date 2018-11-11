@@ -16,15 +16,31 @@
 
 package com.chelseaurquhart.securejson;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 @SuppressWarnings("PMD.CommentRequired")
-public final class IterableCharSequenceTest {
-    private IterableCharSequenceTest() {
+public final class IterableInputStreamTest {
+    private IterableInputStreamTest() {
     }
 
-    @Test(expectedExceptions = NotImplementedException.class)
+    @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testRemove() {
-        new IterableCharSequence("").remove();
+        new IterableInputStream(new ByteArrayInputStream(new byte[0])).remove();
+    }
+
+    @Test
+    public void testReadNextChar() throws IOException {
+        try (InputStream myBuffer = new ByteArrayInputStream(new byte[]{'a', 'b'})) {
+            final IterableInputStream myStream = new IterableInputStream(myBuffer);
+            Assert.assertEquals(myStream.readNextChar(), (Character) 'a');
+            Assert.assertEquals(myStream.readNextChar(), (Character) 'b');
+            Assert.assertNull(myStream.readNextChar());
+            Assert.assertNull(myStream.readNextChar());
+        }
     }
 }

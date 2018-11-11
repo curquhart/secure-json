@@ -17,6 +17,8 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.util.StringUtil;
+import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -72,10 +74,40 @@ public final class HugeDecimalTest {
                 .expectedShort((short) -1)
                 .expectedCharSequence("-1"),
             new Parameters(
+                "big integer value that can be represented in all types",
+                BigInteger.valueOf(-1)
+            )
+                .expectedBigDecimal(BigDecimal.ONE.negate())
+                .expectedBigInteger(BigInteger.ONE.negate())
+                .expectedDouble(-1.0)
+                .expectedFloat(-1.0f)
+                .expectedLong(-1)
+                .expectedInt(-1)
+                .expectedShort((short) -1)
+                .expectedCharSequence("-1"),
+            new Parameters(
+                "big decimal value that can be represented in all types",
+                BigDecimal.valueOf(-1)
+            )
+                .expectedBigDecimal(BigDecimal.ONE.negate())
+                .expectedBigInteger(BigInteger.ONE.negate())
+                .expectedDouble(-1.0)
+                .expectedFloat(-1.0f)
+                .expectedLong(-1)
+                .expectedInt(-1)
+                .expectedShort((short) -1)
+                .expectedCharSequence("-1"),
+            new Parameters(
                 "number that can be represented only in HugeDecimal",
                 new HugeDecimal("1e100000000000", new NumberReader(Settings.DEFAULTS))
             )
-                .expectedCharSequence("1e100000000000")
+                .expectedCharSequence("1e100000000000"),
+            new Parameters(
+                "error handling",
+                new HugeDecimal("abc", new NumberReader(Settings.DEFAULTS))
+            )
+                .expectedCharSequence("abc")
+            // all expected number types being null means exception expected for each.
         };
     }
 
@@ -86,9 +118,8 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.bigDecimalValue(), parParameters.expectedBigDecimal);
-                } catch (final IOException | JSONException myException) {
-                    throw new JSONException.JSONRuntimeException(myException);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException | IOException
+                        | JSONException myException) {
                     Assert.assertNull(parParameters.expectedBigDecimal);
                 }
             }
@@ -102,9 +133,8 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.bigIntegerValue(), parParameters.expectedBigInteger);
-                } catch (final IOException | JSONException myException) {
-                    throw new JSONException.JSONRuntimeException(myException);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException | IOException
+                        | JSONException myException) {
                     Assert.assertNull(parParameters.expectedBigInteger);
                 }
             }
@@ -118,7 +148,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.doubleValue(), parParameters.expectedDouble);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedDouble);
                 }
             }
@@ -132,7 +162,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.floatValue(), parParameters.expectedFloat);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedFloat);
                 }
             }
@@ -146,7 +176,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(Long.valueOf(parInput.longValue()), parParameters.expectedLong);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedLong);
                 }
             }
@@ -160,7 +190,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(Integer.valueOf(parInput.intValue()), parParameters.expectedInt);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedInt);
                 }
             }
@@ -174,7 +204,7 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(Short.valueOf(parInput.shortValue()), parParameters.expectedShort);
-                } catch (final NumberFormatException | ArithmeticException myException) {
+                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedShort);
                 }
             }
@@ -190,6 +220,17 @@ public final class HugeDecimalTest {
                     parParameters.expectedCharSequence);
             }
         });
+    }
+
+    @Test
+    public void testNumberSequencingAndSerializing() {
+        final HugeDecimal myNumber = new HugeDecimal(123);
+        Assert.assertEquals(myNumber.subSequence(0, 3), "123");
+        Assert.assertEquals(myNumber.subSequence(0, 2), "12");
+
+        final HugeDecimal mySequence = new HugeDecimal("123", new NumberReader(Settings.DEFAULTS));
+        Assert.assertEquals(mySequence.subSequence(0, 3), "123");
+        Assert.assertEquals(mySequence.subSequence(0, 2), "12");
     }
 
     private void testConvert(final Parameters parParameters, final IConsumer<HugeDecimal> parConsumer) {

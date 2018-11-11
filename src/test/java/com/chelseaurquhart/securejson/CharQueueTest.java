@@ -37,8 +37,21 @@ public final class CharQueueTest {
     }
 
     @Test(expectedExceptions = JSONRuntimeException.class)
+    public void testAddBufferOverflowSingleCharCapacity() {
+        final CharQueue myQueue = new CharQueue(1);
+        myQueue.add('a');
+        myQueue.add('b');
+    }
+
+    @Test(expectedExceptions = JSONRuntimeException.class)
     public void testPopBufferUnderflow() {
         final CharQueue myQueue = new CharQueue(4);
+        myQueue.pop();
+    }
+
+    @Test(expectedExceptions = JSONRuntimeException.class)
+    public void testPopBufferUnderflowSingleCharCapacity() {
+        final CharQueue myQueue = new CharQueue(1);
         myQueue.pop();
     }
 

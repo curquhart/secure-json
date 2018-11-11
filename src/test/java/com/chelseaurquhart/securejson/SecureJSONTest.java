@@ -32,6 +32,7 @@ import java.util.Map;
 @SuppressWarnings("PMD.CommentRequired")
 public final class SecureJSONTest {
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
+    @SuppressWarnings("unchecked")
     public void testReadString(final JSONReaderTest.Parameters parParameters) {
         try {
             new SecureJSON().fromJSON(parParameters.getInputString(), new IConsumer<Object>() {
@@ -40,7 +41,7 @@ public final class SecureJSONTest {
                     Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
                         StringUtil.deepCharSequenceToString(parInput));
                 }
-            });
+            }, parParameters.getExpectedClass());
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
         } catch (final JSONDecodeException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
@@ -48,6 +49,7 @@ public final class SecureJSONTest {
     }
 
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
+    @SuppressWarnings("unchecked")
     public void testReadStream(final JSONReaderTest.Parameters parParameters) {
         final InputStream myInputStream = JSONReaderTest.inputToStream(
             parParameters.getInputString(), parParameters.getInputBytes());
@@ -59,7 +61,7 @@ public final class SecureJSONTest {
                     Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
                         StringUtil.deepCharSequenceToString(parInput));
                 }
-            });
+            }, parParameters.getExpectedClass());
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
         } catch (final JSONDecodeException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
@@ -67,6 +69,7 @@ public final class SecureJSONTest {
     }
 
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
+    @SuppressWarnings("unchecked")
     public void testReadBytes(final JSONReaderTest.Parameters parParameters) {
         try {
             final byte[] myBytes;
@@ -76,13 +79,14 @@ public final class SecureJSONTest {
             } else {
                 myBytes = parParameters.getInputBytes();
             }
+
             new SecureJSON().fromJSON(myBytes, new IConsumer<Object>() {
                 @Override
                 public void accept(final Object parInput) {
                     Assert.assertEquals(StringUtil.deepCharSequenceToString(parParameters.getExpected()),
                         StringUtil.deepCharSequenceToString(parInput));
                 }
-            });
+            }, parParameters.getExpectedClass());
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
         } catch (final JSONDecodeException | JSONRuntimeException myException) {
             checkException(parParameters, myException);
@@ -103,7 +107,7 @@ public final class SecureJSONTest {
             @Override
             public void accept(final CharSequence parInput) {
                 Assert.assertEquals(StringUtil.charSequenceToString(parInput),
-                    StringUtil.charSequenceToString(parParameters.getExpected()));
+                    StringUtil.charSequenceToString(parParameters.getSecureJSONExpected()));
             }
         });
     }
@@ -114,7 +118,7 @@ public final class SecureJSONTest {
         final ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
         new SecureJSON().toJSON(parParameters.getInputObject(), myOutputStream);
         Assert.assertEquals(StringUtil.charSequenceToString(myOutputStream.toString(StandardCharsets.UTF_8.name())),
-            StringUtil.charSequenceToString(parParameters.getExpected()));
+            StringUtil.charSequenceToString(parParameters.getSecureJSONExpected()));
     }
 
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
@@ -124,7 +128,7 @@ public final class SecureJSONTest {
             @Override
             public void accept(final byte[] parInput) {
                 Assert.assertEquals(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(parInput)).toString(),
-                    StringUtil.charSequenceToString(parParameters.getExpected()));
+                    StringUtil.charSequenceToString(parParameters.getSecureJSONExpected()));
             }
         });
     }
