@@ -229,13 +229,17 @@ public final class HugeDecimal extends Number implements CharSequence {
 
             return true;
         } else {
-            try {
-                return bigDecimalValue().equals(myThat.bigDecimalValue());
-            } catch (final IOException myException) {
-                throw new JSONRuntimeException(myException);
-            } catch (final JSONException myException) {
-                throw new JSONRuntimeException(myException);
-            }
+            return compareByBigDecimal(myThat);
+        }
+    }
+
+    private boolean compareByBigDecimal(final HugeDecimal parOther) {
+        try {
+            return bigDecimalValue().equals(parOther.bigDecimalValue());
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
+            throw new JSONRuntimeException(myException);
         }
     }
 
