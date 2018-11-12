@@ -26,7 +26,6 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
-import java.nio.charset.StandardCharsets;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -65,8 +64,11 @@ public final class ObjectReaderTest {
 
     @Test
     public void testSimpleDeserialization() throws IOException, JSONException {
-        final SimpleDeserializationClass mySimpleDeserializationClass = new ObjectReader<>(
-            SimpleDeserializationClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
+        final SimpleDeserializationClass mySimpleDeserializationClass = new ObjectReader<SimpleDeserializationClass>(
+            SimpleDeserializationClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
+                private static final long serialVersionUID = 1L;
+
+                {
                     put("integerVal", 1);
                     put("shortVal", 2);
                     final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
@@ -79,7 +81,8 @@ public final class ObjectReaderTest {
                     put("ints", new int[]{1, 2, 3});
                     put("intList", Arrays.asList(4, 5, 6));
                     put("root1", true);
-                }});
+                }
+            });
 
         Assert.assertEquals(mySimpleDeserializationClass.presetVal, 5);
         Assert.assertEquals(mySimpleDeserializationClass.integerVal, 1);
@@ -100,16 +103,24 @@ public final class ObjectReaderTest {
             SJSecurityManager.SECURITY_VIOLATIONS.add(new ReflectPermission("suppressAccessChecks"));
             testSimpleDeserialization();
             Assert.fail("Expected exception not thrown");
-        } catch (final JSONException | JSONRuntimeException myException) {
+        } catch (final JSONException myException) {
+            Assert.assertEquals(myException.getCause().getClass(), SecurityException.class);
+        } catch (final JSONRuntimeException myException) {
             Assert.assertEquals(myException.getCause().getClass(), SecurityException.class);
         }
     }
 
     @Test
     public void testSimpleNesting() throws IOException, JSONException {
-        final SimpleNestingClass mySimpleNestingClass = new ObjectReader<>(
-            SimpleNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
-                    put("inner1", new HashMap<CharSequence, Object>() {{
+        final SimpleNestingClass mySimpleNestingClass = new ObjectReader<SimpleNestingClass>(
+            SimpleNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
+                private static final long serialVersionUID = 1L;
+
+                {
+                    put("inner1", new HashMap<CharSequence, Object>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
                             put("integerVal", 11);
                             put("shortVal", 21);
                             final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
@@ -120,20 +131,27 @@ public final class ObjectReaderTest {
                             myCSeqBuffer.append("testingCharSeq1");
                             put("charSeqVal", myCSeqBuffer);
                             put("transientIntVal", 1234);
-                        }});
-                    put("inner2", new HashMap<CharSequence, Object>() {{
+                        }
+                    });
+                    put("inner2", new HashMap<CharSequence, Object>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
                             put("integerVal", 111);
                             put("shortVal", 211);
                             final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
                                 Settings.DEFAULTS);
                             myStringBuffer.append("testingString2");
                             put("stringVal", myStringBuffer);
-                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                            final ManagedSecureCharBuffer myCSeqBuffer =
+                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
                             myCSeqBuffer.append("testingCharSeq2");
                             put("charSeqVal", myCSeqBuffer);
                             put("transientIntVal", 12345);
-                        }});
-                }});
+                        }
+                    });
+                }
+            });
 
         Assert.assertNull(mySimpleNestingClass.inner1);
         Assert.assertEquals(mySimpleNestingClass.inner2.presetVal, 5);
@@ -148,10 +166,19 @@ public final class ObjectReaderTest {
 
     @Test
     public void testSubNesting() throws IOException, JSONException {
-        final SubNestingClass mySubNestingClass = new ObjectReader<>(
-            SubNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
-                    put("inner1", new HashMap<CharSequence, Object>() {{
-                            put("data1", new HashMap<CharSequence, Object>() {{
+        final SubNestingClass mySubNestingClass = new ObjectReader<SubNestingClass>(
+            SubNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
+                private static final long serialVersionUID = 1L;
+
+                {
+                    put("inner1", new HashMap<CharSequence, Object>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
+                            put("data1", new HashMap<CharSequence, Object>() {
+                                private static final long serialVersionUID = 1L;
+
+                                {
                                     put("integerVal", 111);
                                     put("shortVal", 211);
                                     final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
@@ -163,9 +190,12 @@ public final class ObjectReaderTest {
                                     myCSeqBuffer.append("testingCharSeq2");
                                     put("charSeqVal", myCSeqBuffer);
                                     put("transientIntVal", 1234);
-                                }});
-                        }});
-                }});
+                                }
+                            });
+                        }
+                    });
+                }
+            });
 
         Assert.assertNull(mySubNestingClass.data1);
         Assert.assertEquals(mySubNestingClass.inner1.data1.presetVal, 5);
@@ -180,43 +210,67 @@ public final class ObjectReaderTest {
 
     @Test
     public void testRecursiveNesting() throws IOException, JSONException {
-        final SubNestingClass mySubNestingClass = new ObjectReader<>(
-                SubNestingClass.class, UNSTRICT_SETTINGS)
-                    .accept(new HashMap<CharSequence, Object>() {{
-                            put("inner1", new HashMap<CharSequence, Object>() {{
-                                    put("inner1", new HashMap<CharSequence, Object>() {{
-                                            put("data1", new HashMap<CharSequence, Object>() {{
-                                                    put("integerVal", 1111);
-                                                    put("shortVal", 2111);
+        final SubNestingClass mySubNestingClass = new ObjectReader<SubNestingClass>(
+            SubNestingClass.class, UNSTRICT_SETTINGS)
+            .accept(new HashMap<CharSequence, Object>() {
+                private static final long serialVersionUID = 1L;
+
+                {
+                    put("inner1", new HashMap<CharSequence, Object>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
+                            put("inner1", new HashMap<CharSequence, Object>() {
+                                private static final long serialVersionUID = 1L;
+
+                                {
+                                    put("data1", new HashMap<CharSequence, Object>() {
+                                        private static final long serialVersionUID = 1L;
+
+                                        {
+                                            put("integerVal", 1111);
+                                            put("shortVal", 2111);
+                                            final ManagedSecureCharBuffer myStringBuffer =
+                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                            myStringBuffer.append("testingString3");
+                                            put("stringVal", myStringBuffer);
+                                            final ManagedSecureCharBuffer myCSeqBuffer =
+                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                            myCSeqBuffer.append("testingCharSeq3");
+                                            put("charSeqVal", myCSeqBuffer);
+                                            put("transientIntVal", 12345);
+                                        }
+                                    });
+
+                                    put("inner1", new HashMap<CharSequence, Object>() {
+                                        private static final long serialVersionUID = 1L;
+
+                                        {
+                                            put("data1", new HashMap<CharSequence, Object>() {
+                                                private static final long serialVersionUID = 1L;
+
+                                                {
+                                                    put("integerVal", 111);
+                                                    put("shortVal", 211);
                                                     final ManagedSecureCharBuffer myStringBuffer =
                                                         new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                                                    myStringBuffer.append("testingString3");
+                                                    myStringBuffer.append("testingString2");
                                                     put("stringVal", myStringBuffer);
                                                     final ManagedSecureCharBuffer myCSeqBuffer =
                                                         new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                                                    myCSeqBuffer.append("testingCharSeq3");
+                                                    myCSeqBuffer.append("testingCharSeq2");
                                                     put("charSeqVal", myCSeqBuffer);
-                                                    put("transientIntVal", 12345);
-                                                }});
-
-                                            put("inner1", new HashMap<CharSequence, Object>() {{
-                                                    put("data1", new HashMap<CharSequence, Object>() {{
-                                                            put("integerVal", 111);
-                                                            put("shortVal", 211);
-                                                            final ManagedSecureCharBuffer myStringBuffer =
-                                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                                                            myStringBuffer.append("testingString2");
-                                                            put("stringVal", myStringBuffer);
-                                                            final ManagedSecureCharBuffer myCSeqBuffer =
-                                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
-                                                            myCSeqBuffer.append("testingCharSeq2");
-                                                            put("charSeqVal", myCSeqBuffer);
-                                                            put("transientIntVal", 1234);
-                                                        }});
-                                                }});
-                                        }});
-                                }});
-                        }});
+                                                    put("transientIntVal", 1234);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
 
         Assert.assertNull(mySubNestingClass.data1);
         Assert.assertNull(mySubNestingClass.inner1.data1);
@@ -226,7 +280,7 @@ public final class ObjectReaderTest {
         Assert.assertEquals(mySubNestingClass.inner1.inner1.data1.transientIntVal, 0);
         Assert.assertEquals(mySubNestingClass.inner1.inner1.data1.stringVal, "testingString3");
         Assert.assertEquals(mySubNestingClass.inner1.inner1.data1.charSeqVal.getClass(),
-                ManagedSecureCharBuffer.class);
+            ManagedSecureCharBuffer.class);
         Assert.assertEquals(StringUtil.charSequenceToString(mySubNestingClass.inner1.inner1.data1.charSeqVal),
             "testingCharSeq3");
 
@@ -244,58 +298,120 @@ public final class ObjectReaderTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testComplexType() throws IOException, JSONException {
-        final ComplexTypeClass myComplexTypeClass = new ObjectReader<>(
-                ComplexTypeClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                        final List<Map<CharSequence, Map<String, Integer>>> myList1 = new ArrayList<>();
-                        myList1.add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                                put("1", new HashMap<String, Integer>() {{
-                                        put("2", 3);
-                                    }});
-                            }});
-                        final List<Map<CharSequence, Map<String, Integer>>> myList2 = new ArrayList<>();
-                        myList2.add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                                put("4", new HashMap<String, Integer>() {{
-                                        put("5", 6);
-                                    }});
-                            }});
+        final ComplexTypeClass myComplexTypeClass = new ObjectReader<ComplexTypeClass>(
+            ComplexTypeClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+                private static final long serialVersionUID = 1L;
 
-                        put("data", new List[]{myList1, myList2});
-                    }});
+                {
+                    final List<Map<CharSequence, Map<String, Integer>>> myList1 =
+                            new ArrayList<Map<CharSequence, Map<String, Integer>>>();
+                    myList1.add(new HashMap<CharSequence, Map<String, Integer>>() {
+                        private static final long serialVersionUID = 1L;
 
-        Assert.assertEquals(myComplexTypeClass.data[0], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {{
-                add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                        put("1", new HashMap<String, Integer>() {{
+                        {
+                            put("1", new HashMap<String, Integer>() {
+                                private static final long serialVersionUID = 1L;
+
+                                {
+                                    put("2", 3);
+                                }
+                            });
+                        }
+                    });
+                    final List<Map<CharSequence, Map<String, Integer>>> myList2 =
+                            new ArrayList<Map<CharSequence, Map<String, Integer>>>();
+                    myList2.add(new HashMap<CharSequence, Map<String, Integer>>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
+                            put("4", new HashMap<String, Integer>() {
+                                private static final long serialVersionUID = 1L;
+
+                                {
+                                    put("5", 6);
+                                }
+                            });
+                        }
+                    });
+
+                    put("data", new Object[]{myList1, myList2});
+                }
+            });
+
+        Assert.assertEquals(myComplexTypeClass.data[0], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {
+            private static final long serialVersionUID = 1L;
+
+            {
+                add(new HashMap<CharSequence, Map<String, Integer>>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        put("1", new HashMap<String, Integer>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
                                 put("2", 3);
-                            }});
-                    }});
-            }});
-        Assert.assertEquals(myComplexTypeClass.data[1], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {{
-                add(new HashMap<CharSequence, Map<String, Integer>>() {{
-                        put("4", new HashMap<String, Integer>() {{
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        Assert.assertEquals(myComplexTypeClass.data[1], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {
+            private static final long serialVersionUID = 1L;
+
+            {
+                add(new HashMap<CharSequence, Map<String, Integer>>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        put("4", new HashMap<String, Integer>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
                                 put("5", 6);
-                            }});
-                    }});
-            }});
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testAbsoluteNesting() throws IOException, JSONException {
-        final NestingAbsClass myNestingAbsClass = new ObjectReader<>(
-            NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                    put("1", 11);
-                    put("2", 21);
-                    put("3", 31);
-                    put("level2", new HashMap<CharSequence, Object>() {{
-                            put("rel", 41);
-                            put("l3", new HashMap<CharSequence, Object>() {{
-                                    put("rel", 51);
-                                    put("level4", new HashMap<CharSequence, Object>() {{
-                                            put("level4", 61);
-                                        }});
-                                }});
-                        }});
-                }});
+        final NestingAbsClass myNestingAbsClass = new ObjectReader<NestingAbsClass>(
+                NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        put("1", 11);
+                        put("2", 21);
+                        put("3", 31);
+                        put("level2", new HashMap<CharSequence, Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                put("rel", 41);
+                                put("l3", new HashMap<CharSequence, Object>() {
+                                    private static final long serialVersionUID = 1L;
+
+                                    {
+                                        put("rel", 51);
+                                        put("level4", new HashMap<CharSequence, Object>() {
+                                            private static final long serialVersionUID = 1L;
+
+                                            {
+                                                put("level4", 61);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
 
         Assert.assertEquals(myNestingAbsClass.level1, 11);
         Assert.assertEquals(myNestingAbsClass.level2.level2, 21);
@@ -308,97 +424,189 @@ public final class ObjectReaderTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testConcreteConstruction() throws IOException, JSONException {
-        final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<>(
-                NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                        put("genericMap", new TreeMap<CharSequence, Object>() {{
-                                put("a", "b");
-                            }});
-                        put("typedMap", new TreeMap<CharSequence, Object>() {{
-                                put("c", "d");
-                            }});
-                        put("genericSet", new HashSet<Object>() {{
-                                add("e");
-                            }});
-                        put("typedSet", new HashSet<Object>() {{
-                                add("f");
-                            }});
-                        put("genericAbstractSet", new HashSet<Object>() {{
-                                add("g");
-                            }});
-                        put("typedAbstractSet", new HashSet<Object>() {{
-                                add("h");
-                            }});
-                        put("genericCollection", new ArrayList<Object>() {{
-                                add("i");
-                            }});
-                        put("typedCollection", new LinkedList<Object>() {{
-                                add("j");
-                            }});
-                        put("genericAbstractCollection", new HashSet<Object>() {{
-                                add("k");
-                            }});
-                        put("genericList", new ArrayList<Object>() {{
-                                add("l");
-                            }});
-                    }});
+        final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<NestingAbsClass.ConcreteTest>(
+                NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
 
-        Assert.assertEquals(myConcreteTest.genericMap, new LinkedHashMap() {{
+                    {
+                        put("genericMap", new TreeMap<CharSequence, Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                put("a", "b");
+                            }
+                        });
+                        put("typedMap", new TreeMap<CharSequence, Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                put("c", "d");
+                            }
+                        });
+                        put("genericSet", new HashSet<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("e");
+                            }
+                        });
+                        put("typedSet", new HashSet<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("f");
+                            }
+                        });
+                        put("genericAbstractSet", new HashSet<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("g");
+                            }
+                        });
+                        put("typedAbstractSet", new HashSet<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("h");
+                            }
+                        });
+                        put("genericCollection", new ArrayList<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("i");
+                            }
+                        });
+                        put("typedCollection", new LinkedList<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("j");
+                            }
+                        });
+                        put("genericAbstractCollection", new HashSet<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("k");
+                            }
+                        });
+                        put("genericList", new ArrayList<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add("l");
+                            }
+                        });
+                    }
+                });
+
+        Assert.assertEquals(myConcreteTest.genericMap, new LinkedHashMap<Object, Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 put("a", "b");
-            }});
-        Assert.assertEquals(myConcreteTest.typedMap, new LinkedHashMap() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.typedMap, new LinkedHashMap<String, Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 put("c", "d");
-            }});
-        Assert.assertEquals(myConcreteTest.genericSet, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.genericSet, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("e");
-            }});
-        Assert.assertEquals(myConcreteTest.typedSet, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.typedSet, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("f");
-            }});
-        Assert.assertEquals(myConcreteTest.genericAbstractSet, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.genericAbstractSet, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("g");
-            }});
-        Assert.assertEquals(myConcreteTest.typedAbstractSet, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.typedAbstractSet, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("h");
-            }});
-        Assert.assertEquals(myConcreteTest.genericCollection, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.genericCollection, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("i");
-            }});
-        Assert.assertEquals(myConcreteTest.typedCollection, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.typedCollection, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("j");
-            }});
-        Assert.assertEquals(myConcreteTest.genericAbstractCollection, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.genericAbstractCollection, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("k");
-            }});
-        Assert.assertEquals(myConcreteTest.genericList, new HashSet() {{
+            }
+        });
+        Assert.assertEquals(myConcreteTest.genericList, new HashSet<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("l");
-            }});
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
     @Test(expectedExceptions = JSONException.JSONRuntimeException.class)
     public void testUnknownType() throws IOException, JSONException {
-        new ObjectReader<>(
-            NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                    put("calendar", new ArrayList<Object>() {{
+        new ObjectReader<NestingAbsClass.InvalidClassTest>(
+            NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+                private static final long serialVersionUID = 1L;
+
+                {
+                    put("calendar", new ArrayList<Object>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
                             add(Calendar.getInstance());
-                        }});
-                }});
+                        }
+                    });
+                }
+            });
     }
 
     public static final class IdentityHashSetTest {
         @Test(expectedExceptions = NotImplementedException.class)
         public void testAddValue() {
-            new ObjectReader.IdentityHashSet<>().size();
+            new ObjectReader.IdentityHashSet<Object>().size();
         }
 
         @Test(expectedExceptions = NotImplementedException.class)
         public void testIterator() {
-            new ObjectReader.IdentityHashSet<>().iterator();
+            new ObjectReader.IdentityHashSet<Object>().iterator();
         }
 
         @Test
         public void testContains() {
-            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<>();
+            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<String>();
             myHashSet.add("test");
             Assert.assertTrue(myHashSet.contains("test"));
             Assert.assertFalse(myHashSet.contains("testing"));
@@ -476,16 +684,16 @@ public final class ObjectReaderTest {
         }
 
         private static final class ConcreteTest {
-            private Map genericMap;
+            private Map<?, ?> genericMap;
             private Map<String, Object> typedMap;
-            private Set genericSet;
+            private Set<?> genericSet;
             private Set<CharSequence> typedSet;
-            private AbstractSet genericAbstractSet;
+            private AbstractSet<?> genericAbstractSet;
             private AbstractSet<CharSequence> typedAbstractSet;
-            private Collection genericCollection;
+            private Collection<?> genericCollection;
             private Collection<CharSequence> typedCollection;
-            private AbstractCollection genericAbstractCollection;
-            private List genericList;
+            private AbstractCollection<?> genericAbstractCollection;
+            private List<?> genericList;
         }
 
         private static final class InvalidClassTest {

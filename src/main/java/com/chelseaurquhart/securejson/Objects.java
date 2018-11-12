@@ -16,31 +16,25 @@
 
 package com.chelseaurquhart.securejson;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * @exclude
+ * Objects class to provide simple helpers (functionality from Java 7 Objects)
  */
-class ManagedSecureBufferList implements Closeable, IAutoCloseable {
-    private final transient List<ManagedSecureCharBuffer> secureBuffers;
-
-    ManagedSecureBufferList() {
-        secureBuffers = new ArrayList<ManagedSecureCharBuffer>();
+final class Objects {
+    private Objects() {
     }
 
-    @Override
-    public void close() throws IOException {
-        for (final ManagedSecureCharBuffer myBuffer : secureBuffers) {
-            myBuffer.close();
+    static <T> T requireNonNull(final T parObj) {
+        if (parObj == null) {
+            throw new NullPointerException();
+        }
+        return parObj;
+    }
+
+    static int hash(final Object parObj) {
+        if (parObj == null) {
+            return 0;
         }
 
-        secureBuffers.clear();
-    }
-
-    void addSecureBuffer(final ManagedSecureCharBuffer parSecureBuffer) {
-        secureBuffers.add(parSecureBuffer);
+        return parObj.hashCode();
     }
 }

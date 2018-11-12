@@ -1,69 +1,158 @@
 stages:
-  - test
+  - JDK Build and Test
+  - Documentation and Remote Linting
+  - JRE Verification
 
-testJava7:
+# Java 7 docker image is a special snowflake in that its SSL is borked so we can't use gradlew.
+Test Java 7 OpenJDK:
   tags:
     - docker
   image: gradle:4.10-jdk7
-  stage: test
+  stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - gradle --no-daemon test
 
-testJava8:
+Test Java 8 OpenJDK:
   tags:
     - docker
-  image: gradle:4.10-jdk8
-  stage: test
+  image: openjdk:8-jdk-slim
+  stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - ./gradlew --no-daemon test
 
-testJava10:
+Test Java 10 OpenJDK:
   tags:
     - docker
-  image: gradle:4.10-jdk10
-  stage: test
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:10-jdk-slim
+  stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
-    - gradle --no-daemon check
+    - ./gradlew --no-daemon check
 
-javadocs:
+Test Java 11 OpenJDK:
+  tags:
+    - docker
+  image: openjdk:11-jdk-slim
+  stage: JDK Build and Test
+  script:
+    - unset SONAR_TOKEN
+    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
+    - ./gradlew --no-daemon check
+
+Test Java 12 OpenJDK:
+  tags:
+    - docker
+  image: openjdk:12-ea-jdk
+  stage: JDK Build and Test
+  allow_failure: true
+  script:
+    - unset SONAR_TOKEN
+    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
+    - ./gradlew --no-daemon check
+
+Publish Java 10 OpenJDK:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:10-jdk-slim
+  stage: JDK Build and Test
+  script:
+    - unset SONAR_TOKEN
+    - ./gradlew --no-daemon jar shadowJar -Prt=/rt-6-openjdk.jar
+  artifacts:
+    paths:
+      - build/libs
+
+Java Docs:
   # we aren't doing anything with these here, but we use them in the Maven releases, so we want the pipeline to run them
   # to verify no errors on a regular basis.
   tags:
-  - docker
-  image: gradle:4.10-jdk10
-  stage: test
-  script:
-    - unset SONAR_TOKEN
-    - gradle --no-daemon javadoc
-
-# Lets support this in the pipeline, but call it experimental to be clear that we're using an experimental Gradle version.
-testJava11:
-  tags:
     - docker
-  image: gradle:4.10-jdk11
-  stage: test
+  image: gradle:4.10-jdk10
+  stage: Documentation and Remote Linting
   script:
     - unset SONAR_TOKEN
-    - gradle wrapper --gradle-version=5.0-20181110000025+0000
-    - ./gradlew --no-daemon check
+    - ./gradlew --no-daemon javadoc
 
-verifyJSONTestSuite:
+Sonar Qube:
   tags:
     - docker
   image: gradle:4.10-jdk10
-  stage: test
-  script:
-    - unset SONAR_TOKEN
-    - gradle --no-daemon verifyJSONTestSuite
-
-sonarqube:
-  tags:
-    - docker
-  image: gradle:4.10-jdk10
-  stage: test
+  stage: Documentation and Remote Linting
   only:
     - master
-  script: gradle --no-daemon sonarqube -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+  script:
+    - ./gradlew --no-daemon sonarqube -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+
+Verify Java 6 OpenJDK JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:6-jre-slim
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)
+
+Verify Java 7 OpenJDK JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:7-jre-slim
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)
+
+Verify Java 8 OpenJDK JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:8-jre-slim
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)
+
+Verify Java 10 OpenJDK JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:10-jre-slim
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)
+
+Verify Java 11 OpenJDK JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:11-jre-slim
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)
+
+Verify Java 8 IBM JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-ibmjava:8-jre
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)

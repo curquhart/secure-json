@@ -24,12 +24,11 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
 
 /**
  * @exclude
  */
-final class JSONReader implements Closeable, AutoCloseable {
+final class JSONReader implements Closeable, IAutoCloseable {
     @SuppressWarnings("rawtypes")
     private final transient IReader<?>[] readers;
 
@@ -66,7 +65,7 @@ final class JSONReader implements Closeable, AutoCloseable {
     }
 
     Object read(final ICharacterIterator parIterator) throws IOException, JSONException {
-        final PairStack<IReader<?>, Object> myStack = new PairStack<>();
+        final PairStack<IReader<?>, Object> myStack = new PairStack<IReader<?>, Object>();
 
         final ReaderData myReaderData = new ReaderData();
         while (parIterator.hasNext()) {
@@ -166,7 +165,6 @@ final class JSONReader implements Closeable, AutoCloseable {
         parReaderData.hasResult = true;
     }
 
-    @SuppressWarnings("unchecked")
     private IReader<?> getReaderStartingNextChar(final ICharacterIterator parIterator) throws IOException,
             JSONException {
         for (final IReader<?> myReader : readers) {

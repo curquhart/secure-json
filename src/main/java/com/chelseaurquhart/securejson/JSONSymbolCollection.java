@@ -88,7 +88,7 @@ final class JSONSymbolCollection {
     );
 
     private static Map<Character, Token> listToMap(final Token... parElements) {
-        final Map<Character, Token> myMap = new HashMap<>();
+        final Map<Character, Token> myMap = new HashMap<Character, Token>();
         for (final Token myElement : parElements) {
             myMap.put(myElement.getShortSymbol(), myElement);
         }
@@ -97,7 +97,7 @@ final class JSONSymbolCollection {
     }
 
     private static Map<Character, Character> listToMap(final Character... parElements) {
-        final Map<Character, Character> myMap = new HashMap<>();
+        final Map<Character, Character> myMap = new HashMap<Character, Character>();
         for (final Character myElement : parElements) {
             myMap.put(myElement, myElement);
         }
@@ -149,7 +149,7 @@ final class JSONSymbolCollection {
         private final Object value;
         private final char shortSymbol;
 
-        private static final Map<Character, Token> SHORT_TOKEN_MAP = new HashMap<>();
+        private static final Map<Character, Token> SHORT_TOKEN_MAP = new HashMap<Character, Token>();
 
         static {
             for (final Token myValue : values()) {
@@ -187,7 +187,7 @@ final class JSONSymbolCollection {
             this.symbol = parSymbol;
             this.value = parValue;
             if (symbol instanceof Character) {
-                this.shortSymbol = (char) symbol;
+                this.shortSymbol = (Character) symbol;
             } else if (symbol != null) {
                 this.shortSymbol = symbol.toString().charAt(0);
             } else {

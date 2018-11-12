@@ -54,12 +54,12 @@ public final class JSONWriterTest {
             ),
             new Parameters(
                 "empty array",
-                new ArrayList<>(),
+                new ArrayList<Object>(),
                 "[]"
             ),
             new Parameters(
                 "empty set",
-                new HashSet<>(),
+                new HashSet<Object>(),
                 "[]"
             ),
             new Parameters(
@@ -74,18 +74,30 @@ public final class JSONWriterTest {
             ),
             new Parameters(
                 "empty map",
-                new LinkedHashMap<>(),
+                new LinkedHashMap<Object, Object>(),
                 "{}"
             ),
             new Parameters(
                 "nesting",
-                new LinkedHashMap<String, Object>() {{
-                        put("a", new ArrayList<Object>() {{
-                                add(new HashMap<String, Object>() {{
+                new LinkedHashMap<String, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        put("a", new ArrayList<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add(new HashMap<String, Object>() {
+                                    private static final long serialVersionUID = 1L;
+
+                                    {
                                         put("x", 12);
-                                    }});
-                            }});
-                    }},
+                                    }
+                                });
+                            }
+                        });
+                    }
+                },
                 "{\"a\":[{\"x\":12}]}"
             ),
             new Parameters(
@@ -151,15 +163,19 @@ public final class JSONWriterTest {
 
     @Test(dataProvider = DATA_PROVIDER_NAME)
     public void testWrite(final Parameters parParameters) throws IOException {
-        try (JSONWriter myWriter = new JSONWriter(Settings.DEFAULTS)) {
-            try {
-                Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
-                        StringUtil.deepCharSequenceToString(parParameters.expected));
-                Assert.assertNull(parParameters.expectedException);
-            } catch (final JSONException myException) {
-                Assert.assertNotNull(parParameters.expectedException);
-                Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+        JSONWriter myWriter = null;
+        try {
+            myWriter = new JSONWriter(Settings.DEFAULTS);
+            Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
+                    StringUtil.deepCharSequenceToString(parParameters.expected));
+            Assert.assertNull(parParameters.expectedException);
+        } catch (final JSONException myException) {
+            Assert.assertNotNull(parParameters.expectedException);
+            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
                     parParameters.expectedException.getMessage());
+        } finally {
+            if (myWriter != null) {
+                myWriter.close();
             }
         }
     }

@@ -16,31 +16,19 @@
 
 package com.chelseaurquhart.securejson;
 
-import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * @exclude
+ * Functional interface that consumes a value.
+ *
+ * @param <T> The type of value to consume.
  */
-class ManagedSecureBufferList implements Closeable, IAutoCloseable {
-    private final transient List<ManagedSecureCharBuffer> secureBuffers;
-
-    ManagedSecureBufferList() {
-        secureBuffers = new ArrayList<ManagedSecureCharBuffer>();
-    }
-
-    @Override
-    public void close() throws IOException {
-        for (final ManagedSecureCharBuffer myBuffer : secureBuffers) {
-            myBuffer.close();
-        }
-
-        secureBuffers.clear();
-    }
-
-    void addSecureBuffer(final ManagedSecureCharBuffer parSecureBuffer) {
-        secureBuffers.add(parSecureBuffer);
-    }
+public interface IThrowableConsumer<T> {
+    /**
+     * Performs this operation on the given argument.
+     * @param parInput The input argument.
+     * @throws IOException On read/write failure.
+     * @throws JSONException On decode/encode failure.
+     */
+    void accept(T parInput) throws IOException, JSONException;
 }

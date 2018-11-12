@@ -95,7 +95,11 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         final Map.Entry<BigDecimal, Boolean> myDecimalAndForceDouble;
         try {
             myDecimalAndForceDouble = charSequenceToBigDecimal(parNumber, parOffset);
-        } catch (final NumberFormatException | ArithmeticException myException) {
+        } catch (final NumberFormatException myException) {
+            // number is probably too big. We can still handle it, but our algorithm is very expensive and
+            // a CharSequence may be okay so we want to lazy convert it, if requested.
+            return new HugeDecimal(parNumber, this);
+        } catch (final ArithmeticException myException) {
             // number is probably too big. We can still handle it, but our algorithm is very expensive and
             // a CharSequence may be okay so we want to lazy convert it, if requested.
             return new HugeDecimal(parNumber, this);
@@ -126,7 +130,9 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
             }
 
             return myDoubleValue;
-        } catch (final ArithmeticException | NumberFormatException myException) {
+        } catch (final ArithmeticException myException) {
+            return myDecimal;
+        } catch (final NumberFormatException myException) {
             return myDecimal;
         }
     }
@@ -226,7 +232,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
             myData.index++;
         }
 
-        return new AbstractMap.SimpleImmutableEntry<>(
+        return new AbstractMap.SimpleImmutableEntry<BigDecimal, Boolean>(
             new BigDecimal(parBuffer, 0, myLength + myData.lengthOffset, mathContext), myData.forceDouble);
     }
 

@@ -19,11 +19,10 @@ package com.chelseaurquhart.securejson;
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 /**
  * SecureJSON is a JSON serializer and deserializer with strict security in mind. It does not create strings due to
@@ -83,11 +82,12 @@ public final class SecureJSON {
             throws JSONEncodeException {
         Objects.requireNonNull(parConsumer);
 
-        try (JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
-            parConsumer.accept(myJsonWriter.write(parInput));
-        } catch (final JSONRuntimeException | IOException myException) {
-            throw JSONEncodeException.fromException(myException);
-        }
+        writeJSON(new IThrowableConsumer<JSONWriter>() {
+            @Override
+            public void accept(final JSONWriter parWriter) throws IOException, JSONException {
+                parConsumer.accept(parWriter.write(parInput));
+            }
+        });
     }
 
     /**
@@ -120,11 +120,12 @@ public final class SecureJSON {
             throws JSONEncodeException {
         Objects.requireNonNull(parConsumer);
 
-        try (JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
-            parConsumer.accept(myJsonWriter.write(parInput).getBytes());
-        } catch (final JSONRuntimeException | IOException myException) {
-            throw JSONEncodeException.fromException(myException);
-        }
+        writeJSON(new IThrowableConsumer<JSONWriter>() {
+            @Override
+            public void accept(final JSONWriter parWriter) throws IOException, JSONException {
+                parConsumer.accept(parWriter.write(parInput).getBytes());
+            }
+        });
     }
 
     /**
@@ -148,11 +149,12 @@ public final class SecureJSON {
     public void toJSON(final Object parInput, final OutputStream parOutputStream) throws JSONEncodeException {
         Objects.requireNonNull(parOutputStream);
 
-        try (JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings)) {
-            myJsonWriter.write(parInput, new OutputStreamWriter(parOutputStream, StandardCharsets.UTF_8));
-        } catch (final JSONRuntimeException | IOException myException) {
-            throw JSONEncodeException.fromException(myException);
-        }
+        writeJSON(new IThrowableConsumer<JSONWriter>() {
+            @Override
+            public void accept(final JSONWriter parWriter) throws IOException, JSONException {
+                parWriter.write(parInput, new OutputStreamWriter(parOutputStream, StandardCharsets.UTF_8));
+            }
+        });
     }
 
     /**
@@ -184,16 +186,17 @@ public final class SecureJSON {
      *           (which will accept anything) is acceptable.
      * @throws JSONDecodeException On decode failure.
      */
-    @SuppressWarnings("unchecked")
     public <T> void fromJSON(final CharSequence parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
 
-        try (JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
-            parConsumer.accept((T) myJsonReader.read(parInput));
-        } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
-            throw JSONDecodeException.fromException(myException);
-        }
+        readJSON(new IThrowableFunction<JSONReader, T>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public T accept(final JSONReader parReader) throws IOException, JSONException {
+                return (T) parReader.read(parInput);
+            }
+        }, parConsumer);
     }
 
     /**
@@ -268,16 +271,17 @@ public final class SecureJSON {
      *           (which will accept anything) is acceptable.
      * @throws JSONDecodeException On decode failure.
      */
-    @SuppressWarnings("unchecked")
     public <T> void fromJSON(final byte[] parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
 
-        try (JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
-            parConsumer.accept((T) myJsonReader.read(new ByteArrayInputStream(parInput)));
-        } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
-            throw JSONDecodeException.fromException(myException);
-        }
+        readJSON(new IThrowableFunction<JSONReader, T>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public T accept(final JSONReader parReader) throws IOException, JSONException {
+                return (T) parReader.read(new ByteArrayInputStream(parInput));
+            }
+        }, parConsumer);
     }
 
     /**
@@ -356,16 +360,17 @@ public final class SecureJSON {
      *           (which will accept anything) is acceptable.
      * @throws JSONDecodeException On decode failure.
      */
-    @SuppressWarnings("unchecked")
     public <T> void fromJSON(final InputStream parInput, final IConsumer<T> parConsumer) throws JSONDecodeException {
         Objects.requireNonNull(parInput);
         Objects.requireNonNull(parConsumer);
 
-        try (JSONReader myJsonReader = new JSONReader.Builder(settings).build()) {
-            parConsumer.accept((T) myJsonReader.read(parInput));
-        } catch (final JSONException | JSONRuntimeException | IOException | ClassCastException myException) {
-            throw JSONDecodeException.fromException(myException);
-        }
+        readJSON(new IThrowableFunction<JSONReader, T>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public T accept(final JSONReader parReader) throws IOException, JSONException {
+                return (T) parReader.read(parInput);
+            }
+        }, parConsumer);
     }
 
     /**
@@ -414,6 +419,59 @@ public final class SecureJSON {
         fromJSON(parInput, getConsumer(parConsumer, parClass));
     }
 
+    private <T> void readJSON(final IThrowableFunction<JSONReader, T> parReadFunc, final IConsumer<T> parConsumer)
+            throws JSONDecodeException {
+        final JSONReader myJsonReader = new JSONReader.Builder(settings).build();
+        try {
+            parConsumer.accept(parReadFunc.accept(myJsonReader));
+        } catch (final JSONException myException) {
+            throw JSONDecodeException.fromException(myException);
+        } catch (final JSONRuntimeException myException) {
+            throw JSONDecodeException.fromException(myException);
+        } catch (final IOException myException) {
+            throw JSONDecodeException.fromException(myException);
+        } catch (final ClassCastException myException) {
+            throw JSONDecodeException.fromException(myException);
+        } finally {
+            closeDecodeResource(myJsonReader);
+        }
+    }
+
+    private void writeJSON(final IThrowableConsumer<JSONWriter> parWriteFunc) throws JSONEncodeException {
+        final JSONWriter myJsonWriter = new JSONWriter(new ObjectWriter(), settings);
+        try {
+            parWriteFunc.accept(myJsonWriter);
+        } catch (final JSONRuntimeException myException) {
+            throw JSONEncodeException.fromException(myException);
+        } catch (final IOException myException) {
+            throw JSONEncodeException.fromException(myException);
+        } catch (final JSONException myException) {
+            throw JSONEncodeException.fromException(myException);
+        } finally {
+            closeEncodeResource(myJsonWriter);
+        }
+    }
+
+    private void closeEncodeResource(final Closeable parResource) throws JSONEncodeException {
+        if (parResource != null) {
+            try {
+                parResource.close();
+            } catch (final IOException myException) {
+                throw JSONEncodeException.fromException(myException);
+            }
+        }
+    }
+
+    private void closeDecodeResource(final Closeable parResource) throws JSONDecodeException {
+        if (parResource != null) {
+            try {
+                parResource.close();
+            } catch (final IOException myException) {
+                throw JSONDecodeException.fromException(myException);
+            }
+        }
+    }
+
     private <T> IConsumer<?> getConsumer(final IConsumer<T> parConsumer, final Class<T> parClass) {
         Objects.requireNonNull(parConsumer);
 
@@ -425,9 +483,11 @@ public final class SecureJSON {
             @Override
             public void accept(final Object parOutput) {
                 try {
-                    parConsumer.accept(new ObjectReader<>(parClass, settings)
+                    parConsumer.accept(new ObjectReader<T>(parClass, settings)
                         .accept(parOutput));
-                } catch (final IOException | JSONException myException) {
+                } catch (final IOException myException) {
+                    throw new JSONRuntimeException(myException);
+                } catch (final JSONException myException) {
                     throw new JSONRuntimeException(myException);
                 }
             }

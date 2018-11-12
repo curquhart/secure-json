@@ -183,7 +183,15 @@ public final class EncodingAwareCharacterIteratorTest {
                 Assert.assertFalse(parParameters.input.hasNext());
             }
             Assert.assertNull(parParameters.expectedException);
-        } catch (final JSONException | JSONRuntimeException | IOException myException) {
+        } catch (final JSONException myException) {
+            Assert.assertNotNull(parParameters.expectedException, "exception \"" + myException.getMessage() + "\"");
+            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+                parParameters.expectedException.getMessage());
+        } catch (final JSONRuntimeException myException) {
+            Assert.assertNotNull(parParameters.expectedException, "exception \"" + myException.getMessage() + "\"");
+            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+                parParameters.expectedException.getMessage());
+        } catch (final IOException myException) {
             Assert.assertNotNull(parParameters.expectedException, "exception \"" + myException.getMessage() + "\"");
             Assert.assertEquals(Util.unwrapException(myException).getMessage(),
                 parParameters.expectedException.getMessage());

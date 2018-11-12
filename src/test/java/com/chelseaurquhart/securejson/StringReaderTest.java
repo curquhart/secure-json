@@ -23,6 +23,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.nio.CharBuffer;
+import java.util.Calendar;
 
 @SuppressWarnings("PMD.CommentRequired")
 public final class StringReaderTest {
@@ -41,16 +42,38 @@ public final class StringReaderTest {
             CharBuffer.wrap(myResult).get(myActualChars);
             CharBuffer.wrap(parParameters.expected).get(myExpectedChars);
             Assert.assertEquals(new String(myActualChars), new String(myExpectedChars));
-        } catch (final IOException | JSONException | JSONRuntimeException myException) {
+        } catch (final IOException myException) {
+            Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
+            Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
+            Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
+        } catch (final JSONException myException) {
+            Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
+            Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
+            Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
+        } catch (final JSONRuntimeException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
         }
     }
 
+    @Test
+    public void testGetSymbolType() {
+        Assert.assertEquals(IReader.SymbolType.UNKNOWN, new StringReader(Settings.DEFAULTS).getSymbolType(null));
+    }
+
+    @Test
+    public void testNormalizeCollectionAlwaysReturnsInput() {
+        final StringReader myReader = new StringReader(Settings.DEFAULTS);
+        Assert.assertNull(myReader.normalizeCollection(null));
+        Assert.assertEquals(123, myReader.normalizeCollection(123));
+        final Calendar myCalendar = Calendar.getInstance();
+        Assert.assertSame(myCalendar, myReader.normalizeCollection(myCalendar));
+    }
+
     @Test(expectedExceptions = NotImplementedException.class)
     public void testAddValue() throws IOException, JSONException {
-        final IReader myStringReader = new StringReader(Settings.DEFAULTS);
+        final IReader<?> myStringReader = new StringReader(Settings.DEFAULTS);
         myStringReader.addValue(null, null, null);
     }
 }

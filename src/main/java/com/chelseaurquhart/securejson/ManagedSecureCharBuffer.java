@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +29,7 @@ import java.util.List;
 /**
  * @exclude
  */
-final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSequence, ICharacterWriter {
+final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSequence, ICharacterWriter {
     private static final int INITIAL_CAPACITY = 32;
 
     private final transient int initialCapacity;
@@ -51,8 +50,8 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         } else {
             initialCapacity = INITIAL_CAPACITY;
         }
-        buffers = new LinkedList<>();
-        writeBuffers = new LinkedList<>();
+        buffers = new LinkedList<CharSequence>();
+        writeBuffers = new LinkedList<IWritableCharSequence>();
         settings = parSettings;
         capacityRestriction = Capacity.UNKNOWN;
     }
@@ -178,7 +177,7 @@ final class ManagedSecureCharBuffer implements Closeable, AutoCloseable, CharSeq
         int myStart = parStart;
         int myOffset = 0;
         int myRemainingLength = Math.max(0, parEnd - parStart);
-        final LinkedList<CharSequence> myBuffers = new LinkedList<>();
+        final LinkedList<CharSequence> myBuffers = new LinkedList<CharSequence>();
         for (final CharSequence myBuffer : buffers) {
             final int myLength = myBuffer.length();
             if (myLength < 0) {

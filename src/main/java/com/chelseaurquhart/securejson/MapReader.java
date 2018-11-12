@@ -151,7 +151,7 @@ class MapReader implements IReader<MapReader.Container> {
 
         private Map<CharSequence, Object> getMap() {
             if (map == null) {
-                map = new LinkedHashMap<>();
+                map = new LinkedHashMap<CharSequence, Object>();
             }
 
             return map;

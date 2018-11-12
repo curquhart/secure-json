@@ -36,9 +36,13 @@ public final class ObjectWriterTest {
         Assert.assertEquals(myObjectWriter.accept(new Object() {
             private CharSequence a = "b";
             private transient CharSequence b = "c";
-        }), new HashMap<CharSequence, Object>() {{
+        }), new HashMap<CharSequence, Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 put("a", "b");
-            }});
+            }
+        });
     }
 
     @Test
@@ -58,14 +62,22 @@ public final class ObjectWriterTest {
         Assert.assertEquals(myObjectWriter.accept(new IJSONSerializeAware() {
             @Override
             public Object toJSONable() {
-                return new LinkedList<Object>() {{
+                return new LinkedList<Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         add("a");
                         add("b");
-                    }};
+                    }
+                };
             }
-        }), new LinkedList<Object>() {{
+        }), new LinkedList<Object>() {
+            private static final long serialVersionUID = 1L;
+
+            {
                 add("a");
                 add("b");
-            }});
+            }
+        });
     }
 }
