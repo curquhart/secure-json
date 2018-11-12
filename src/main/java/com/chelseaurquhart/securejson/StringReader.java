@@ -56,6 +56,11 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
         addSecureBuffer(mySecureBuffer);
 
+        return readString(parIterator, mySecureBuffer);
+    }
+
+    private CharSequence readString(final ICharacterIterator parIterator, final ManagedSecureCharBuffer parSecureBuffer)
+            throws IOException, JSONException {
         final boolean myCanReadRange = parIterator.canReadRange();
         int myRangeStart = parIterator.getOffset();
         while (parIterator.hasNext()) {
@@ -63,7 +68,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
             final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(myChar,
                 JSONSymbolCollection.Token.UNKNOWN);
             if (myChar == '\\') {
-                readEscape(parIterator, myRangeStart, myCanReadRange, mySecureBuffer);
+                readEscape(parIterator, myRangeStart, myCanReadRange, parSecureBuffer);
                 myRangeStart = parIterator.getOffset();
             } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
                 throw new MalformedStringException(parIterator);
@@ -71,12 +76,12 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
                 parIterator.next();
                 if (myToken == JSONSymbolCollection.Token.QUOTE) {
                     if (myCanReadRange) {
-                        mySecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset() - 1));
+                        parSecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset() - 1));
                     }
-                    return mySecureBuffer;
+                    return parSecureBuffer;
                 }
                 if (!myCanReadRange) {
-                    mySecureBuffer.append(myChar);
+                    parSecureBuffer.append(myChar);
                 }
             }
         }
