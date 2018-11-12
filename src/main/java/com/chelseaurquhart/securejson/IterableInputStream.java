@@ -51,4 +51,14 @@ class IterableInputStream extends EncodingAwareCharacterIterator implements ICha
         }
         return (char) (UNSIGNED_CONVERT_DIGIT & myChar);
     }
+
+    @Override
+    public boolean canReadRange() {
+        return false;
+    }
+
+    @Override
+    public CharSequence range(final int parStart, final int parEnd) {
+        throw new UnsupportedOperationException();
+    }
 }

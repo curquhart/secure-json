@@ -49,4 +49,9 @@ public final class IterableInputStreamTest {
             }
         }
     }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void testRange() {
+        new IterableInputStream(new ByteArrayInputStream(new byte[1])).range(0, 1);
+    }
 }

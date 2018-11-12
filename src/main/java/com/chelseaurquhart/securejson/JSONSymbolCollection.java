@@ -40,7 +40,8 @@ final class JSONSymbolCollection {
         Token.R_BRACE,
         Token.R_CURLY,
         Token.QUOTE,
-        Token.COMMA
+        Token.COMMA,
+        Token.COLON
     );
 
     static final Map<Character, Token> WORD_TOKENS = listToMap(
@@ -193,6 +194,11 @@ final class JSONSymbolCollection {
             } else {
                 this.shortSymbol = '\u0000';
             }
+        }
+
+        static boolean isValid(final Character parChar) {
+            return JSONSymbolCollection.TOKENS.containsKey(parChar)
+                || JSONSymbolCollection.NUMBERS.containsKey(parChar);
         }
 
         Object getValue() {

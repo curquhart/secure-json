@@ -23,7 +23,6 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.nio.CharBuffer;
-import java.util.Calendar;
 
 @SuppressWarnings("PMD.CommentRequired")
 public final class StringReaderTest {
@@ -34,7 +33,7 @@ public final class StringReaderTest {
     public void testConvert(final StringProvider.Parameters parParameters) {
         try {
             final CharSequence myResult = new StringReader(Settings.DEFAULTS)
-                .read(new IterableCharSequence(parParameters.inputString));
+                .read(new IterableCharSequence(parParameters.inputString), null);
             Assert.assertNull(parParameters.expectedException);
             // need to convert in sort of a roundabout way (or loop) as SecureCharBuffer cannot be string-converted.
             final char[] myActualChars = new char[myResult.length()];
@@ -60,15 +59,6 @@ public final class StringReaderTest {
     @Test
     public void testGetSymbolType() {
         Assert.assertEquals(IReader.SymbolType.UNKNOWN, new StringReader(Settings.DEFAULTS).getSymbolType(null));
-    }
-
-    @Test
-    public void testNormalizeCollectionAlwaysReturnsInput() {
-        final StringReader myReader = new StringReader(Settings.DEFAULTS);
-        Assert.assertNull(myReader.normalizeCollection(null));
-        Assert.assertEquals(123, myReader.normalizeCollection(123));
-        final Calendar myCalendar = Calendar.getInstance();
-        Assert.assertSame(myCalendar, myReader.normalizeCollection(myCalendar));
     }
 
     @Test(expectedExceptions = NotImplementedException.class)

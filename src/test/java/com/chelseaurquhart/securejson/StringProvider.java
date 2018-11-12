@@ -89,6 +89,12 @@ public final class StringProvider {
             )
                 .exception(new MalformedStringException(new PresetIterableCharSequence(6))),
             buildParameters(
+                "string ending with escape, end of stream",
+                "\"abc\\",
+                null
+            )
+                .exception(new MalformedStringException(new PresetIterableCharSequence(5))),
+            buildParameters(
                 "string missing end quote",
                 "\"abc",
                 null

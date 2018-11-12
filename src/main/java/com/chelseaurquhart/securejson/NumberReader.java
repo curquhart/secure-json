@@ -61,11 +61,14 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     }
 
     @Override
-    public Number read(final ICharacterIterator parIterator) throws IOException, JSONException {
+    public Number read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
+            throws IOException, JSONException {
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
         addSecureBuffer(mySecureBuffer);
 
         final int myOffset = parIterator.getOffset();
+        final boolean myCanReadRange = parIterator.canReadRange();
+        final int myRangeStart = parIterator.getOffset();
         while (parIterator.hasNext()) {
             final char myNextChar = parIterator.peek();
 
@@ -73,11 +76,18 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                     || JSONSymbolCollection.END_TOKENS.containsKey(myNextChar)) {
                 break;
             } else {
-                mySecureBuffer.append(parIterator.next());
+                if (myCanReadRange) {
+                    parIterator.next();
+                } else {
+                    mySecureBuffer.append(parIterator.next());
+                }
             }
         }
 
         try {
+            if (myCanReadRange) {
+                mySecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset()));
+            }
             return charSequenceToNumber(mySecureBuffer, myOffset);
         } catch (final ArithmeticException myException) {
             throw new MalformedNumberException(parIterator);
@@ -85,7 +95,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection,
+                         final Object parItem) {
         // only for collections
         throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addValue");
     }
@@ -135,16 +146,6 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         } catch (final NumberFormatException myException) {
             return myDecimal;
         }
-    }
-
-    @Override
-    public Object normalizeCollection(final Object parValue) {
-        return parValue;
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return false;
     }
 
     Map.Entry<BigDecimal, Boolean> charSequenceToBigDecimal(final CharSequence parSource, final int parOffset)

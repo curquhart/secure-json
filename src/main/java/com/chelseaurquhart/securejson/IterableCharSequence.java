@@ -45,4 +45,14 @@ class IterableCharSequence extends EncodingAwareCharacterIterator implements ICh
 
         return null;
     }
+
+    @Override
+    public boolean canReadRange() {
+        return true;
+    }
+
+    @Override
+    public CharSequence range(final int parStart, final int parEnd) {
+        return chars.subSequence(parStart, parEnd);
+    }
 }

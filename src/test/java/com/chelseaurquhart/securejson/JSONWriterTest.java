@@ -17,7 +17,6 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.util.StringUtil;
-import com.chelseaurquhart.securejson.JSONEncodeException.InvalidTypeException;
 
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -152,12 +151,16 @@ public final class JSONWriterTest {
                 "null"
             ),
             new Parameters(
-                "Invalid type",
-                new Object(),
-                "null",
-                "{}"
+                "Throws exception",
+                new IJSONSerializeAware() {
+                    @Override
+                    public Object toJSONable() {
+                        throw new UnsupportedOperationException();
+                    }
+                },
+                null
             )
-                .exception(new InvalidTypeException())
+                .exception(new JSONEncodeException(new UnsupportedOperationException()))
         };
     }
 
@@ -173,6 +176,10 @@ public final class JSONWriterTest {
             Assert.assertNotNull(parParameters.expectedException);
             Assert.assertEquals(Util.unwrapException(myException).getMessage(),
                     parParameters.expectedException.getMessage());
+        } catch (final UnsupportedOperationException myException) {
+            Assert.assertNotNull(parParameters.expectedException);
+            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+                    parParameters.expectedException.getMessage());
         } finally {
             if (myWriter != null) {
                 myWriter.close();
@@ -180,35 +187,31 @@ public final class JSONWriterTest {
         }
     }
 
+    @Test
+    public void testWriteInvalidType() throws IOException {
+        final Parameters myParameters = new Parameters(
+            "Invalid type",
+            new Object(),
+            null
+        ).exception(new JSONEncodeException.InvalidTypeException());
+
+        testWrite(myParameters);
+    }
+
     static class Parameters {
         private String testName;
         private CharSequence expected;
-        private CharSequence expectedSecureJSON;
         private Object inputObject;
         private Exception expectedException;
 
         Parameters(final String parTestName, final Object parObject, final CharSequence parExpected) {
-            this(parTestName, parObject, parExpected, null);
-        }
-
-        Parameters(final String parTestName, final Object parObject, final CharSequence parExpected,
-                   final CharSequence parExpectedSecureJSON) {
             testName = parTestName;
             inputObject = parObject;
             expected = parExpected;
-            if (parExpectedSecureJSON == null) {
-                expectedSecureJSON = parExpected;
-            } else {
-                expectedSecureJSON = parExpectedSecureJSON;
-            }
         }
 
         CharSequence getExpected() {
             return expected;
-        }
-
-        CharSequence getSecureJSONExpected() {
-            return expectedSecureJSON;
         }
 
         Object getInputObject() {
@@ -219,6 +222,10 @@ public final class JSONWriterTest {
             expectedException = parException;
 
             return this;
+        }
+
+        Exception getExpectedException() {
+            return expectedException;
         }
 
         @Override

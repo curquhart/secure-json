@@ -45,47 +45,68 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     @Override
-    public CharSequence read(final ICharacterIterator parInput) throws IOException, JSONException {
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parInput.peek(), null) != JSONSymbolCollection.Token.QUOTE) {
-            throw new MalformedStringException(parInput);
+    public CharSequence read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
+            throws IOException, JSONException {
+        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+                != JSONSymbolCollection.Token.QUOTE) {
+            throw new MalformedStringException(parIterator);
         }
-        parInput.next();
+        parIterator.next();
 
         final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
         addSecureBuffer(mySecureBuffer);
 
-        while (parInput.hasNext()) {
-            final char myChar = parInput.peek();
+        return readString(parIterator, mySecureBuffer);
+    }
+
+    private CharSequence readString(final ICharacterIterator parIterator, final ManagedSecureCharBuffer parSecureBuffer)
+            throws IOException, JSONException {
+        final boolean myCanReadRange = parIterator.canReadRange();
+        int myRangeStart = parIterator.getOffset();
+        while (parIterator.hasNext()) {
+            final char myChar = parIterator.peek();
             final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(myChar,
                 JSONSymbolCollection.Token.UNKNOWN);
             if (myChar == '\\') {
-                parInput.next();
-                readEscape(parInput, mySecureBuffer);
+                readEscape(parIterator, myRangeStart, myCanReadRange, parSecureBuffer);
+                myRangeStart = parIterator.getOffset();
             } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
-                throw new MalformedStringException(parInput);
+                throw new MalformedStringException(parIterator);
             } else {
-                parInput.next();
+                parIterator.next();
                 if (myToken == JSONSymbolCollection.Token.QUOTE) {
-                    return mySecureBuffer;
+                    if (myCanReadRange) {
+                        parSecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset() - 1));
+                    }
+                    return parSecureBuffer;
                 }
-                mySecureBuffer.append(myChar);
+                if (!myCanReadRange) {
+                    parSecureBuffer.append(myChar);
+                }
             }
         }
 
         // did not find trailing quote
-        throw new MalformedStringException(parInput);
+        throw new MalformedStringException(parIterator);
     }
 
-    private void readEscape(final ICharacterIterator parInput, final ManagedSecureCharBuffer parSecureBuffer)
+    private void readEscape(final ICharacterIterator parIterator, final int parRangeStart,
+                            final boolean parCanReadRange, final ManagedSecureCharBuffer parSecureBuffer)
             throws IOException, JSONException {
-        if (!parInput.hasNext()) {
-            throw new MalformedStringException(parInput);
+        final int myOffset = parIterator.getOffset();
+        if (parCanReadRange && myOffset != parRangeStart) {
+            parSecureBuffer.append(parIterator.range(parRangeStart, myOffset));
         }
-        char myChar = parInput.peek();
+        parIterator.next();
+
+        if (!parIterator.hasNext()) {
+            throw new MalformedStringException(parIterator);
+        }
+        char myChar = parIterator.peek();
 
         if (myChar == 'u') {
-            parInput.next();
-            parSecureBuffer.append(readUnicode(parInput));
+            parIterator.next();
+            parSecureBuffer.append(readUnicode(parIterator));
         } else {
             if (myChar == 't') {
                 myChar = '\t';
@@ -98,27 +119,18 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
             } else if (myChar == 'f') {
                 myChar = '\f';
             } else if (myChar != '\\' && myChar != '"' && myChar != '/') {
-                throw new MalformedStringException(parInput);
+                throw new MalformedStringException(parIterator);
             }
-            parInput.next();
+            parIterator.next();
             parSecureBuffer.append(myChar);
         }
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection,
+                         final Object parItem) {
         // only for collections
         throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addValue");
-    }
-
-    @Override
-    public Object normalizeCollection(final Object parValue) {
-        return parValue;
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return false;
     }
 
     private char readUnicode(final ICharacterIterator parInput) throws IOException, JSONException {

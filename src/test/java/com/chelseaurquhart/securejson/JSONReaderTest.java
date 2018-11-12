@@ -363,6 +363,38 @@ public final class JSONReaderTest {
                 new MalformedStringException(new PresetIterableCharSequence(1))
             ),
             new Parameters<Object>(
+                "map with list key",
+                "{[\"x\"]:123}",
+                null,
+                new MalformedStringException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters<Object>(
+                "map with map key",
+                "{[\"x\":1]:123}",
+                null,
+                new MalformedListException(new PresetIterableCharSequence(5))
+            ),
+            new Parameters<Object>(
+                "map with list keys with immediate map separator in list",
+                "{[: \"x\"]:123}",
+                null,
+                // NOTE: technically, we could detect the deformity at character 1 but because of the way we parse,
+                // we will not see it until character 2.
+                new MalformedJSONException(new PresetIterableCharSequence(2))
+            ),
+            new Parameters<Object>(
+                "list with map separator",
+                "[: \"x\"]",
+                null,
+                new MalformedJSONException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters<Object>(
+                "list with single map separator",
+                "[:]",
+                null,
+                new MalformedJSONException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters<Object>(
                 "map with string:string",
                 "{\"1\":\"test\"}",
                 new HashMap<CharSequence, Object>() {
@@ -627,6 +659,53 @@ public final class JSONReaderTest {
         @Override
         public Object toJSONable() {
             return input;
+        }
+    }
+
+    public static class ContainerStackTest {
+        @Test
+        public void testPopEmpty() {
+            new JSONReader.ContainerStack().pop();
+        }
+
+        @Test
+        public void testPushPopElements() {
+            final JSONReader.ContainerStack myStack = new JSONReader.ContainerStack();
+            final Container myContainerFirst = new Container("first");
+            final Container myContainerSecond = new Container("second");
+            myStack.push(myContainerFirst);
+            myStack.push(myContainerSecond);
+            Assert.assertSame(myStack.peek(), myContainerSecond);
+            Assert.assertSame(myStack.peek(), myContainerSecond);
+            myStack.pop();
+            Assert.assertSame(myStack.peek(), myContainerFirst);
+            myStack.pop();
+            Assert.assertSame(myStack.peek(), null);
+            myStack.pop();
+            Assert.assertSame(myStack.peek(), null);
+        }
+
+        private static class Container implements JSONReader.IContainer<Object, IReader<?>> {
+            private final String name;
+
+            Container(final String parName) {
+                name = parName;
+            }
+
+            @Override
+            public Object resolve() {
+                return null;
+            }
+
+            @Override
+            public IReader<?> getReader() {
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
         }
     }
 }

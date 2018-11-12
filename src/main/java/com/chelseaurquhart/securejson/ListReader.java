@@ -26,12 +26,6 @@ import java.util.List;
  * @exclude
  */
 class ListReader implements IReader<ListReader.Container> {
-    private final transient JSONReader jsonReader;
-
-    ListReader(final JSONReader parJsonReader) {
-        jsonReader = parJsonReader;
-    }
-
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
@@ -54,9 +48,10 @@ class ListReader implements IReader<ListReader.Container> {
     }
 
     @Override
-    public Container read(final ICharacterIterator parIterator) throws IOException, JSONException {
+    public Container read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer)
+            throws IOException, JSONException {
         parIterator.next();
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
 
         if (!parIterator.hasNext()) {
             throw new MalformedListException(parIterator);
@@ -67,33 +62,26 @@ class ListReader implements IReader<ListReader.Container> {
             throw new MalformedListException(parIterator);
         }
 
-        return new Container();
+        final Container myContainer;
+        if (parContainer == null) {
+            myContainer = new Container(this);
+        } else {
+            myContainer = (Container) parContainer;
+        }
+
+        return myContainer;
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
-            throws IOException, JSONException {
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection,
+                         final Object parValue) throws IOException, JSONException {
         final Container myContainer = objectToContainer(parCollection);
         myContainer.add(parValue);
 
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
         if (getSymbolType(parIterator) == SymbolType.UNKNOWN) {
             throw new MalformedListException(parIterator);
         }
-    }
-
-    @Override
-    public Object normalizeCollection(final Object parValue) {
-        if (parValue instanceof Container) {
-            return ((Container) parValue).getList();
-        }
-
-        return parValue;
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return true;
     }
 
     @Override
@@ -108,22 +96,30 @@ class ListReader implements IReader<ListReader.Container> {
     /**
      * A container for our List.
      */
-    static final class Container {
+    static final class Container implements JSONReader.IContainer<List<Object>, ListReader> {
         private transient List<Object> list;
+        private transient ListReader reader;
 
-        private Container() {
+        private Container(final ListReader parReader) {
+            reader = parReader;
         }
 
         private void add(final Object parValue) {
-            getList().add(parValue);
+            resolve().add(parValue);
         }
 
-        private List<Object> getList() {
+        @Override
+        public List<Object> resolve() {
             if (list == null) {
                 list = new LinkedList<Object>();
             }
 
             return list;
+        }
+
+        @Override
+        public ListReader getReader() {
+            return reader;
         }
     }
 }

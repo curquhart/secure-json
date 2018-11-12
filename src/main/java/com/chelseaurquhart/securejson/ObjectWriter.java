@@ -81,14 +81,6 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
         }
     }
 
-    private Object resolve(final Object parInput) {
-        if (parInput instanceof IJSONSerializeAware) {
-            return resolve(((IJSONSerializeAware) parInput).toJSONable());
-        }
-
-        return parInput;
-    }
-
     private Map<CharSequence, Object> addObjectToMap(final Object parInput, final Map<CharSequence, Object> parRelMap,
                                                      final Map<CharSequence, Object> parAbsMap) throws IOException,
             JSONException {

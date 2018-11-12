@@ -17,6 +17,7 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedMapException;
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -26,14 +27,6 @@ import java.util.Map;
  * @exclude
  */
 class MapReader implements IReader<MapReader.Container> {
-    private final transient JSONReader jsonReader;
-    private final transient IReader<CharSequence> stringReader;
-
-    MapReader(final JSONReader parJsonReader, final IReader<CharSequence> parStringReader) {
-        jsonReader = parJsonReader;
-        stringReader = parStringReader;
-    }
-
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
@@ -53,108 +46,95 @@ class MapReader implements IReader<MapReader.Container> {
             case R_CURLY:
                 return SymbolType.END;
             case COLON:
-                return SymbolType.SEPARATOR;
             case COMMA:
-                return SymbolType.RESERVED;
+                return SymbolType.SEPARATOR;
             default:
                 return SymbolType.UNKNOWN;
         }
     }
 
     @Override
-    public Container read(final ICharacterIterator parIterator) throws IOException, JSONException {
+    public Container read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer)
+            throws IOException, JSONException {
         parIterator.next();
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
 
         if (!parIterator.hasNext()) {
             throw new MalformedMapException(parIterator);
         }
 
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
-                == JSONSymbolCollection.Token.R_CURLY) {
-            return new Container(null);
+        final Container myContainer;
+        if (parContainer == null) {
+            myContainer = new Container(this, parIterator.getOffset());
         } else {
-            return new Container(readKey(parIterator));
+            myContainer = (Container) parContainer;
+        }
+
+        return myContainer;
+    }
+
+    @Override
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer,
+                         final Object parValue) throws IOException, JSONException {
+        final Container myContainer = (Container) parContainer;
+        parIterator.skipWhitespace();
+        final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(),
+            null);
+        if (myContainer.key == null) {
+            if (myToken != JSONSymbolCollection.Token.COLON) {
+                throw new MalformedMapException(parIterator);
+            }
+            if (!(parValue instanceof CharSequence)) {
+                throw new MalformedStringException(myContainer.keyStartIndex);
+            }
+
+            myContainer.key = (CharSequence) parValue;
+        } else {
+            if (myToken != JSONSymbolCollection.Token.R_CURLY && myToken != JSONSymbolCollection.Token.COMMA) {
+                throw new MalformedMapException(parIterator);
+            }
+
+            myContainer.put(myContainer.key, parValue);
+            myContainer.key = null;
+            myContainer.keyStartIndex = parIterator.getOffset();
         }
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
-            throws IOException, JSONException {
-        final Container myContainer = objectToContainer(parCollection);
-        myContainer.put(myContainer.key, parValue);
-        jsonReader.moveToNextToken(parIterator);
-        final SymbolType mySymbolType = getSymbolType(parIterator);
-        if (mySymbolType == SymbolType.RESERVED) {
-            parIterator.next();
-            jsonReader.moveToNextToken(parIterator);
-            myContainer.key = readKey(parIterator);
-        } else if (mySymbolType == SymbolType.UNKNOWN) {
-            throw new MalformedMapException(parIterator);
-        }
-    }
-
-    @Override
-    public Object normalizeCollection(final Object parValue) {
-        if (parValue instanceof Container) {
-            return ((Container) parValue).getMap();
-        }
-
-        return parValue;
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return true;
-    }
-
-    @Override
-    public void close() throws IOException {
-        stringReader.close();
-    }
-
-    private CharSequence readKey(final ICharacterIterator parIterator) throws IOException, JSONException {
-        final CharSequence myKey = stringReader.read(parIterator);
-        jsonReader.moveToNextToken(parIterator);
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
-                != JSONSymbolCollection.Token.COLON) {
-            throw new MalformedMapException(parIterator);
-        }
-        parIterator.next();
-        jsonReader.moveToNextToken(parIterator);
-        final SymbolType mySymbolType = getSymbolType(parIterator);
-        if (mySymbolType != SymbolType.UNKNOWN && mySymbolType != SymbolType.END) {
-            throw new MalformedMapException(parIterator);
-        }
-
-        return myKey;
-    }
-
-    private Container objectToContainer(final Object parValue) {
-        return (Container) parValue;
+    public void close() {
+        // NOOP
     }
 
     /**
      * Container for Map data.
      */
-    static final class Container {
+    static final class Container implements JSONReader.IContainer<Map<CharSequence, Object>, MapReader> {
         private transient Map<CharSequence, Object> map;
         private transient CharSequence key;
+        private transient int keyStartIndex;
+        private transient MapReader reader;
 
-        private Container(final CharSequence parKey) {
-            key = parKey;
+        private Container(final MapReader parReader, final int parKeyStartIndex) {
+            reader = parReader;
+            keyStartIndex = parKeyStartIndex;
         }
 
         private void put(final CharSequence parKey, final Object parValue) {
-            getMap().put(parKey, parValue);
+            resolve().put(parKey, parValue);
         }
 
-        private Map<CharSequence, Object> getMap() {
+        @Override
+        public Map<CharSequence, Object> resolve() {
             if (map == null) {
                 map = new LinkedHashMap<CharSequence, Object>();
             }
 
             return map;
+        }
+
+        @Override
+        public MapReader getReader() {
+            return reader;
         }
     }
 }

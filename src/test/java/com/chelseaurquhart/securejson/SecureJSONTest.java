@@ -104,35 +104,81 @@ public final class SecureJSONTest {
     }
 
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
-    public void testWriteString(final JSONWriterTest.Parameters parParameters) throws JSONEncodeException {
-        new SecureJSON().toJSON(parParameters.getInputObject(), new IConsumer<CharSequence>() {
+    public void testWriteString(final JSONWriterTest.Parameters parParameters) throws Throwable {
+        final Assert.ThrowingRunnable myRunner = new Assert.ThrowingRunnable() {
             @Override
-            public void accept(final CharSequence parInput) {
-                Assert.assertEquals(StringUtil.charSequenceToString(parInput),
-                    StringUtil.charSequenceToString(parParameters.getSecureJSONExpected()));
+            public void run() throws JSONEncodeException {
+                new SecureJSON().toJSON(parParameters.getInputObject(), new IConsumer<CharSequence>() {
+                    @Override
+                    public void accept(final CharSequence parInput) {
+                        Assert.assertEquals(StringUtil.charSequenceToString(parInput),
+                            StringUtil.charSequenceToString(parParameters.getExpected()));
+                    }
+                });
             }
-        });
+        };
+
+        if (parParameters.getExpectedException() == null) {
+            myRunner.run();
+        } else {
+            Assert.expectThrows(parParameters.getExpectedException().getClass(), myRunner);
+        }
     }
 
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
     public void testWriteStream(final JSONWriterTest.Parameters parParameters)
-            throws JSONEncodeException, UnsupportedEncodingException {
-        final ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-        new SecureJSON().toJSON(parParameters.getInputObject(), myOutputStream);
-        Assert.assertEquals(StringUtil.charSequenceToString(myOutputStream.toString(StandardCharsets.UTF_8.name())),
-            StringUtil.charSequenceToString(parParameters.getSecureJSONExpected()));
+            throws Throwable {
+        final Assert.ThrowingRunnable myRunner = new Assert.ThrowingRunnable() {
+            @Override
+            public void run() throws JSONEncodeException {
+                new SecureJSON().toJSONBytes(parParameters.getInputObject(), new IConsumer<byte[]>() {
+                    @Override
+                    public void accept(final byte[] parInput) {
+                        final ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+                        try {
+                            new SecureJSON().toJSON(parParameters.getInputObject(), myOutputStream);
+                        } catch (final JSONEncodeException myException) {
+                            throw new JSONRuntimeException(myException);
+                        }
+                        try {
+                            Assert.assertEquals(StringUtil.charSequenceToString(
+                                myOutputStream.toString(StandardCharsets.UTF_8.name())),
+                                StringUtil.charSequenceToString(parParameters.getExpected()));
+                        } catch (final UnsupportedEncodingException myException) {
+                            throw new JSONRuntimeException(myException);
+                        }
+                    }
+                });
+            }
+        };
+
+        if (parParameters.getExpectedException() == null) {
+            myRunner.run();
+        } else {
+            Assert.expectThrows(parParameters.getExpectedException().getClass(), myRunner);
+        }
     }
 
     @Test(dataProviderClass = JSONWriterTest.class, dataProvider = JSONWriterTest.DATA_PROVIDER_NAME)
-    public void testWriteBytes(final JSONWriterTest.Parameters parParameters)
-            throws JSONEncodeException {
-        new SecureJSON().toJSONBytes(parParameters.getInputObject(), new IConsumer<byte[]>() {
+    public void testWriteBytes(final JSONWriterTest.Parameters parParameters) throws Throwable {
+        final Assert.ThrowingRunnable myRunner = new Assert.ThrowingRunnable() {
             @Override
-            public void accept(final byte[] parInput) {
-                Assert.assertEquals(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(parInput)).toString(),
-                    StringUtil.charSequenceToString(parParameters.getSecureJSONExpected()));
+            public void run() throws JSONEncodeException {
+                new SecureJSON().toJSONBytes(parParameters.getInputObject(), new IConsumer<byte[]>() {
+                    @Override
+                    public void accept(final byte[] parInput) {
+                        Assert.assertEquals(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(parInput)).toString(),
+                            StringUtil.charSequenceToString(parParameters.getExpected()));
+                    }
+                });
             }
-        });
+        };
+
+        if (parParameters.getExpectedException() == null) {
+            myRunner.run();
+        } else {
+            Assert.expectThrows(parParameters.getExpectedException().getClass(), myRunner);
+        }
     }
 
     @Test(expectedExceptions = JSONDecodeException.class)
