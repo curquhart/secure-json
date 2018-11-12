@@ -173,7 +173,12 @@ if (JavaVersion.current().java9Compatible) {
                 standardOutput = stdOut
             }
 
-            bootstrapPath = files("${stdOut.toString().trim()}/jre/lib/rt.jar")
+            def tryBootstrapPath = files("${stdOut.toString().trim()}/jre/lib/rt.jar")
+            if (tryBootstrapPath.first().exists()) {
+                bootstrapPath = tryBootstrapPath
+            } else {
+                println "Failed to locate rt.jar in Java ${OLD_JRE_VERSION} home. Bootstrap path will not be set"
+            }
         } catch (final Exception e) {
             println "Failed to get Java ${OLD_JRE_VERSION} home. Bootstrap path will not be set: ${e.getMessage()}"
         }
