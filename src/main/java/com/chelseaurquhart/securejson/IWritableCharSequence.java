@@ -33,6 +33,14 @@ public interface IWritableCharSequence extends CharSequence, Closeable, IAutoClo
     void append(char parChar) throws IOException;
 
     /**
+     * Append a character sequence to the sequence of characters.
+     *
+     * @param parCharSequence The character sequence to append.
+     * @throws IOException On write failure.
+     */
+    void append(CharSequence parCharSequence) throws IOException;
+
+    /**
      * Check if this buffer is restricted to the initial capacity. If it is, we will create more buffers before going
      * over the initial capacity. If it is not, we will expect it to handle resizing itself.
      *
