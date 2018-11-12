@@ -55,6 +55,9 @@ public final class Verify {
         for (final String myFilename : parArgs) {
             Status myStatus;
 
+            System.out.printf("%s: ", myFilename);
+            System.out.flush();
+
             InputStream myStream = null;
             try {
                 myStream = new FileInputStream(myFilename);
@@ -104,7 +107,6 @@ public final class Verify {
                         System.exit(-1);
                         break;
                 }
-                System.out.printf("%s: ", myFilename);
             }
 
             switch (myStatus) {
