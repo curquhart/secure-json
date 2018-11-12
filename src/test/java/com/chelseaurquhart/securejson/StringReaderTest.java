@@ -67,7 +67,8 @@ public final class StringReaderTest {
         final StringReader myReader = new StringReader(Settings.DEFAULTS);
         Assert.assertNull(myReader.normalizeCollection(null));
         Assert.assertEquals(123, myReader.normalizeCollection(123));
-        Assert.assertEquals(Calendar.getInstance(), myReader.normalizeCollection(Calendar.getInstance()));
+        final Calendar myCalendar = Calendar.getInstance();
+        Assert.assertSame(myCalendar, myReader.normalizeCollection(myCalendar));
     }
 
     @Test(expectedExceptions = NotImplementedException.class)
