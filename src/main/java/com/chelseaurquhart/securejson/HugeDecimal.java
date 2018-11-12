@@ -233,9 +233,9 @@ public final class HugeDecimal extends Number implements CharSequence {
         }
     }
 
-    private boolean compareByBigDecimal(final HugeDecimal parOther) {
+    boolean compareByBigDecimal(final HugeDecimal parOther) {
         try {
-            return bigDecimalValue().equals(parOther.bigDecimalValue());
+            return bigDecimalValue().compareTo(parOther.bigDecimalValue()) == 0;
         } catch (final IOException myException) {
             throw new JSONRuntimeException(myException);
         } catch (final JSONException myException) {

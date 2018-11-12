@@ -267,6 +267,15 @@ public final class HugeDecimalTest {
         Assert.assertEquals(mySequence.subSequence(0, 2), "12");
     }
 
+    @Test
+    public void testCompareByBigDecimal() {
+        final HugeDecimal myNumberLHS = new HugeDecimal("123.10e450", new NumberReader(Settings.DEFAULTS));
+        final HugeDecimal myNumberRHS = new HugeDecimal("123.1e450", new NumberReader(Settings.DEFAULTS));
+        final HugeDecimal myNumberRHSAlt = new HugeDecimal("123.11e450", new NumberReader(Settings.DEFAULTS));
+        Assert.assertTrue(myNumberLHS.compareByBigDecimal(myNumberRHS));
+        Assert.assertFalse(myNumberLHS.compareByBigDecimal(myNumberRHSAlt));
+    }
+
     private void testConvert(final Parameters parParameters, final IConsumer<HugeDecimal> parConsumer) {
         // test from number
         final HugeDecimal myHugeDecimal = new HugeDecimal(parParameters.input);
