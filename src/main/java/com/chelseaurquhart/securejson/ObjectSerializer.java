@@ -77,6 +77,18 @@ class ObjectSerializer extends ObjectReflector {
         return parInput.isArray();
     }
 
+    final Object resolve(final Object parInput) {
+        if (parInput instanceof IJSONSerializeAware) {
+            try {
+                return resolve(((IJSONSerializeAware) parInput).toJSONable());
+            } catch (final RuntimeException myException) {
+                throw new JSONRuntimeException(myException);
+            }
+        }
+
+        return parInput;
+    }
+
     final Collection<Field> getFields(final Class<?> parClass) {
         final List<Field> myCollection = new LinkedList<Field>();
         for (final Field myField : parClass.getDeclaredFields()) {
