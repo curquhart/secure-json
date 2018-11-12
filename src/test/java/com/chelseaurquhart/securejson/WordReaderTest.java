@@ -131,7 +131,7 @@ public final class WordReaderTest {
         Assert.assertNull(myReader.normalizeCollection(null));
         Assert.assertEquals(123, myReader.normalizeCollection(123));
         final Calendar myCalendar = Calendar.getInstance();
-        Assert.assertEquals(myCalendar, myReader.normalizeCollection(myCalendar));
+        Assert.assertSame(myCalendar, myReader.normalizeCollection(myCalendar));
     }
 
     private static final class Parameters {
