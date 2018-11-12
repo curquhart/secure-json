@@ -63,12 +63,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
             final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(myChar,
                 JSONSymbolCollection.Token.UNKNOWN);
             if (myChar == '\\') {
-                final int myOffset = parIterator.getOffset();
-                if (myCanReadRange && myOffset != myRangeStart) {
-                    mySecureBuffer.append(parIterator.range(myRangeStart, myOffset));
-                }
-                parIterator.next();
-                readEscape(parIterator, mySecureBuffer);
+                readEscape(parIterator, myRangeStart, myCanReadRange, mySecureBuffer);
                 myRangeStart = parIterator.getOffset();
             } else if (myChar < JSONSymbolCollection.MIN_ALLOWED_ASCII_CODE) {
                 throw new MalformedStringException(parIterator);
@@ -90,16 +85,23 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         throw new MalformedStringException(parIterator);
     }
 
-    private void readEscape(final ICharacterIterator parInput, final ManagedSecureCharBuffer parSecureBuffer)
+    private void readEscape(final ICharacterIterator parIterator, final int parRangeStart,
+                            final boolean parCanReadRange, final ManagedSecureCharBuffer parSecureBuffer)
             throws IOException, JSONException {
-        if (!parInput.hasNext()) {
-            throw new MalformedStringException(parInput);
+        final int myOffset = parIterator.getOffset();
+        if (parCanReadRange && myOffset != parRangeStart) {
+            parSecureBuffer.append(parIterator.range(parRangeStart, myOffset));
         }
-        char myChar = parInput.peek();
+        parIterator.next();
+
+        if (!parIterator.hasNext()) {
+            throw new MalformedStringException(parIterator);
+        }
+        char myChar = parIterator.peek();
 
         if (myChar == 'u') {
-            parInput.next();
-            parSecureBuffer.append(readUnicode(parInput));
+            parIterator.next();
+            parSecureBuffer.append(readUnicode(parIterator));
         } else {
             if (myChar == 't') {
                 myChar = '\t';
@@ -112,9 +114,9 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
             } else if (myChar == 'f') {
                 myChar = '\f';
             } else if (myChar != '\\' && myChar != '"' && myChar != '/') {
-                throw new MalformedStringException(parInput);
+                throw new MalformedStringException(parIterator);
             }
-            parInput.next();
+            parIterator.next();
             parSecureBuffer.append(myChar);
         }
     }
