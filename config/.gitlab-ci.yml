@@ -85,6 +85,18 @@ Sonar Qube:
   script:
     - ./gradlew --no-daemon sonarqube -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
 
+Verify Java 6 OpenJDK JRE:
+  tags:
+    - docker
+  image: 137938719373.dkr.ecr.us-east-1.amazonaws.com/rocketsimplicity/java-openjdk:6-jre-slim
+  stage: JRE Verification
+  dependencies:
+    - Publish Java 10 OpenJDK
+  script:
+    - unset SONAR_TOKEN
+    - git clone --depth 1 https://github.com/nst/JSONTestSuite build/JSONTestSuite
+    - java -DverifyRunMode=batch -cp build/libs/SecureJSON-$(cat version.txt)-SNAPSHOT-all.jar com.chelseaurquhart.securejson.Verify $(ls -1 build/JSONTestSuite/test_parsing/*.json)
+
 Verify Java 7 OpenJDK JRE:
   tags:
     - docker
