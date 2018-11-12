@@ -232,6 +232,16 @@ public final class EncodingAwareCharacterIteratorTest {
         public void remove() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public boolean canReadRange() {
+            return true;
+        }
+
+        @Override
+        public CharSequence range(int parStart, int parEnd) {
+            return input.subSequence(parStart, parEnd);
+        }
     }
 
     static class Parameters {

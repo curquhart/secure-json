@@ -38,4 +38,21 @@ interface ICharacterIterator extends Iterator<Character> {
      * @return The current offset.
      */
     int getOffset();
+
+    /**
+     * Return true if we can read a range or false otherwise.
+     *
+     * @return True if we can read a range or false otherwise.
+     */
+    boolean canReadRange();
+
+    /**
+     * Return the sequence of characters between parStart and parEnd.
+     *
+     * @param parStart The start index to read.
+     * @param parEnd The end index to read.
+     * @return The sequence between parStart and parEnd.
+     */
+    CharSequence range(final int parStart, final int parEnd);
+
 }
