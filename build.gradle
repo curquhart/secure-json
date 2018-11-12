@@ -127,9 +127,9 @@ if (shadowEnabled) {
 
 def OLD_JRE_VERSION
 if (isJava12) {
-    OLD_JRE_VERSION="7"
+    OLD_JRE_VERSION="1.7"
 } else {
-    OLD_JRE_VERSION="6"
+    OLD_JRE_VERSION="1.6"
 }
 
 sourceCompatibility = OLD_JRE_VERSION
@@ -137,7 +137,7 @@ targetCompatibility = OLD_JRE_VERSION
 
 if (JavaVersion.current().java9Compatible) {
     compileJava {
-        options.compilerArgs.addAll(['--release', OLD_JRE_VERSION])
+        options.compilerArgs.addAll(['--release', OLD_JRE_VERSION.replaceAll('^1\\.', '')])
     }
 
     compileJava9Java {
