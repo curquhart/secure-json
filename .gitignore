@@ -1,7 +1,7 @@
 build
 .gradle
 .idea
-secure-json.iml
+*.iml
 .DS_Store
 .idea
 docs/source/com/

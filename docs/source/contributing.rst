@@ -11,7 +11,7 @@ Thank you for considering contributing to SecureJSON.
 Improving documentation, bug triaging, writing tutorials, or even simply requesting features are all examples of helpful
 contributions that mean a better library for everyone.
 
-Before we get into specifics, the issue tracker can be found on `GitHub <https://github.com/curquhart/secure-json/issues>`_.
+Before we get into specifics, the issue tracker can be found on `GitHub <https://github.com/curquhart/securejson/issues>`_.
 
 ------------
 Ground Rules

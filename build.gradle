@@ -265,7 +265,7 @@ publishing {
             pom {
                 name = 'SecureJSON'
                 description = 'A secure JSON library.'
-                url = 'https://github.com/curquhart/secure-json/'
+                url = 'https://github.com/curquhart/securejson/'
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
@@ -280,9 +280,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com/curquhart/secure-json.git'
-                    developerConnection = 'scm:git:ssh://github.com/curquhart/secure-json.git'
-                    url = 'https://github.com/curquhart/secure-json/'
+                    connection = 'scm:git:git://github.com/curquhart/securejson.git'
+                    developerConnection = 'scm:git:ssh://github.com/curquhart/securejson.git'
+                    url = 'https://github.com/curquhart/securejson/'
                 }
             }
         }

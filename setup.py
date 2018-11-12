@@ -14,7 +14,7 @@ setup(name='SecureJSON',
     description='Secure Java JSON Serializer and Deserializer',
     author='Chelsea Urquhart',
     author_email='chelsea.urquhart@rocketsimplicity.com',
-    url='https://github.com/curquhart/secure-json',
+    url='https://github.com/curquhart/securejson',
     install_requires=[
         'javasphinx==0.9.15'
     ]
