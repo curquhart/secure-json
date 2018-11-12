@@ -23,6 +23,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.nio.CharBuffer;
+import java.util.Calendar;
 
 @SuppressWarnings("PMD.CommentRequired")
 public final class StringReaderTest {
@@ -54,6 +55,19 @@ public final class StringReaderTest {
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
         }
+    }
+
+    @Test
+    public void testGetSymbolType() {
+        Assert.assertEquals(IReader.SymbolType.UNKNOWN, new StringReader(Settings.DEFAULTS).getSymbolType(null));
+    }
+
+    @Test
+    public void testNormalizeCollectionAlwaysReturnsInput() {
+        final StringReader myReader = new StringReader(Settings.DEFAULTS);
+        Assert.assertNull(myReader.normalizeCollection(null));
+        Assert.assertEquals(123, myReader.normalizeCollection(123));
+        Assert.assertEquals(Calendar.getInstance(), myReader.normalizeCollection(Calendar.getInstance()));
     }
 
     @Test(expectedExceptions = NotImplementedException.class)

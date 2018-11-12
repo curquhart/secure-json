@@ -82,6 +82,30 @@ public final class StringProvider {
                 null
             )
                 .exception(new MalformedUnicodeValueException(new PresetIterableCharSequence(9))),
+            buildParameters(
+                "string ending with escape",
+                "\"abc\\\"",
+                null
+            )
+                .exception(new MalformedStringException(new PresetIterableCharSequence(6))),
+            buildParameters(
+                "string missing end quote",
+                "\"abc",
+                null
+            )
+                .exception(new MalformedStringException(new PresetIterableCharSequence(4))),
+            buildParameters(
+                "string missing end quote",
+                "\"abc",
+                null
+            )
+                .exception(new MalformedStringException(new PresetIterableCharSequence(4))),
+            buildParameters(
+                "string with control characters",
+                "\"ab\bc\"",
+                null
+            )
+                .exception(new MalformedStringException(new PresetIterableCharSequence(3))),
         };
     }
 

@@ -73,10 +73,6 @@ class PairStack<T, U> {
         return pair;
     }
 
-    int size() {
-        return part1.size();
-    }
-
     boolean isEmpty() {
         return part1.isEmpty();
     }

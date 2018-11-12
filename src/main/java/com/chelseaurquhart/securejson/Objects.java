@@ -16,6 +16,9 @@
 
 package com.chelseaurquhart.securejson;
 
+/**
+ * Objects class to provide simple helpers (functionality from Java 7 Objects)
+ */
 final class Objects {
     private Objects() {
     }
