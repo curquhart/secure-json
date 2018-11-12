@@ -79,13 +79,25 @@ public final class JSONWriterTest {
             ),
             new Parameters(
                 "nesting",
-                new LinkedHashMap<String, Object>() {{
-                        put("a", new ArrayList<Object>() {{
-                                add(new HashMap<String, Object>() {{
+                new LinkedHashMap<String, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        put("a", new ArrayList<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
+                                add(new HashMap<String, Object>() {
+                                    private static final long serialVersionUID = 1L;
+
+                                    {
                                         put("x", 12);
-                                    }});
-                            }});
-                    }},
+                                    }
+                                });
+                            }
+                        });
+                    }
+                },
                 "{\"a\":[{\"x\":12}]}"
             ),
             new Parameters(
@@ -160,7 +172,7 @@ public final class JSONWriterTest {
         } catch (final JSONException myException) {
             Assert.assertNotNull(parParameters.expectedException);
             Assert.assertEquals(Util.unwrapException(myException).getMessage(),
-                parParameters.expectedException.getMessage());
+                    parParameters.expectedException.getMessage());
         } finally {
             if (myWriter != null) {
                 myWriter.close();

@@ -315,13 +315,21 @@ public final class JSONReaderTest {
             new Parameters<Object>(
                 "nested lists",
                 "  [[1,2],3]  ",
-                new ArrayList<Object>() {{
-                        add(new ArrayList<Integer>() {{
+                new ArrayList<Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        add(new ArrayList<Integer>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
                                 add(1);
                                 add(2);
-                            }});
+                            }
+                        });
                         add(3);
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
@@ -357,61 +365,93 @@ public final class JSONReaderTest {
             new Parameters<Object>(
                 "map with string:string",
                 "{\"1\":\"test\"}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("1", "test");
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
                 "map with string:int",
                 "{\"1\":123}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("1", 123);
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
                 "map with string:null",
                 "{\"1\":null}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("1", null);
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
                 "map with string:bool",
                 "{\"1\":true}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("1", true);
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
                 "map with string:bool padded",
                 "{\"1\"   :    true}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("1", true);
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
                 "much nesting",
                 "{\"1\"   :    [1,2,3],\"2\":[false,{\"22\":\"456\"}]}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("1", Arrays.asList(1, 2, 3));
-                        put("2", Arrays.asList(false, new HashMap<CharSequence, Object>() {{
+                        put("2", Arrays.asList(false, new HashMap<CharSequence, Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
                                 put("22", "456");
-                            }}));
-                    }},
+                            }
+                        }));
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
                 "spaces around comma in map",
                 "{\"asd\":\"sdf\"   ,  \"dfg\":\"fgh\"}",
-                new HashMap<CharSequence, Object>() {{
+                new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                         put("asd", "sdf");
                         put("dfg", "fgh");
-                    }},
+                    }
+                },
                 null
             ),
             new Parameters<Object>(
@@ -423,12 +463,20 @@ public final class JSONReaderTest {
             new Parameters<Deserializable>(
                 "custom object",
                 "[\"abc\"  ,  \"def\"]",
-                new Deserializable() {{
-                        input = new LinkedList<Object>() {{
+                new Deserializable() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
+                        input = new LinkedList<Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
                                 add("abc");
                                 add("def");
-                            }};
-                    }},
+                            }
+                        };
+                    }
+                },
                 null
             ).clazz(Deserializable.class),
         };
