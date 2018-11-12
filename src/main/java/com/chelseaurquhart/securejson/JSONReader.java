@@ -54,7 +54,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             myStringReader,
             new WordReader(),
             new ListReader(this),
-            new MapReader(this, myStringReader),
+            new MapReader(this),
         };
     }
 

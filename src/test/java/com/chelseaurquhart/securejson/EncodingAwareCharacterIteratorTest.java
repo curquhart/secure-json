@@ -239,7 +239,7 @@ public final class EncodingAwareCharacterIteratorTest {
         }
 
         @Override
-        public CharSequence range(int parStart, int parEnd) {
+        public CharSequence range(final int parStart, final int parEnd) {
             return input.subSequence(parStart, parEnd);
         }
     }

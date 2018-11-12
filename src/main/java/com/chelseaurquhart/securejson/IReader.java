@@ -29,8 +29,7 @@ interface IReader<T> extends Closeable {
     enum SymbolType {
         END,
         SEPARATOR,
-        UNKNOWN,
-        RESERVED
+        UNKNOWN
     }
 
     /**

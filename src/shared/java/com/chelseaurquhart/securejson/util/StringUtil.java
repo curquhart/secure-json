@@ -66,6 +66,16 @@ public final class StringUtil {
             }
         } else if (parInput instanceof IJSONSerializeAware) {
             return deepCharSequenceToString(((IJSONSerializeAware) parInput).toJSONable());
+        } else if (parInput instanceof Double) {
+            final double myValue = (Double) parInput;
+            if (myValue == (long) myValue) {
+                return (long) myValue;
+            }
+        } else if (parInput instanceof Float) {
+            final double myValue = (Float) parInput;
+            if (myValue == (long) myValue) {
+                return (long) myValue;
+            }
         }
 
         return parInput;

@@ -27,10 +27,17 @@ public class JSONDecodeException extends JSONException {
     /**
      * @exclude
      */
-    JSONDecodeException(final ICharacterIterator parCharSequence, final Messages.Key parMessageKey)
+    JSONDecodeException(final ICharacterIterator parCharSequence, final Messages.Key parMessageKey) throws IOException {
+        this(parMessageKey, parCharSequence.getOffset());
+    }
+
+    /**
+     * @exclude
+     */
+    JSONDecodeException(final Messages.Key parMessageKey, final int parOffset)
             throws IOException {
         super(Messages.get(Messages.Key.ERROR_JSON_DECODE)
-            .replace(":offset", String.valueOf(parCharSequence.getOffset()))
+            .replace(":offset", String.valueOf(parOffset))
             .replace(":message", Messages.get(parMessageKey)));
     }
 
@@ -80,6 +87,13 @@ public class JSONDecodeException extends JSONException {
          */
         MalformedStringException(final ICharacterIterator parCharSequence) throws IOException {
             super(parCharSequence, Messages.Key.ERROR_MALFORMED_STRING);
+        }
+
+        /**
+         * @exclude
+         */
+        MalformedStringException(final int parOffset) throws IOException {
+            super(Messages.Key.ERROR_MALFORMED_STRING, parOffset);
         }
     }
 

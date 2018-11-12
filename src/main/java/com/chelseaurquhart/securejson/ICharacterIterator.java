@@ -53,6 +53,6 @@ interface ICharacterIterator extends Iterator<Character> {
      * @param parEnd The end index to read.
      * @return The sequence between parStart and parEnd.
      */
-    CharSequence range(final int parStart, final int parEnd);
+    CharSequence range(int parStart, int parEnd);
 
 }

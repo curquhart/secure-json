@@ -17,6 +17,7 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONDecodeException.MalformedMapException;
+import com.chelseaurquhart.securejson.JSONDecodeException.MalformedStringException;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -27,11 +28,9 @@ import java.util.Map;
  */
 class MapReader implements IReader<MapReader.Container> {
     private final transient JSONReader jsonReader;
-    private final transient IReader<CharSequence> stringReader;
 
-    MapReader(final JSONReader parJsonReader, final IReader<CharSequence> parStringReader) {
+    MapReader(final JSONReader parJsonReader) {
         jsonReader = parJsonReader;
-        stringReader = parStringReader;
     }
 
     @Override
@@ -53,9 +52,8 @@ class MapReader implements IReader<MapReader.Container> {
             case R_CURLY:
                 return SymbolType.END;
             case COLON:
-                return SymbolType.SEPARATOR;
             case COMMA:
-                return SymbolType.RESERVED;
+                return SymbolType.SEPARATOR;
             default:
                 return SymbolType.UNKNOWN;
         }
@@ -73,17 +71,11 @@ class MapReader implements IReader<MapReader.Container> {
 
         final Container myContainer;
         if (parContainer == null) {
-            myContainer = new Container(this, null);
+            myContainer = new Container(this, parIterator.getOffset());
         } else {
             myContainer = (Container) parContainer;
         }
 
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
-                == JSONSymbolCollection.Token.R_CURLY) {
-            myContainer.key = null;
-        } else {
-            myContainer.key = readKey(parIterator);
-        }
         return myContainer;
     }
 
@@ -91,38 +83,32 @@ class MapReader implements IReader<MapReader.Container> {
     public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer,
                          final Object parValue) throws IOException, JSONException {
         final Container myContainer = (Container) parContainer;
-        myContainer.put(myContainer.key, parValue);
         jsonReader.moveToNextToken(parIterator);
-        final SymbolType mySymbolType = getSymbolType(parIterator);
-        if (mySymbolType == SymbolType.RESERVED) {
-            parIterator.next();
-            jsonReader.moveToNextToken(parIterator);
-            myContainer.key = readKey(parIterator);
-        } else if (mySymbolType == SymbolType.UNKNOWN) {
-            throw new MalformedMapException(parIterator);
+        final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(),
+            null);
+        if (myContainer.key == null) {
+            if (myToken != JSONSymbolCollection.Token.COLON) {
+                throw new MalformedMapException(parIterator);
+            }
+            if (!(parValue instanceof CharSequence)) {
+                throw new MalformedStringException(myContainer.keyStartIndex);
+            }
+
+            myContainer.key = (CharSequence) parValue;
+        } else {
+            if (myToken != JSONSymbolCollection.Token.R_CURLY && myToken != JSONSymbolCollection.Token.COMMA) {
+                throw new MalformedMapException(parIterator);
+            }
+
+            myContainer.put(myContainer.key, parValue);
+            myContainer.key = null;
+            myContainer.keyStartIndex = parIterator.getOffset();
         }
     }
 
     @Override
-    public void close() throws IOException {
-        stringReader.close();
-    }
-
-    private CharSequence readKey(final ICharacterIterator parIterator) throws IOException, JSONException {
-        final CharSequence myKey = stringReader.read(parIterator, null);
-        jsonReader.moveToNextToken(parIterator);
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
-                != JSONSymbolCollection.Token.COLON) {
-            throw new MalformedMapException(parIterator);
-        }
-        parIterator.next();
-        jsonReader.moveToNextToken(parIterator);
-        final SymbolType mySymbolType = getSymbolType(parIterator);
-        if (mySymbolType != SymbolType.UNKNOWN && mySymbolType != SymbolType.END) {
-            throw new MalformedMapException(parIterator);
-        }
-
-        return myKey;
+    public void close() {
+        // NOOP
     }
 
     /**
@@ -131,11 +117,12 @@ class MapReader implements IReader<MapReader.Container> {
     static final class Container implements JSONReader.IContainer<Map<CharSequence, Object>, MapReader> {
         private transient Map<CharSequence, Object> map;
         private transient CharSequence key;
+        private transient int keyStartIndex;
         private transient MapReader reader;
 
-        private Container(final MapReader parReader, final CharSequence parKey) {
+        private Container(final MapReader parReader, final int parKeyStartIndex) {
             reader = parReader;
-            key = parKey;
+            keyStartIndex = parKeyStartIndex;
         }
 
         private void put(final CharSequence parKey, final Object parValue) {

@@ -58,7 +58,7 @@ class IterableInputStream extends EncodingAwareCharacterIterator implements ICha
     }
 
     @Override
-    public CharSequence range(int parStart, int parEnd) {
+    public CharSequence range(final int parStart, final int parEnd) {
         throw new JSONRuntimeException(new UnsupportedOperationException());
     }
 }

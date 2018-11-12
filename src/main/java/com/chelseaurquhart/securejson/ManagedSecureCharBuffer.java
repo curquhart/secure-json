@@ -315,7 +315,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
         }
 
         @Override
-        public void append(CharSequence parCharSequence) throws IOException {
+        public void append(final CharSequence parCharSequence) throws IOException {
             final int myLength = parCharSequence.length();
             for (int myIndex = 0; myIndex < myLength; myIndex++) {
                 append(parCharSequence.charAt(myIndex));

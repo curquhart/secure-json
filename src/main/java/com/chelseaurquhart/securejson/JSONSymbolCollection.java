@@ -40,7 +40,8 @@ final class JSONSymbolCollection {
         Token.R_BRACE,
         Token.R_CURLY,
         Token.QUOTE,
-        Token.COMMA
+        Token.COMMA,
+        Token.COLON
     );
 
     static final Map<Character, Token> WORD_TOKENS = listToMap(

@@ -47,7 +47,8 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     @Override
     public CharSequence read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
             throws IOException, JSONException {
-        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null) != JSONSymbolCollection.Token.QUOTE) {
+        if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
+                != JSONSymbolCollection.Token.QUOTE) {
             throw new MalformedStringException(parIterator);
         }
         parIterator.next();
