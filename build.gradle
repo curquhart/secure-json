@@ -258,7 +258,7 @@ task javadocJar(type: Jar) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = 'secure-json'
+            artifactId = 'securejson'
             from components.java
             artifact sourcesJar
             artifact javadocJar
