@@ -135,7 +135,8 @@ final class JSONReader implements Closeable, IAutoCloseable {
             readStackEnd(parIterator, myHead, parReaderData, parStack);
         } else if (mySymbolType == IReader.SymbolType.SEPARATOR) {
             readStackPart(parIterator, myReader, parReaderData);
-        } else if (parIterator.hasNext() && JSONSymbolCollection.Token.isValid(parIterator.peek())) {
+        } else if (mySymbolType != IReader.SymbolType.UNKNOWN && parIterator.hasNext()
+                && JSONSymbolCollection.Token.isValid(parIterator.peek())) {
             parReaderData.isFinished = false;
         } else {
             throw new MalformedJSONException(parIterator);

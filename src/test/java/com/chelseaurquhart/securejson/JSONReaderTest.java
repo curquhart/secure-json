@@ -363,6 +363,38 @@ public final class JSONReaderTest {
                 new MalformedStringException(new PresetIterableCharSequence(1))
             ),
             new Parameters<Object>(
+                "map with list key",
+                "{[\"x\"]:123}",
+                null,
+                new MalformedStringException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters<Object>(
+                "map with map key",
+                "{[\"x\":1]:123}",
+                null,
+                new MalformedListException(new PresetIterableCharSequence(5))
+            ),
+            new Parameters<Object>(
+                "map with list keys with immediate map separator in list",
+                "{[: \"x\"]:123}",
+                null,
+                // NOTE: technically, we could detect the deformity at character 1 but because of the way we parse,
+                // we will not see it until character 2.
+                new MalformedJSONException(new PresetIterableCharSequence(2))
+            ),
+            new Parameters<Object>(
+                "list with map separator",
+                "[: \"x\"]",
+                null,
+                new MalformedJSONException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters<Object>(
+                "list with single map separator",
+                "[:]",
+                null,
+                new MalformedJSONException(new PresetIterableCharSequence(1))
+            ),
+            new Parameters<Object>(
                 "map with string:string",
                 "{\"1\":\"test\"}",
                 new HashMap<CharSequence, Object>() {
