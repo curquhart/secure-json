@@ -79,7 +79,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             if (myReader != null) {
                 myReaderData.result = myReader.read(parIterator, null);
                 if (myReaderData.result instanceof IContainer) {
-                    myStack.push((IContainer) myReaderData.result);
+                    myStack.push(myReaderData.result);
                     continue;
                 }
 
@@ -275,19 +275,22 @@ final class JSONReader implements Closeable, IAutoCloseable {
      * Stack of Containers. Optimized for the use of most operations happening on head.
      */
     static class ContainerStack {
-        private IContainer<?, ?> head;
-        private Deque<IContainer<?, ?>> stack;
+        private IContainer<Object, IReader<Object>> head;
+        private Deque<IContainer<Object, IReader<Object>>> stack;
 
-        void push(final IContainer<?, ?> parValue) {
+        @SuppressWarnings("unchecked")
+        void push(final Object parValue) {
+            final IContainer<Object, IReader<Object>> myCasted = (IContainer<Object, IReader<Object>>) parValue;
+
             if (head == null) {
-                head = parValue;
+                head = myCasted;
             } else {
                 if (stack == null) {
-                    stack = new ArrayDeque<IContainer<?, ?>>();
+                    stack = new ArrayDeque<IContainer<Object, IReader<Object>>>();
                 }
 
                 stack.push(head);
-                head = parValue;
+                head = myCasted;
             }
         }
 
@@ -295,7 +298,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             return head == null;
         }
 
-        IContainer<?, ?> peek() {
+        IContainer<Object, IReader<Object>> peek() {
             return head;
         }
 
