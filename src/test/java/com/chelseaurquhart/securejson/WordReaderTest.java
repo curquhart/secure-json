@@ -21,7 +21,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.Calendar;
 
 @SuppressWarnings("PMD.CommentRequired")
 public final class WordReaderTest {
@@ -100,7 +99,7 @@ public final class WordReaderTest {
     public void testRead(final Parameters parParameters) {
         final WordReader myWordReader = new WordReader();
         try {
-            Assert.assertEquals(myWordReader.read(new IterableCharSequence(parParameters.input)),
+            Assert.assertEquals(myWordReader.read(new IterableCharSequence(parParameters.input), null),
                 parParameters.expected);
             Assert.assertNull(parParameters.expectedException);
         } catch (final IOException myException) {
@@ -123,15 +122,6 @@ public final class WordReaderTest {
     @Test
     public void testGetSymbolType() {
         Assert.assertEquals(IReader.SymbolType.UNKNOWN, new WordReader().getSymbolType(null));
-    }
-
-    @Test
-    public void testNormalizeCollectionAlwaysReturnsInput() {
-        final WordReader myReader = new WordReader();
-        Assert.assertNull(myReader.normalizeCollection(null));
-        Assert.assertEquals(123, myReader.normalizeCollection(123));
-        final Calendar myCalendar = Calendar.getInstance();
-        Assert.assertSame(myCalendar, myReader.normalizeCollection(myCalendar));
     }
 
     private static final class Parameters {

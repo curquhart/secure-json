@@ -24,6 +24,8 @@ import com.chelseaurquhart.securejson.JSONDecodeException.MalformedJSONException
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * @exclude
@@ -65,7 +67,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
     }
 
     Object read(final ICharacterIterator parIterator) throws IOException, JSONException {
-        final PairStack<IReader<?>, Object> myStack = new PairStack<IReader<?>, Object>();
+        final ContainerStack myStack = new ContainerStack();
 
         final ReaderData myReaderData = new ReaderData();
         while (parIterator.hasNext()) {
@@ -75,9 +77,9 @@ final class JSONReader implements Closeable, IAutoCloseable {
 
             final IReader<?> myReader = getReaderStartingNextChar(parIterator);
             if (myReader != null) {
-                myReaderData.result = myReader.read(parIterator);
-                if (myReader.isContainerType()) {
-                    myStack.push(myReader, myReaderData.result);
+                myReaderData.result = myReader.read(parIterator, null);
+                if (myReaderData.result instanceof IContainer) {
+                    myStack.push((IContainer) myReaderData.result);
                     continue;
                 }
 
@@ -103,7 +105,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
         throw new EmptyJSONException(parIterator);
     }
 
-    private void readStack(final ICharacterIterator parIterator, final PairStack<IReader<?>, Object> parStack,
+    private void readStack(final ICharacterIterator parIterator, final ContainerStack parStack,
                            final ReaderData parReaderData) throws IOException, JSONException {
         while (!parStack.isEmpty()) {
             readStackEntry(parIterator, parStack, parReaderData);
@@ -115,23 +117,22 @@ final class JSONReader implements Closeable, IAutoCloseable {
     }
 
     private void readStackEntry(final ICharacterIterator parIterator,
-                                final PairStack<IReader<?>, Object> parStack, final ReaderData parReaderData)
+                                final ContainerStack parStack, final ReaderData parReaderData)
             throws IOException, JSONException {
-        final PairStack.Pair<IReader<?>, Object> myHead = parStack.peek();
+        final IContainer<?, ?> myHead = parStack.peek();
         if (!parIterator.hasNext() || myHead == null) {
             throw new MalformedJSONException(parIterator);
         }
 
         // unwrap - Pair will be repurposed so we must retain certainty that we don't depend on it!
-        final IReader<?> myReader = myHead.first;
-        final Object myValue = myHead.second;
+        final IReader<?> myReader = myHead.getReader();
 
         final IReader.SymbolType mySymbolType = myReader.getSymbolType(parIterator);
         if (parReaderData.hasResult) {
-            myReader.addValue(parIterator, myValue, parReaderData.result);
+            myReader.addValue(parIterator, myHead, parReaderData.result);
         }
         if (mySymbolType == IReader.SymbolType.END) {
-            readStackEnd(parIterator, myReader, myValue, parReaderData, parStack);
+            readStackEnd(parIterator, myHead, parReaderData, parStack);
         } else if (mySymbolType == IReader.SymbolType.SEPARATOR) {
             readStackPart(parIterator, myReader, parReaderData);
         } else if (parIterator.hasNext() && isValidToken(parIterator.peek())) {
@@ -152,15 +153,16 @@ final class JSONReader implements Closeable, IAutoCloseable {
         parReaderData.isFinished = false;
     }
 
-    private void readStackEnd(final ICharacterIterator parIterator, final IReader<?> parReader, final Object parValue,
-                              final ReaderData parReaderData, final PairStack<IReader<?>, Object> parStack)
+    private void readStackEnd(final ICharacterIterator parIterator,
+                              final IContainer<?, ?> parValue, final ReaderData parReaderData,
+                              final ContainerStack parStack)
             throws IOException, JSONException {
         parStack.pop();
         parIterator.next();
         moveToNextToken(parIterator);
         // feed it to its parent. Because map stores its data as a wrapper, we need to ask the reader
         // to provide a proper value (ex Map instead of Container)
-        parReaderData.result = parReader.normalizeCollection(parValue);
+        parReaderData.result = parValue.resolve();
         // keep reading
         parReaderData.hasResult = true;
     }
@@ -245,5 +247,64 @@ final class JSONReader implements Closeable, IAutoCloseable {
         private transient boolean isFinished;
         private transient Object result;
         private transient boolean hasResult;
+    }
+
+    /**
+     * Container interface for collections. All collection types must return an implementation of this.
+     *
+     * @param <T> The type this container is wrapping.
+     * @param <U> The reader this container is associated with.
+     */
+    interface IContainer<T, U extends IReader<?>> {
+        /**
+         * Resolve the underlying collection.
+         *
+         * @return The underlying collection.
+         */
+        T resolve();
+
+        /**
+         * Get the reader associated with this container.
+         *
+         * @return The reader associated with this container.
+         */
+        U getReader();
+    }
+
+    /**
+     * Stack of Containers. Optimized for the use of most operations happening on head.
+     */
+    static class ContainerStack {
+        private IContainer<?, ?> head;
+        private Deque<IContainer<?, ?>> stack;
+
+        void push(final IContainer<?, ?> parValue) {
+            if (head == null) {
+                head = parValue;
+            } else {
+                if (stack == null) {
+                    stack = new ArrayDeque<IContainer<?, ?>>();
+                }
+
+                stack.push(head);
+                head = parValue;
+            }
+        }
+
+        boolean isEmpty() {
+            return head == null;
+        }
+
+        IContainer<?, ?> peek() {
+            return head;
+        }
+
+        void pop() {
+            if (head == null || stack == null || stack.isEmpty()) {
+                head = null;
+            } else {
+                head = stack.pop();
+            }
+        }
     }
 }

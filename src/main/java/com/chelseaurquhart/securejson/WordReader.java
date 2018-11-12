@@ -35,7 +35,8 @@ class WordReader implements IReader<Object> {
     }
 
     @Override
-    public Object read(final ICharacterIterator parIterator) throws IOException, JSONException {
+    public Object read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
+            throws IOException, JSONException {
 
         final JSONSymbolCollection.Token myWordToken = JSONSymbolCollection.WORD_TOKENS.get(parIterator.peek());
         if (myWordToken != null) {
@@ -47,14 +48,10 @@ class WordReader implements IReader<Object> {
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection,
+                         final Object parItem) {
         // only for collections
         throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addValue");
-    }
-
-    @Override
-    public Object normalizeCollection(final Object parValue) {
-        return parValue;
     }
 
     private void readAndValidateWord(final ICharacterIterator parIterator, final JSONSymbolCollection.Token parToken)
@@ -83,11 +80,6 @@ class WordReader implements IReader<Object> {
         }
 
         throw new InvalidTokenException(parIterator);
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return false;
     }
 
     @Override

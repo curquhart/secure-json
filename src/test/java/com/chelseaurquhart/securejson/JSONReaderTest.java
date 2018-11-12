@@ -629,4 +629,51 @@ public final class JSONReaderTest {
             return input;
         }
     }
+
+    public static class ContainerStackTest {
+        @Test
+        public void testPopEmpty() {
+            new JSONReader.ContainerStack().pop();
+        }
+
+        @Test
+        public void testPushPopElements() {
+            final JSONReader.ContainerStack myStack = new JSONReader.ContainerStack();
+            final Container myContainerFirst = new Container("first");
+            final Container myContainerSecond = new Container("second");
+            myStack.push(myContainerFirst);
+            myStack.push(myContainerSecond);
+            Assert.assertSame(myStack.peek(), myContainerSecond);
+            Assert.assertSame(myStack.peek(), myContainerSecond);
+            myStack.pop();
+            Assert.assertSame(myStack.peek(), myContainerFirst);
+            myStack.pop();
+            Assert.assertSame(myStack.peek(), null);
+            myStack.pop();
+            Assert.assertSame(myStack.peek(), null);
+        }
+
+        private static class Container implements JSONReader.IContainer<Object, IReader<?>> {
+            private final String name;
+
+            Container(final String parName) {
+                name = parName;
+            }
+
+            @Override
+            public Object resolve() {
+                return null;
+            }
+
+            @Override
+            public IReader<?> getReader() {
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        }
+    }
 }

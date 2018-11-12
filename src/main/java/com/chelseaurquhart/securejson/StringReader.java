@@ -45,7 +45,8 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     @Override
-    public CharSequence read(final ICharacterIterator parInput) throws IOException, JSONException {
+    public CharSequence read(final ICharacterIterator parInput, final JSONReader.IContainer<?, ?> parCollection)
+            throws IOException, JSONException {
         if (JSONSymbolCollection.Token.forSymbolOrDefault(parInput.peek(), null) != JSONSymbolCollection.Token.QUOTE) {
             throw new MalformedStringException(parInput);
         }
@@ -106,19 +107,10 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parItem) {
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection,
+                         final Object parItem) {
         // only for collections
         throw new NotImplementedException(Messages.Key.ERROR_NOT_IMPLEMENTED, "addValue");
-    }
-
-    @Override
-    public Object normalizeCollection(final Object parValue) {
-        return parValue;
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return false;
     }
 
     private char readUnicode(final ICharacterIterator parInput) throws IOException, JSONException {

@@ -24,14 +24,6 @@ import java.io.IOException;
  */
 interface IReader<T> extends Closeable {
     /**
-     * Normalize the collection this reader is responsible for.
-     *
-     * @param parValue The input value.
-     * @return The normalized value.
-     */
-    Object normalizeCollection(Object parValue);
-
-    /**
      * @exclude
      */
     enum SymbolType {
@@ -45,11 +37,12 @@ interface IReader<T> extends Closeable {
      * Read the next T that this represents.
      *
      * @param parIterator The iterator to read from.
+     * @param parContainer A container for the collection we are managing.
      * @return An instanceof T
      * @throws IOException On read failure.
      * @throws JSONException On process failure.
      */
-    T read(ICharacterIterator parIterator) throws IOException, JSONException;
+    T read(ICharacterIterator parIterator, JSONReader.IContainer<?, ?> parContainer) throws IOException, JSONException;
 
     /**
      * Add a value to the collection we are managing.
@@ -60,7 +53,8 @@ interface IReader<T> extends Closeable {
      * @throws IOException On read failure.
      * @throws JSONException On process failure.
      */
-    void addValue(ICharacterIterator parIterator, Object parCollection, Object parValue) throws IOException,
+    void addValue(ICharacterIterator parIterator, JSONReader.IContainer<?, ?> parCollection, Object parValue)
+            throws IOException,
         JSONException;
 
     /**
@@ -72,13 +66,6 @@ interface IReader<T> extends Closeable {
      * @throws JSONException On process failure.
      */
     boolean isStart(ICharacterIterator parIterator) throws IOException, JSONException;
-
-    /**
-     * Check if this reader is managing a container.
-     *
-     * @return True if this reader manages a container. Otherwise false.
-     */
-    boolean isContainerType();
 
     /**
      * Get the symbol type from the provided iterator. This is used for determining when we hit a separator, end of a

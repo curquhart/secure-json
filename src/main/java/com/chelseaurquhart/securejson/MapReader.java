@@ -62,7 +62,8 @@ class MapReader implements IReader<MapReader.Container> {
     }
 
     @Override
-    public Container read(final ICharacterIterator parIterator) throws IOException, JSONException {
+    public Container read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer)
+            throws IOException, JSONException {
         parIterator.next();
         jsonReader.moveToNextToken(parIterator);
 
@@ -70,18 +71,26 @@ class MapReader implements IReader<MapReader.Container> {
             throw new MalformedMapException(parIterator);
         }
 
+        final Container myContainer;
+        if (parContainer == null) {
+            myContainer = new Container(this, null);
+        } else {
+            myContainer = (Container) parContainer;
+        }
+
         if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
                 == JSONSymbolCollection.Token.R_CURLY) {
-            return new Container(null);
+            myContainer.key = null;
         } else {
-            return new Container(readKey(parIterator));
+            myContainer.key = readKey(parIterator);
         }
+        return myContainer;
     }
 
     @Override
-    public void addValue(final ICharacterIterator parIterator, final Object parCollection, final Object parValue)
-            throws IOException, JSONException {
-        final Container myContainer = objectToContainer(parCollection);
+    public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer,
+                         final Object parValue) throws IOException, JSONException {
+        final Container myContainer = (Container) parContainer;
         myContainer.put(myContainer.key, parValue);
         jsonReader.moveToNextToken(parIterator);
         final SymbolType mySymbolType = getSymbolType(parIterator);
@@ -95,26 +104,12 @@ class MapReader implements IReader<MapReader.Container> {
     }
 
     @Override
-    public Object normalizeCollection(final Object parValue) {
-        if (parValue instanceof Container) {
-            return ((Container) parValue).getMap();
-        }
-
-        return parValue;
-    }
-
-    @Override
-    public boolean isContainerType() {
-        return true;
-    }
-
-    @Override
     public void close() throws IOException {
         stringReader.close();
     }
 
     private CharSequence readKey(final ICharacterIterator parIterator) throws IOException, JSONException {
-        final CharSequence myKey = stringReader.read(parIterator);
+        final CharSequence myKey = stringReader.read(parIterator, null);
         jsonReader.moveToNextToken(parIterator);
         if (JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
                 != JSONSymbolCollection.Token.COLON) {
@@ -130,31 +125,35 @@ class MapReader implements IReader<MapReader.Container> {
         return myKey;
     }
 
-    private Container objectToContainer(final Object parValue) {
-        return (Container) parValue;
-    }
-
     /**
      * Container for Map data.
      */
-    static final class Container {
+    static final class Container implements JSONReader.IContainer<Map<CharSequence, Object>, MapReader> {
         private transient Map<CharSequence, Object> map;
         private transient CharSequence key;
+        private transient MapReader reader;
 
-        private Container(final CharSequence parKey) {
+        private Container(final MapReader parReader, final CharSequence parKey) {
+            reader = parReader;
             key = parKey;
         }
 
         private void put(final CharSequence parKey, final Object parValue) {
-            getMap().put(parKey, parValue);
+            resolve().put(parKey, parValue);
         }
 
-        private Map<CharSequence, Object> getMap() {
+        @Override
+        public Map<CharSequence, Object> resolve() {
             if (map == null) {
                 map = new LinkedHashMap<CharSequence, Object>();
             }
 
             return map;
+        }
+
+        @Override
+        public MapReader getReader() {
+            return reader;
         }
     }
 }
