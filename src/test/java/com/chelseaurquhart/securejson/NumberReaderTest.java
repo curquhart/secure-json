@@ -25,13 +25,17 @@ import java.math.MathContext;
 @SuppressWarnings("PMD.CommentRequired")
 public final class NumberReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
-    public void testRead(final NumberProvider.Parameters parParameters) {
+    public void testRead(final NumberProvider.Parameters<?> parParameters) {
         try {
             final Number myNumber = charSequenceToNumber(parParameters.number, parParameters.mathContext);
             Assert.assertNull(parParameters.expectedException);
             Assert.assertSame(myNumber.getClass(), parParameters.expectedNumberClass);
             Assert.assertEquals(myNumber, parParameters.expected);
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
+            Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
+            Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
+        } catch (final JSONException myException) {
             Assert.assertNotNull(parParameters.expectedException, myException.getMessage());
             Assert.assertEquals(myException.getMessage(), parParameters.expectedException.getMessage());
             Assert.assertEquals(myException.getClass(), parParameters.expectedException.getClass());
@@ -50,7 +54,7 @@ public final class NumberReaderTest {
 
     @Test(expectedExceptions = NotImplementedException.class)
     public void testAddValue() throws IOException, JSONException {
-        final IReader myNumberReader = new NumberReader(Settings.DEFAULTS);
+        final IReader<?> myNumberReader = new NumberReader(Settings.DEFAULTS);
         myNumberReader.addValue(null, null, null);
     }
 }

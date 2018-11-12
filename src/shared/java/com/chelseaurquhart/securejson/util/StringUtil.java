@@ -42,19 +42,18 @@ public final class StringUtil {
         } else if (parInput instanceof CharSequence) {
             return charSequenceToString((CharSequence) parInput);
         } else if (parInput instanceof Map) {
-            final Map myInputMap = (Map) parInput;
+            final Map<?, ?> myInputMap = (Map) parInput;
 
-            final Map<String, Object> myInputMapCopy = new LinkedHashMap<>();
-            for (final Object myObject : myInputMap.entrySet()) {
-                final Map.Entry myEntry = (Map.Entry) myObject;
+            final Map<String, Object> myInputMapCopy = new LinkedHashMap<String, Object>();
+            for (final Map.Entry<?, ?> myEntry : myInputMap.entrySet()) {
                 myInputMapCopy.put(charSequenceToString((CharSequence) myEntry.getKey()),
                         deepCharSequenceToString(myEntry.getValue()));
             }
 
             return myInputMapCopy;
         } else if (parInput instanceof Collection) {
-            final Collection myInputList = (Collection) parInput;
-            final Collection<Object> myInputListCopy = new LinkedList<>();
+            final Collection<?> myInputList = (Collection) parInput;
+            final Collection<Object> myInputListCopy = new LinkedList<Object>();
             for (final Object myItem : myInputList) {
                 myInputListCopy.add(deepCharSequenceToString(myItem));
             }

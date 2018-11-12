@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @exclude
  */
-class JSONWriter implements Closeable, AutoCloseable {
+class JSONWriter implements Closeable, IAutoCloseable {
     private static final int INITIAL_CAPACITY = 512;
     private final transient List<ManagedSecureCharBuffer> secureBuffers;
     private final transient IObjectMutator objectMutator;
@@ -40,7 +40,7 @@ class JSONWriter implements Closeable, AutoCloseable {
     }
 
     JSONWriter(final IObjectMutator parObjectMutator, final Settings parSettings) {
-        secureBuffers = new ArrayList<>();
+        secureBuffers = new ArrayList<ManagedSecureCharBuffer>();
         objectMutator = parObjectMutator;
         settings = parSettings;
     }
@@ -74,9 +74,9 @@ class JSONWriter implements Closeable, AutoCloseable {
         } else if (myInput instanceof Number) {
             // nothing we can do here, need to convert to string
             parSecureBuffer.append(myInput.toString());
-        } else if (myInput instanceof Boolean && (boolean) myInput) {
+        } else if (myInput instanceof Boolean && (Boolean) myInput) {
             parSecureBuffer.append(JSONSymbolCollection.Token.TRUE.getSymbol().toString());
-        } else if (myInput instanceof Boolean && !(boolean) myInput) {
+        } else if (myInput instanceof Boolean) {
             parSecureBuffer.append(JSONSymbolCollection.Token.FALSE.getSymbol().toString());
         } else if (myInput instanceof CharSequence) {
             parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());

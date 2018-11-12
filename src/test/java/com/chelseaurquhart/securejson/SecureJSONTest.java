@@ -26,14 +26,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @SuppressWarnings("PMD.CommentRequired")
 public final class SecureJSONTest {
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
-    @SuppressWarnings("unchecked")
-    public void testReadString(final JSONReaderTest.Parameters parParameters) {
+    public void testReadString(final JSONReaderTest.Parameters<Object> parParameters) {
         try {
             new SecureJSON().fromJSON(parParameters.getInputString(), new IConsumer<Object>() {
                 @Override
@@ -43,14 +41,15 @@ public final class SecureJSONTest {
                 }
             }, parParameters.getExpectedClass());
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final JSONDecodeException | JSONRuntimeException myException) {
+        } catch (final JSONDecodeException myException) {
+            checkException(parParameters, myException);
+        } catch (final JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
 
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
-    @SuppressWarnings("unchecked")
-    public void testReadStream(final JSONReaderTest.Parameters parParameters) {
+    public void testReadStream(final JSONReaderTest.Parameters<Object> parParameters) {
         final InputStream myInputStream = JSONReaderTest.inputToStream(
             parParameters.getInputString(), parParameters.getInputBytes());
 
@@ -63,14 +62,15 @@ public final class SecureJSONTest {
                 }
             }, parParameters.getExpectedClass());
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final JSONDecodeException | JSONRuntimeException myException) {
+        } catch (final JSONDecodeException myException) {
+            checkException(parParameters, myException);
+        } catch (final JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
 
     @Test(dataProviderClass = JSONReaderTest.class, dataProvider = JSONReaderTest.DATA_PROVIDER_NAME)
-    @SuppressWarnings("unchecked")
-    public void testReadBytes(final JSONReaderTest.Parameters parParameters) {
+    public void testReadBytes(final JSONReaderTest.Parameters<Object> parParameters) {
         try {
             final byte[] myBytes;
             if (parParameters.getInputBytes() == null) {
@@ -88,12 +88,14 @@ public final class SecureJSONTest {
                 }
             }, parParameters.getExpectedClass());
             Assert.assertNull(parParameters.getExpectedException(), "Expected exception was not thrown");
-        } catch (final JSONDecodeException | JSONRuntimeException myException) {
+        } catch (final JSONDecodeException myException) {
+            checkException(parParameters, myException);
+        } catch (final JSONRuntimeException myException) {
             checkException(parParameters, myException);
         }
     }
 
-    private void checkException(final JSONReaderTest.Parameters parParameters, final Exception parException) {
+    private void checkException(final JSONReaderTest.Parameters<?> parParameters, final Exception parException) {
         Assert.assertNotNull(parParameters.getExpectedException());
         Assert.assertEquals(Util.unwrapException(parException).getMessage(),
             parParameters.getExpectedException().getMessage());
@@ -146,9 +148,9 @@ public final class SecureJSONTest {
         });
 
         // Bad cast
-        new SecureJSON().fromJSON(myInput, new IConsumer<Map>() {
+        new SecureJSON().fromJSON(myInput, new IConsumer<Map<?, ?>>() {
             @Override
-            public void accept(final Map parInput) {
+            public void accept(final Map<?, ?> parInput) {
                 Assert.fail("invalid type");
             }
         });

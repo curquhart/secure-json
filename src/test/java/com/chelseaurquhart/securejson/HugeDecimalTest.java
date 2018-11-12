@@ -118,8 +118,15 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.bigDecimalValue(), parParameters.expectedBigDecimal);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException | IOException
-                        | JSONException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedBigDecimal);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedBigDecimal);
+                } catch (final JSONRuntimeException myException) {
+                    Assert.assertNull(parParameters.expectedBigDecimal);
+                } catch (final IOException myException) {
+                    Assert.assertNull(parParameters.expectedBigDecimal);
+                } catch (final JSONException myException) {
                     Assert.assertNull(parParameters.expectedBigDecimal);
                 }
             }
@@ -133,8 +140,15 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.bigIntegerValue(), parParameters.expectedBigInteger);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException | IOException
-                        | JSONException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedBigInteger);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedBigInteger);
+                } catch (final JSONRuntimeException myException) {
+                    Assert.assertNull(parParameters.expectedBigInteger);
+                } catch (final IOException myException) {
+                    Assert.assertNull(parParameters.expectedBigInteger);
+                } catch (final JSONException myException) {
                     Assert.assertNull(parParameters.expectedBigInteger);
                 }
             }
@@ -148,7 +162,11 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.doubleValue(), parParameters.expectedDouble);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedDouble);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedDouble);
+                } catch (final JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedDouble);
                 }
             }
@@ -162,7 +180,11 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(parInput.floatValue(), parParameters.expectedFloat);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedFloat);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedFloat);
+                } catch (final JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedFloat);
                 }
             }
@@ -176,7 +198,11 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(Long.valueOf(parInput.longValue()), parParameters.expectedLong);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedLong);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedLong);
+                } catch (final JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedLong);
                 }
             }
@@ -190,7 +216,11 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(Integer.valueOf(parInput.intValue()), parParameters.expectedInt);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedInt);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedInt);
+                } catch (final JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedInt);
                 }
             }
@@ -204,7 +234,11 @@ public final class HugeDecimalTest {
             public void accept(final HugeDecimal parInput) {
                 try {
                     Assert.assertEquals(Short.valueOf(parInput.shortValue()), parParameters.expectedShort);
-                } catch (final NumberFormatException | ArithmeticException | JSONRuntimeException myException) {
+                } catch (final NumberFormatException myException) {
+                    Assert.assertNull(parParameters.expectedShort);
+                } catch (final ArithmeticException myException) {
+                    Assert.assertNull(parParameters.expectedShort);
+                } catch (final JSONRuntimeException myException) {
                     Assert.assertNull(parParameters.expectedShort);
                 }
             }

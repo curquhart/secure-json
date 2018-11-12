@@ -25,7 +25,7 @@ import java.util.List;
  * parallel.
  */
 final class SJSecurityManager extends SecurityManager {
-    static final List<Permission> SECURITY_VIOLATIONS = new LinkedList<>();
+    static final List<Permission> SECURITY_VIOLATIONS = new LinkedList<Permission>();
 
     private static final SecurityManager ORIGINAL_SECURITY_MANAGER = System.getSecurityManager();
 

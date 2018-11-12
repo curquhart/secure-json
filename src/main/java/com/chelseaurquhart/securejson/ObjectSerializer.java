@@ -78,7 +78,7 @@ class ObjectSerializer extends ObjectReflector {
     }
 
     final Collection<Field> getFields(final Class<?> parClass) {
-        final List<Field> myCollection = new LinkedList<>();
+        final List<Field> myCollection = new LinkedList<Field>();
         for (final Field myField : parClass.getDeclaredFields()) {
             if (Modifier.isTransient(myField.getModifiers()) || myField.isSynthetic()) {
                 // ignore transient and synthetic fields.
@@ -104,7 +104,9 @@ class ObjectSerializer extends ObjectReflector {
                     return parField.get(parInstance);
                     // RuntimeException because we need to catch InaccessibleObjectException
                     // but also compile pre-java 9.
-                } catch (final IllegalAccessException | RuntimeException myException) {
+                } catch (final IllegalAccessException myException) {
+                    throw new JSONRuntimeException(myException);
+                } catch (final RuntimeException myException) {
                     throw new JSONRuntimeException(myException);
                 } finally {
                     parField.setAccessible(myOriginalValue);
@@ -127,7 +129,9 @@ class ObjectSerializer extends ObjectReflector {
                     parField.set(parInstance, parValue);
                     // RuntimeException because we need to catch InaccessibleObjectException
                     // but also compile pre-java 9.
-                } catch (final IllegalAccessException | RuntimeException myException) {
+                } catch (final IllegalAccessException myException) {
+                    throw new JSONRuntimeException(myException);
+                } catch (final RuntimeException myException) {
                     throw new JSONRuntimeException(myException);
                 } finally {
                     parField.setAccessible(myOriginalValue);
@@ -160,8 +164,13 @@ class ObjectSerializer extends ObjectReflector {
 
                     try {
                         return myConstructor.newInstance();
-                    } catch (final InstantiationException | IllegalAccessException
-                            | InvocationTargetException | SecurityException myException) {
+                    } catch (final InstantiationException myException) {
+                        throw new JSONRuntimeException(myException);
+                    } catch (final IllegalAccessException myException) {
+                        throw new JSONRuntimeException(myException);
+                    } catch (final InvocationTargetException myException) {
+                        throw new JSONRuntimeException(myException);
+                    } catch (final SecurityException myException) {
                         throw new JSONRuntimeException(myException);
                     } finally {
                         myConstructor.setAccessible(myOriginalValue);

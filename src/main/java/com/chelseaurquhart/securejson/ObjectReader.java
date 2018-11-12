@@ -47,6 +47,7 @@ import java.util.Set;
  * @param <T> The Class of the object to be read.
  * @exclude
  */
+@SuppressWarnings("unchecked")
 class ObjectReader<T> extends ObjectSerializer {
     /**
      * A collection of types that we can ignore when we're recursively resolving targets.
@@ -76,7 +77,7 @@ class ObjectReader<T> extends ObjectSerializer {
     private static final Map<Class<?>, IFunction<Number, Number>> CLASS_MAP;
 
     static {
-        CLASS_MAP = new HashMap<>();
+        CLASS_MAP = new HashMap<Class<?>, IFunction<Number, Number>>();
         CLASS_MAP.put(byte.class, new IFunction<Number, Number>() {
             @Override
             public Number accept(final Number parInput) {
@@ -306,11 +307,11 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     private Set<Class<?>> buildIdentityHashSet() {
-        return new IdentityHashSet<>();
+        return new IdentityHashSet<Class<?>>();
     }
 
-    private ObjectReader<?> buildObjectReader(final Class<?> parType) {
-        return new ObjectReader<>(parType, settings);
+    private <U> ObjectReader<U> buildObjectReader(final Class<U> parType) {
+        return new ObjectReader<U>(parType, settings);
     }
 
     private boolean canRecursivelyAccept(final Class<?> parFieldType) {
@@ -327,7 +328,7 @@ class ObjectReader<T> extends ObjectSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    private Object buildValue(final Type parGenericType, final Class<?> parType, final Object parValue,
+    private <U> Object buildValue(final Type parGenericType, final Class<?> parType, final Object parValue,
                               final Map<CharSequence, Object> parAbsMap)
             throws IOException, JSONException {
         final Class<?> myType;
@@ -352,7 +353,7 @@ class ObjectReader<T> extends ObjectSerializer {
         } else if (CharSequence.class.isAssignableFrom(myType)) {
             return buildStringValue(myType, (CharSequence) parValue, settings.isStrictStrings());
         } else {
-            return new ObjectReader<>(myType, settings).buildInstance(parValue, parAbsMap);
+            return new ObjectReader<U>((Class<U>) myType, settings).buildInstance(parValue, parAbsMap);
         }
     }
 
@@ -524,7 +525,15 @@ class ObjectReader<T> extends ObjectSerializer {
             if (parType == HugeDecimal.class && myValueClass != HugeDecimal.class) {
                 return new HugeDecimal(parValue);
             }
-        } catch (final NumberFormatException | ArithmeticException | IOException myException) {
+        } catch (final NumberFormatException myException) {
+            // conversion failure. This is specific to HugeDecimal in that it will disallow conversions that will
+            // cause data loss, but there could be other custom implementations of Number.
+            throw new JSONException(myException);
+        } catch (final ArithmeticException myException) {
+            // conversion failure. This is specific to HugeDecimal in that it will disallow conversions that will
+            // cause data loss, but there could be other custom implementations of Number.
+            throw new JSONException(myException);
+        } catch (final IOException myException) {
             // conversion failure. This is specific to HugeDecimal in that it will disallow conversions that will
             // cause data loss, but there could be other custom implementations of Number.
             throw new JSONException(myException);
@@ -564,7 +573,7 @@ class ObjectReader<T> extends ObjectSerializer {
      * @param <T> The element type.
      */
     static class IdentityHashSet<T> implements Set<T> {
-        private final transient IdentityHashMap<T, Void> identityHashMap = new IdentityHashMap<>();
+        private final transient IdentityHashMap<T, Void> identityHashMap = new IdentityHashMap<T, Void>();
 
         @Override
         public int size() {

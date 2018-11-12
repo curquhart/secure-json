@@ -24,7 +24,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Objects;
 
 /**
  * HugeDecimal is for numbers that are too big to parse with BigDecimal through normal means.
@@ -80,7 +79,9 @@ public final class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().intValue();
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -99,7 +100,9 @@ public final class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().longValue();
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -118,7 +121,9 @@ public final class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().floatValue();
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -137,7 +142,9 @@ public final class HugeDecimal extends Number implements CharSequence {
 
         try {
             return numberReader.charSequenceToBigDecimal(chars, 0).getKey().doubleValue();
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -224,7 +231,9 @@ public final class HugeDecimal extends Number implements CharSequence {
         } else {
             try {
                 return bigDecimalValue().equals(myThat.bigDecimalValue());
-            } catch (final IOException | JSONException myException) {
+            } catch (final IOException myException) {
+                throw new JSONRuntimeException(myException);
+            } catch (final JSONException myException) {
                 throw new JSONRuntimeException(myException);
             }
         }

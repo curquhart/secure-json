@@ -26,7 +26,6 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
-import java.nio.charset.StandardCharsets;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -65,7 +64,7 @@ public final class ObjectReaderTest {
 
     @Test
     public void testSimpleDeserialization() throws IOException, JSONException {
-        final SimpleDeserializationClass mySimpleDeserializationClass = new ObjectReader<>(
+        final SimpleDeserializationClass mySimpleDeserializationClass = new ObjectReader<SimpleDeserializationClass>(
             SimpleDeserializationClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("integerVal", 1);
                     put("shortVal", 2);
@@ -100,14 +99,16 @@ public final class ObjectReaderTest {
             SJSecurityManager.SECURITY_VIOLATIONS.add(new ReflectPermission("suppressAccessChecks"));
             testSimpleDeserialization();
             Assert.fail("Expected exception not thrown");
-        } catch (final JSONException | JSONRuntimeException myException) {
+        } catch (final JSONException myException) {
+            Assert.assertEquals(myException.getCause().getClass(), SecurityException.class);
+        } catch (final JSONRuntimeException myException) {
             Assert.assertEquals(myException.getCause().getClass(), SecurityException.class);
         }
     }
 
     @Test
     public void testSimpleNesting() throws IOException, JSONException {
-        final SimpleNestingClass mySimpleNestingClass = new ObjectReader<>(
+        final SimpleNestingClass mySimpleNestingClass = new ObjectReader<SimpleNestingClass>(
             SimpleNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("inner1", new HashMap<CharSequence, Object>() {{
                             put("integerVal", 11);
@@ -148,7 +149,7 @@ public final class ObjectReaderTest {
 
     @Test
     public void testSubNesting() throws IOException, JSONException {
-        final SubNestingClass mySubNestingClass = new ObjectReader<>(
+        final SubNestingClass mySubNestingClass = new ObjectReader<SubNestingClass>(
             SubNestingClass.class, UNSTRICT_SETTINGS).accept(new HashMap<CharSequence, Object>() {{
                     put("inner1", new HashMap<CharSequence, Object>() {{
                             put("data1", new HashMap<CharSequence, Object>() {{
@@ -180,7 +181,7 @@ public final class ObjectReaderTest {
 
     @Test
     public void testRecursiveNesting() throws IOException, JSONException {
-        final SubNestingClass mySubNestingClass = new ObjectReader<>(
+        final SubNestingClass mySubNestingClass = new ObjectReader<SubNestingClass>(
                 SubNestingClass.class, UNSTRICT_SETTINGS)
                     .accept(new HashMap<CharSequence, Object>() {{
                             put("inner1", new HashMap<CharSequence, Object>() {{
@@ -244,22 +245,24 @@ public final class ObjectReaderTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testComplexType() throws IOException, JSONException {
-        final ComplexTypeClass myComplexTypeClass = new ObjectReader<>(
+        final ComplexTypeClass myComplexTypeClass = new ObjectReader<ComplexTypeClass>(
                 ComplexTypeClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
-                        final List<Map<CharSequence, Map<String, Integer>>> myList1 = new ArrayList<>();
+                        final List<Map<CharSequence, Map<String, Integer>>> myList1 =
+                                new ArrayList<Map<CharSequence, Map<String, Integer>>>();
                         myList1.add(new HashMap<CharSequence, Map<String, Integer>>() {{
                                 put("1", new HashMap<String, Integer>() {{
                                         put("2", 3);
                                     }});
                             }});
-                        final List<Map<CharSequence, Map<String, Integer>>> myList2 = new ArrayList<>();
+                        final List<Map<CharSequence, Map<String, Integer>>> myList2 =
+                                new ArrayList<Map<CharSequence, Map<String, Integer>>>();
                         myList2.add(new HashMap<CharSequence, Map<String, Integer>>() {{
                                 put("4", new HashMap<String, Integer>() {{
                                         put("5", 6);
                                     }});
                             }});
 
-                        put("data", new List[]{myList1, myList2});
+                        put("data", new Object[]{myList1, myList2});
                     }});
 
         Assert.assertEquals(myComplexTypeClass.data[0], new ArrayList<HashMap<CharSequence, Map<String, Integer>>>() {{
@@ -281,7 +284,7 @@ public final class ObjectReaderTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testAbsoluteNesting() throws IOException, JSONException {
-        final NestingAbsClass myNestingAbsClass = new ObjectReader<>(
+        final NestingAbsClass myNestingAbsClass = new ObjectReader<NestingAbsClass>(
             NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
                     put("1", 11);
                     put("2", 21);
@@ -308,7 +311,7 @@ public final class ObjectReaderTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testConcreteConstruction() throws IOException, JSONException {
-        final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<>(
+        final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<NestingAbsClass.ConcreteTest>(
                 NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
                         put("genericMap", new TreeMap<CharSequence, Object>() {{
                                 put("a", "b");
@@ -342,34 +345,34 @@ public final class ObjectReaderTest {
                             }});
                     }});
 
-        Assert.assertEquals(myConcreteTest.genericMap, new LinkedHashMap() {{
+        Assert.assertEquals(myConcreteTest.genericMap, new LinkedHashMap<Object, Object>() {{
                 put("a", "b");
             }});
-        Assert.assertEquals(myConcreteTest.typedMap, new LinkedHashMap() {{
+        Assert.assertEquals(myConcreteTest.typedMap, new LinkedHashMap<String, Object>() {{
                 put("c", "d");
             }});
-        Assert.assertEquals(myConcreteTest.genericSet, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.genericSet, new HashSet<Object>() {{
                 add("e");
             }});
-        Assert.assertEquals(myConcreteTest.typedSet, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.typedSet, new HashSet<Object>() {{
                 add("f");
             }});
-        Assert.assertEquals(myConcreteTest.genericAbstractSet, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.genericAbstractSet, new HashSet<Object>() {{
                 add("g");
             }});
-        Assert.assertEquals(myConcreteTest.typedAbstractSet, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.typedAbstractSet, new HashSet<Object>() {{
                 add("h");
             }});
-        Assert.assertEquals(myConcreteTest.genericCollection, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.genericCollection, new HashSet<Object>() {{
                 add("i");
             }});
-        Assert.assertEquals(myConcreteTest.typedCollection, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.typedCollection, new HashSet<Object>() {{
                 add("j");
             }});
-        Assert.assertEquals(myConcreteTest.genericAbstractCollection, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.genericAbstractCollection, new HashSet<Object>() {{
                 add("k");
             }});
-        Assert.assertEquals(myConcreteTest.genericList, new HashSet() {{
+        Assert.assertEquals(myConcreteTest.genericList, new HashSet<Object>() {{
                 add("l");
             }});
     }
@@ -377,7 +380,7 @@ public final class ObjectReaderTest {
     @SuppressWarnings("unchecked")
     @Test(expectedExceptions = JSONException.JSONRuntimeException.class)
     public void testUnknownType() throws IOException, JSONException {
-        new ObjectReader<>(
+        new ObjectReader<NestingAbsClass.InvalidClassTest>(
             NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {{
                     put("calendar", new ArrayList<Object>() {{
                             add(Calendar.getInstance());
@@ -388,17 +391,17 @@ public final class ObjectReaderTest {
     public static final class IdentityHashSetTest {
         @Test(expectedExceptions = NotImplementedException.class)
         public void testAddValue() {
-            new ObjectReader.IdentityHashSet<>().size();
+            new ObjectReader.IdentityHashSet<Object>().size();
         }
 
         @Test(expectedExceptions = NotImplementedException.class)
         public void testIterator() {
-            new ObjectReader.IdentityHashSet<>().iterator();
+            new ObjectReader.IdentityHashSet<Object>().iterator();
         }
 
         @Test
         public void testContains() {
-            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<>();
+            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<String>();
             myHashSet.add("test");
             Assert.assertTrue(myHashSet.contains("test"));
             Assert.assertFalse(myHashSet.contains("testing"));
@@ -476,16 +479,16 @@ public final class ObjectReaderTest {
         }
 
         private static final class ConcreteTest {
-            private Map genericMap;
+            private Map<?, ?> genericMap;
             private Map<String, Object> typedMap;
-            private Set genericSet;
+            private Set<?> genericSet;
             private Set<CharSequence> typedSet;
-            private AbstractSet genericAbstractSet;
+            private AbstractSet<?> genericAbstractSet;
             private AbstractSet<CharSequence> typedAbstractSet;
-            private Collection genericCollection;
+            private Collection<?> genericCollection;
             private Collection<CharSequence> typedCollection;
-            private AbstractCollection genericAbstractCollection;
-            private List genericList;
+            private AbstractCollection<?> genericAbstractCollection;
+            private List<?> genericList;
         }
 
         private static final class InvalidClassTest {

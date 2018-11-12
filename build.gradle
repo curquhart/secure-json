@@ -3,7 +3,7 @@ buildscript {
     ext.sonarQubeEnabled = JavaVersion.current().java8Compatible
     ext.spotBugsEnabled = JavaVersion.current().java8Compatible && JavaVersion.current().getMajorVersion() != '12'
     ext.consoleCoverageReporterEnabled = JavaVersion.current().java8Compatible && !JavaVersion.current().java11Compatible
-    ext.checkStyleEnabled = JavaVersion.current().getMajorVersion() != '12'
+    ext.checkStyleEnabled = !JavaVersion.current().java11Compatible
 
     repositories {
         maven {
@@ -124,37 +124,13 @@ if (shadowEnabled) {
     }
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-def bootstrapPath
-
-if (project.hasProperty('rt')) {
-    bootstrapPath = files(project.getProperty('rt'))
-} else if (JavaVersion.current().java8Compatible) {
-    def stdOut = new ByteArrayOutputStream()
-    try {
-        exec {
-            commandLine '/usr/libexec/java_home', '-v', '1.7'
-            standardOutput = stdOut
-        }
-
-        bootstrapPath = files("${stdOut.toString().trim()}/jre/lib/rt.jar")
-    } catch (final Exception e) {
-        println "Failed to get Java 7 home. Bootstrap path will not be set: ${e.getMessage()}"
-    }
-}
-
-if (bootstrapPath) {
-    println "Using bootstrap path: ${bootstrapPath.join(' ')}"
-    project.tasks.withType(AbstractCompile, { ac ->
-        ac.options.bootstrapClasspath = bootstrapPath
-    })
-}
+def OLD_JRE_VERSION="1.6"
+sourceCompatibility = OLD_JRE_VERSION
+targetCompatibility = OLD_JRE_VERSION
 
 if (JavaVersion.current().java9Compatible) {
     compileJava {
-        options.compilerArgs.addAll(['--release', '7'])
+        options.compilerArgs.addAll(['--release', '6'])
     }
 
     compileJava9Java {
@@ -178,6 +154,32 @@ if (JavaVersion.current().java9Compatible) {
     test {
         jvmArgs '--illegal-access=deny'
     }
+
+    def bootstrapPath
+    if (project.hasProperty('rt')) {
+        bootstrapPath = files(project.getProperty('rt'))
+    } else if (JavaVersion.current().java8Compatible) {
+        def stdOut = new ByteArrayOutputStream()
+        try {
+            exec {
+                commandLine '/usr/libexec/java_home', '-v', OLD_JRE_VERSION
+                standardOutput = stdOut
+            }
+
+            bootstrapPath = files("${stdOut.toString().trim()}/jre/lib/rt.jar")
+        } catch (final Exception e) {
+            println "Failed to get Java ${OLD_JRE_VERSION} home. Bootstrap path will not be set: ${e.getMessage()}"
+        }
+    }
+
+    if (bootstrapPath) {
+        project.tasks.withType(AbstractCompile, { ac ->
+            if (ac.sourceCompatibility == OLD_JRE_VERSION) {
+                println "Using bootstrap path: ${bootstrapPath.join(' ')} for ${ac.name}"
+                ac.options.bootstrapClasspath = bootstrapPath
+            }
+        })
+    }
 }
 
 dependencies {
@@ -198,9 +200,11 @@ pmd {
     ruleSetFiles = files("config/pmd.xml")
 }
 
-compileJava {
-    options.compilerArgs << '-Xlint:all'
-}
+project.tasks.withType(AbstractCompile, { ac ->
+    ac.options.compilerArgs << '-Xlint:all'
+    ac.options.compilerArgs << '-Xlint:-options'
+    ac.options.compilerArgs << '-Werror'
+})
 
 jacocoTestCoverageVerification {
     violationRules {

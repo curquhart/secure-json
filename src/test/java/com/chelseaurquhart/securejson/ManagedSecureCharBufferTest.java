@@ -297,43 +297,59 @@ public final class ManagedSecureCharBufferTest {
 
     @Test
     public void testFullBuffer() throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
-                Settings.DEFAULTS)) {
+        ManagedSecureCharBuffer myManagedSecureCharBuffer = null;
+        try {
+            myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4, Settings.DEFAULTS);
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
             myManagedSecureCharBuffer.append('s');
             myManagedSecureCharBuffer.append('t');
             Assert.assertEquals("test", StringUtil.charSequenceToString(myManagedSecureCharBuffer));
+        } finally {
+            if (myManagedSecureCharBuffer != null) {
+                myManagedSecureCharBuffer.close();
+            }
         }
     }
 
     @Test
     public void testOverflowBuffer() throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
-                Settings.DEFAULTS)) {
+        ManagedSecureCharBuffer myManagedSecureCharBuffer = null;
+        try {
+            myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4, Settings.DEFAULTS);
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
             myManagedSecureCharBuffer.append('s');
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('2');
             Assert.assertEquals("test2", StringUtil.charSequenceToString(myManagedSecureCharBuffer));
+        } finally {
+            if (myManagedSecureCharBuffer != null) {
+                myManagedSecureCharBuffer.close();
+            }
         }
     }
 
     @Test
     public void testUnderflowBuffer() throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
-                Settings.DEFAULTS)) {
+        ManagedSecureCharBuffer myManagedSecureCharBuffer = null;
+        try {
+            myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4, Settings.DEFAULTS);
             myManagedSecureCharBuffer.append('t');
             myManagedSecureCharBuffer.append('e');
             Assert.assertEquals("te", StringUtil.charSequenceToString(myManagedSecureCharBuffer));
+        } finally {
+            if (myManagedSecureCharBuffer != null) {
+                myManagedSecureCharBuffer.close();
+            }
         }
     }
 
     @Test
     public void testCharSequenceByReference() throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
-                Settings.DEFAULTS)) {
+        ManagedSecureCharBuffer myManagedSecureCharBuffer = null;
+        try {
+            myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4, Settings.DEFAULTS);
             final MutatableString myCharSequence = new MutatableString();
 
             myCharSequence.string = "TEST";
@@ -342,49 +358,65 @@ public final class ManagedSecureCharBufferTest {
             Assert.assertEquals(StringUtil.charSequenceToString(myManagedSecureCharBuffer), "TEST");
             myCharSequence.string = "TEST2";
             Assert.assertEquals(StringUtil.charSequenceToString(myManagedSecureCharBuffer), "TEST2");
+        } finally {
+            if (myManagedSecureCharBuffer != null) {
+                myManagedSecureCharBuffer.close();
+            }
         }
     }
 
     @Test
     public void testCharSequenceAndBytesMixedClose() throws IOException {
-        final ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
-                Settings.DEFAULTS);
+        ManagedSecureCharBuffer myManagedSecureCharBuffer = null;
+        try {
+            myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4, Settings.DEFAULTS);
 
-        myManagedSecureCharBuffer.append('a');
-        myManagedSecureCharBuffer.append('b');
-        myManagedSecureCharBuffer.append("test");
-        myManagedSecureCharBuffer.append('c');
-        myManagedSecureCharBuffer.append("test2");
-        myManagedSecureCharBuffer.append('d');
+            myManagedSecureCharBuffer.append('a');
+            myManagedSecureCharBuffer.append('b');
+            myManagedSecureCharBuffer.append("test");
+            myManagedSecureCharBuffer.append('c');
+            myManagedSecureCharBuffer.append("test2");
+            myManagedSecureCharBuffer.append('d');
 
-        Assert.assertEquals(StringUtil.charSequenceToString(myManagedSecureCharBuffer), "abtestctest2d");
-        myManagedSecureCharBuffer.close();
+            Assert.assertEquals(StringUtil.charSequenceToString(myManagedSecureCharBuffer), "abtestctest2d");
+        } finally {
+            if (myManagedSecureCharBuffer != null) {
+                myManagedSecureCharBuffer.close();
+            }
+        }
+
         // after closing all should be empty
         Assert.assertEquals(StringUtil.charSequenceToString(myManagedSecureCharBuffer), "");
     }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testToStringException() throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4,
-                Settings.DEFAULTS)) {
+        ManagedSecureCharBuffer myManagedSecureCharBuffer = null;
+        try {
+            myManagedSecureCharBuffer = new ManagedSecureCharBuffer(4, Settings.DEFAULTS);
             myManagedSecureCharBuffer.append('a');
             myManagedSecureCharBuffer.append('b');
             myManagedSecureCharBuffer.toString();
+        } finally {
+            if (myManagedSecureCharBuffer != null) {
+                myManagedSecureCharBuffer.close();
+            }
         }
     }
 
     @Test(dataProvider = SUBSEQUENCE_DATA_PROVIDER_NAME)
     public void testSubSequence(final Parameters parParameters) throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
-            try {
-                final CharSequence mySequence = myManagedSecureCharBuffer.subSequence(
-                    parParameters.start, parParameters.end);
-                Assert.assertEquals(StringUtil.charSequenceToString(mySequence), parParameters.expected);
-                Assert.assertNull(parParameters.expectedException);
-            } catch (final ArrayIndexOutOfBoundsException myException) {
-                Assert.assertNotNull(parParameters.expectedException);
-                Assert.assertEquals(myException.getMessage(), parParameters.expectedException);
-            }
+        final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer;
+        try {
+            final CharSequence mySequence = myManagedSecureCharBuffer.subSequence(
+                parParameters.start, parParameters.end);
+            Assert.assertEquals(StringUtil.charSequenceToString(mySequence), parParameters.expected);
+            Assert.assertNull(parParameters.expectedException);
+        } catch (final ArrayIndexOutOfBoundsException myException) {
+            Assert.assertNotNull(parParameters.expectedException);
+            Assert.assertEquals(myException.getMessage(), parParameters.expectedException);
+        } finally {
+            myManagedSecureCharBuffer.close();
         }
     }
 
@@ -459,12 +491,15 @@ public final class ManagedSecureCharBufferTest {
 
     @Test(dataProvider = EQUALS_DATA_PROVIDER_NAME)
     public void testEqual(final Parameters parParameters) throws IOException {
-        try (ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer) {
+        final ManagedSecureCharBuffer myManagedSecureCharBuffer = parParameters.managedSecureCharBuffer;
+        try {
             if (parParameters.expectedEquals) {
                 Assert.assertTrue(isEqual(myManagedSecureCharBuffer, parParameters.expected));
             } else {
                 Assert.assertFalse(isEqual(myManagedSecureCharBuffer, parParameters.expected));
             }
+        } finally {
+            myManagedSecureCharBuffer.close();
         }
     }
 

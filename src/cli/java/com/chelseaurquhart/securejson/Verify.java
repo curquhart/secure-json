@@ -18,10 +18,9 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.util.StringUtil;
 
-import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,9 +39,10 @@ public final class Verify {
      * Main entry point.
      *
      * @param parArgs The program arguments to use.
+     * @throws IOException If we failed to close an input stream.
      */
     @SuppressWarnings({"PMD.DoNotCallSystemExit", "PMD.DataflowAnomalyAnalysis", "PMD.SystemPrintln"})
-    public static void main(final String[] parArgs) {
+    public static void main(final String[] parArgs) throws IOException {
         if (parArgs.length == 0) {
             System.out.println("Usage: java Verify ...file.json");
 
@@ -55,14 +55,19 @@ public final class Verify {
         for (final String myFilename : parArgs) {
             Status myStatus;
 
+            InputStream myStream = null;
             try {
-                final byte[] myValue = Files.readAllBytes(Paths.get(myFilename));
-                if (isValidJSON(myValue, !myIsBatch)) {
+                myStream = new FileInputStream(myFilename);
+
+                if (isValidJSON(myStream, !myIsBatch)) {
                     myStatus = Status.OK;
                 } else {
                     myStatus = Status.FAIL;
                 }
             } catch (final IOException myException) {
+                if (myStream != null) {
+                    myStream.close();
+                }
                 myStatus = Status.NOT_FOUND;
             }
 
@@ -74,20 +79,20 @@ public final class Verify {
                     System.out.printf("Bad filename: %s%n", myFilename);
                     System.exit(-1);
                 }
-                switch (myMatch.group(1)) {
-                    case "y":
+                switch (myMatch.group(1).charAt(0)) {
+                    case 'y':
                         if (myStatus != Status.OK) {
                             myExitCode = 1;
                             myFailCount++;
                         }
                         break;
-                    case "n":
+                    case 'n':
                         if (myStatus == Status.OK) {
                             myExitCode = 1;
                             myFailCount++;
                         }
                         break;
-                    case "i":
+                    case 'i':
                         // technically these are optional, but we support all of the cases.
                         if (myStatus != Status.OK) {
                             myExitCode = 1;
@@ -152,9 +157,9 @@ public final class Verify {
     }
 
     @SuppressWarnings("PMD.SystemPrintln")
-    private static boolean isValidJSON(final byte[] parValue, final boolean parEnableConsole) {
+    private static boolean isValidJSON(final InputStream parValue, final boolean parEnableConsole) {
         try {
-            new SecureJSON().fromJSON(new ByteArrayInputStream(parValue), new IConsumer<Object>() {
+            new SecureJSON().fromJSON(parValue, new IConsumer<Object>() {
                 @Override
                 public void accept(final Object parInput) {
                     if (parEnableConsole) {

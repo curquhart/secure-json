@@ -86,8 +86,14 @@ final class Messages {
         properties = new Properties();
 
         final ClassLoader myLoader = Thread.currentThread().getContextClassLoader();
-        try (InputStream myResourceStream = myLoader.getResourceAsStream(RESOURCE_NAME)) {
+        InputStream myResourceStream = null;
+        try {
+            myResourceStream = myLoader.getResourceAsStream(RESOURCE_NAME);
             properties.load(myResourceStream);
+        } finally {
+            if (myResourceStream != null) {
+                myResourceStream.close();
+            }
         }
     }
 }

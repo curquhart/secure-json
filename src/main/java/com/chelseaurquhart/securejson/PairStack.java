@@ -31,9 +31,9 @@ class PairStack<T, U> {
     private final transient Pair<T, U> pair;
 
     PairStack() {
-        part1 = new ArrayDeque<>();
-        part2 = new ArrayDeque<>();
-        pair = new Pair<>();
+        part1 = new ArrayDeque<T>();
+        part2 = new ArrayDeque<U>();
+        pair = new Pair<T, U>();
     }
 
     /**

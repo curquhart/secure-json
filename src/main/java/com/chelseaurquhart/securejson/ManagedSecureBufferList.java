@@ -24,11 +24,11 @@ import java.util.List;
 /**
  * @exclude
  */
-class ManagedSecureBufferList implements Closeable, AutoCloseable {
+class ManagedSecureBufferList implements Closeable, IAutoCloseable {
     private final transient List<ManagedSecureCharBuffer> secureBuffers;
 
     ManagedSecureBufferList() {
-        secureBuffers = new ArrayList<>();
+        secureBuffers = new ArrayList<ManagedSecureCharBuffer>();
     }
 
     @Override

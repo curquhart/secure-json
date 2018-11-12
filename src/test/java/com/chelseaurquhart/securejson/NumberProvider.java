@@ -513,10 +513,12 @@ public final class NumberProvider {
         };
     }
 
-    private static Parameters buildParameters(final String parTestName, final String parInputNumber,
-                                              final Number parExpectedNumber, final Class parExpectedClass,
-                                              final MathContext parMathContext) {
-        return new Parameters(
+    private static <T extends Number> Parameters<T> buildParameters(final String parTestName,
+                                                                    final String parInputNumber,
+                                                                    final T parExpectedNumber,
+                                                                    final Class<T> parExpectedClass,
+                                                                    final MathContext parMathContext) {
+        return new Parameters<T>(
             parTestName,
             newSecureCharBuffer(parInputNumber),
             parExpectedNumber,
@@ -540,16 +542,16 @@ public final class NumberProvider {
     /**
      * Parameters for numeric tests.
      */
-    static class Parameters {
+    static class Parameters<T extends Number> {
         final String testName;
         final CharSequence number;
-        final Number expected;
-        final Class expectedNumberClass;
+        final T expected;
+        final Class<T> expectedNumberClass;
         final MathContext mathContext;
         Exception expectedException;
 
-        Parameters(final String parTestName, final CharSequence parNumber, final Number parExpected,
-                   final Class parExpectedNumberClass, final MathContext parMathContext) {
+        Parameters(final String parTestName, final CharSequence parNumber, final T parExpected,
+                   final Class<T> parExpectedNumberClass, final MathContext parMathContext) {
             this.testName = parTestName;
             this.number = parNumber;
             this.expected = parExpected;
@@ -557,7 +559,7 @@ public final class NumberProvider {
             this.mathContext = parMathContext;
         }
 
-        Parameters exception(final Exception parException) {
+        Parameters<T> exception(final Exception parException) {
             expectedException = parException;
             return this;
         }

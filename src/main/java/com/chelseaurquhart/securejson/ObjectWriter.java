@@ -34,13 +34,15 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
         final Map<CharSequence, Object> myRootMap = buildLinkedHashMap();
         try {
             return accept(parInput, myRootMap, myRootMap);
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
 
     private Map<CharSequence, Object> buildLinkedHashMap() {
-        return new LinkedHashMap<>();
+        return new LinkedHashMap<CharSequence, Object>();
     }
 
     private Object accept(final Object parInput, final Map<CharSequence, Object> parRelMap,
@@ -58,14 +60,14 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
             return myOutput;
         } else if (isCollectionType(myInput)) {
             final Collection<?> myArray = (Collection<?>) myInput;
-            final Collection<Object> myOutput = new ArrayList<>(myArray.size());
+            final Collection<Object> myOutput = new ArrayList<Object>(myArray.size());
             for (final Object myEntry : myArray) {
                 myOutput.add(accept(myEntry));
             }
             return myOutput;
         } else if (isMapType(myInput)) {
             final Map<?, ?> myMap = (Map<?, ?>) myInput;
-            final Map<CharSequence, Object> myOutput = new LinkedHashMap<>(myMap.size());
+            final Map<CharSequence, Object> myOutput = new LinkedHashMap<CharSequence, Object>(myMap.size());
             for (final Map.Entry<?, ?> myEntry : myMap.entrySet()) {
                 final Object myKey = resolve(myEntry.getKey());
                 if (!(myKey instanceof CharSequence)) {

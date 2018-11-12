@@ -35,12 +35,18 @@ public final class IterableInputStreamTest {
 
     @Test
     public void testReadNextChar() throws IOException {
-        try (InputStream myBuffer = new ByteArrayInputStream(new byte[]{'a', 'b'})) {
+        InputStream myBuffer = null;
+        try {
+            myBuffer = new ByteArrayInputStream(new byte[]{'a', 'b'});
             final IterableInputStream myStream = new IterableInputStream(myBuffer);
             Assert.assertEquals(myStream.readNextChar(), (Character) 'a');
             Assert.assertEquals(myStream.readNextChar(), (Character) 'b');
             Assert.assertNull(myStream.readNextChar());
             Assert.assertNull(myStream.readNextChar());
+        } finally {
+            if (myBuffer != null) {
+                myBuffer.close();
+            }
         }
     }
 }

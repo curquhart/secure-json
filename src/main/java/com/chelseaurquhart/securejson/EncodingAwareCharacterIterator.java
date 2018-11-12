@@ -204,7 +204,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
     public final boolean hasNext() {
         try {
             return cacheAndGetNextChar() != null;
-        } catch (final IOException | JSONException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONException myException) {
             throw new JSONRuntimeException(myException);
         }
     }
@@ -233,7 +235,9 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
 
         try {
             myChar = readAndProcessNextChar();
-        } catch (final IOException | JSONDecodeException myException) {
+        } catch (final IOException myException) {
+            throw new JSONRuntimeException(myException);
+        } catch (final JSONDecodeException myException) {
             throw new JSONRuntimeException(myException);
         }
 

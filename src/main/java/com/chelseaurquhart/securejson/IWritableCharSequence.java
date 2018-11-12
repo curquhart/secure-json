@@ -23,7 +23,7 @@ import java.io.IOException;
  * Interface representing a CharSequence that can be written to. It must implement close even if it is a NOOP
  * function.
  */
-public interface IWritableCharSequence extends CharSequence, Closeable, AutoCloseable {
+public interface IWritableCharSequence extends CharSequence, Closeable, IAutoCloseable {
     /**
      * Append a character to the sequence of characters.
      *

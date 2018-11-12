@@ -120,7 +120,7 @@ class ListReader implements IReader<ListReader.Container> {
 
         private List<Object> getList() {
             if (list == null) {
-                list = new LinkedList<>();
+                list = new LinkedList<Object>();
             }
 
             return list;
