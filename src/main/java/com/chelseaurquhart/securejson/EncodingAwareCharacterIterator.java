@@ -71,6 +71,20 @@ abstract class EncodingAwareCharacterIterator implements ICharacterIterator {
         return encoding;
     }
 
+    @Override
+    public void skipWhitespace() throws IOException, JSONException {
+        while (hasNext()) {
+            final char myChar = peek();
+            if (JSONSymbolCollection.WHITESPACES.containsKey(myChar)) {
+                next();
+            } else if (JSONSymbolCollection.Token.isValid(myChar)) {
+                break;
+            } else {
+                throw new InvalidTokenException(this);
+            }
+        }
+    }
+
     private Encoding findEncoding() throws IOException, JSONException {
         // We can accept either encoding. UTF-8 characters, other than the BOM, are not allowed in JSON, so these are
         // the only special characters we need to handle.

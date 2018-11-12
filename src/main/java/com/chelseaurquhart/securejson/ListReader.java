@@ -26,12 +26,6 @@ import java.util.List;
  * @exclude
  */
 class ListReader implements IReader<ListReader.Container> {
-    private final transient JSONReader jsonReader;
-
-    ListReader(final JSONReader parJsonReader) {
-        jsonReader = parJsonReader;
-    }
-
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
@@ -57,7 +51,7 @@ class ListReader implements IReader<ListReader.Container> {
     public Container read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer)
             throws IOException, JSONException {
         parIterator.next();
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
 
         if (!parIterator.hasNext()) {
             throw new MalformedListException(parIterator);
@@ -84,7 +78,7 @@ class ListReader implements IReader<ListReader.Container> {
         final Container myContainer = objectToContainer(parCollection);
         myContainer.add(parValue);
 
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
         if (getSymbolType(parIterator) == SymbolType.UNKNOWN) {
             throw new MalformedListException(parIterator);
         }

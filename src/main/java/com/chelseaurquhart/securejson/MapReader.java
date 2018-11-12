@@ -27,12 +27,6 @@ import java.util.Map;
  * @exclude
  */
 class MapReader implements IReader<MapReader.Container> {
-    private final transient JSONReader jsonReader;
-
-    MapReader(final JSONReader parJsonReader) {
-        jsonReader = parJsonReader;
-    }
-
     @Override
     public boolean isStart(final ICharacterIterator parIterator) throws IOException, JSONException {
         return JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(), null)
@@ -63,7 +57,7 @@ class MapReader implements IReader<MapReader.Container> {
     public Container read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer)
             throws IOException, JSONException {
         parIterator.next();
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
 
         if (!parIterator.hasNext()) {
             throw new MalformedMapException(parIterator);
@@ -83,7 +77,7 @@ class MapReader implements IReader<MapReader.Container> {
     public void addValue(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parContainer,
                          final Object parValue) throws IOException, JSONException {
         final Container myContainer = (Container) parContainer;
-        jsonReader.moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
         final JSONSymbolCollection.Token myToken = JSONSymbolCollection.Token.forSymbolOrDefault(parIterator.peek(),
             null);
         if (myContainer.key == null) {

@@ -55,4 +55,11 @@ interface ICharacterIterator extends Iterator<Character> {
      */
     CharSequence range(int parStart, int parEnd);
 
+    /**
+     * Move to next JSON token.
+     *
+     * @throws IOException On read failure.
+     * @throws JSONException On process failure.
+     */
+    void skipWhitespace() throws IOException, JSONException;
 }

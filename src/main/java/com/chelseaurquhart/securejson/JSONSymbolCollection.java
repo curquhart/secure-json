@@ -196,6 +196,11 @@ final class JSONSymbolCollection {
             }
         }
 
+        static boolean isValid(final Character parChar) {
+            return JSONSymbolCollection.TOKENS.containsKey(parChar)
+                || JSONSymbolCollection.NUMBERS.containsKey(parChar);
+        }
+
         Object getValue() {
             return value;
         }

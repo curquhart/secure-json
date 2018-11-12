@@ -53,8 +53,8 @@ final class JSONReader implements Closeable, IAutoCloseable {
             myNumberReader,
             myStringReader,
             new WordReader(),
-            new ListReader(this),
-            new MapReader(this),
+            new ListReader(),
+            new MapReader(),
         };
     }
 
@@ -71,7 +71,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
 
         final ReaderData myReaderData = new ReaderData();
         while (parIterator.hasNext()) {
-            moveToNextToken(parIterator);
+            parIterator.skipWhitespace();
 
             myReaderData.result = null;
 
@@ -89,7 +89,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             } else {
                 myReaderData.hasResult = false;
             }
-            moveToNextToken(parIterator);
+            parIterator.skipWhitespace();
 
             myReaderData.isFinished = true;
             readStack(parIterator, myStack, myReaderData);
@@ -135,7 +135,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             readStackEnd(parIterator, myHead, parReaderData, parStack);
         } else if (mySymbolType == IReader.SymbolType.SEPARATOR) {
             readStackPart(parIterator, myReader, parReaderData);
-        } else if (parIterator.hasNext() && isValidToken(parIterator.peek())) {
+        } else if (parIterator.hasNext() && JSONSymbolCollection.Token.isValid(parIterator.peek())) {
             parReaderData.isFinished = false;
         } else {
             throw new MalformedJSONException(parIterator);
@@ -145,7 +145,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
     private void readStackPart(final ICharacterIterator parIterator, final IReader<?> parReader,
                                final ReaderData parReaderData) throws IOException, JSONException {
         parIterator.next();
-        moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
         if (parReader.getSymbolType(parIterator) != IReader.SymbolType.UNKNOWN) {
             throw new InvalidTokenException(parIterator);
         }
@@ -159,7 +159,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             throws IOException, JSONException {
         parStack.pop();
         parIterator.next();
-        moveToNextToken(parIterator);
+        parIterator.skipWhitespace();
         // feed it to its parent. Because map stores its data as a wrapper, we need to ask the reader
         // to provide a proper value (ex Map instead of Container)
         parReaderData.result = parValue.resolve();
@@ -192,23 +192,6 @@ final class JSONReader implements Closeable, IAutoCloseable {
         if (myException != null) {
             throw myException;
         }
-    }
-
-    void moveToNextToken(final ICharacterIterator parIterator) throws IOException, JSONException {
-        while (parIterator.hasNext()) {
-            final char myChar = parIterator.peek();
-            if (JSONSymbolCollection.WHITESPACES.containsKey(myChar)) {
-                parIterator.next();
-            } else if (isValidToken(myChar)) {
-                break;
-            } else {
-                throw new InvalidTokenException(parIterator);
-            }
-        }
-    }
-
-    private boolean isValidToken(final char parChar) {
-        return JSONSymbolCollection.TOKENS.containsKey(parChar) || JSONSymbolCollection.NUMBERS.containsKey(parChar);
     }
 
     /**
