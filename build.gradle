@@ -1,7 +1,8 @@
 buildscript {
     ext.shadowEnabled = JavaVersion.current().java8Compatible
     ext.sonarQubeEnabled = JavaVersion.current().java8Compatible
-    ext.spotBugsEnabled = JavaVersion.current().java8Compatible && JavaVersion.current().getMajorVersion() != '12'
+    ext.isJava12 = JavaVersion.current().getMajorVersion() == '12'
+    ext.spotBugsEnabled = JavaVersion.current().java8Compatible && !isJava12
     ext.consoleCoverageReporterEnabled = JavaVersion.current().java8Compatible && !JavaVersion.current().java11Compatible
     ext.checkStyleEnabled = !JavaVersion.current().java11Compatible
 
@@ -124,13 +125,19 @@ if (shadowEnabled) {
     }
 }
 
-def OLD_JRE_VERSION="1.6"
+def OLD_JRE_VERSION
+if (isJava12) {
+    OLD_JRE_VERSION="7"
+} else {
+    OLD_JRE_VERSION="6"
+}
+
 sourceCompatibility = OLD_JRE_VERSION
 targetCompatibility = OLD_JRE_VERSION
 
 if (JavaVersion.current().java9Compatible) {
     compileJava {
-        options.compilerArgs.addAll(['--release', '6'])
+        options.compilerArgs.addAll(['--release', OLD_JRE_VERSION])
     }
 
     compileJava9Java {
