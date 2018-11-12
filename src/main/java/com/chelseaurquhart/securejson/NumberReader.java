@@ -67,6 +67,8 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
         addSecureBuffer(mySecureBuffer);
 
         final int myOffset = parIterator.getOffset();
+        final boolean myCanReadRange = parIterator.canReadRange();
+        final int myRangeStart = parIterator.getOffset();
         while (parIterator.hasNext()) {
             final char myNextChar = parIterator.peek();
 
@@ -74,11 +76,18 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                     || JSONSymbolCollection.END_TOKENS.containsKey(myNextChar)) {
                 break;
             } else {
-                mySecureBuffer.append(parIterator.next());
+                if (myCanReadRange) {
+                    parIterator.next();
+                } else {
+                    mySecureBuffer.append(parIterator.next());
+                }
             }
         }
 
         try {
+            if (myCanReadRange) {
+                mySecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset()));
+            }
             return charSequenceToNumber(mySecureBuffer, myOffset);
         } catch (final ArithmeticException myException) {
             throw new MalformedNumberException(parIterator);
