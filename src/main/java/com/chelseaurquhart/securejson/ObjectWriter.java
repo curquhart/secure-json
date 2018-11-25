@@ -17,6 +17,7 @@
 package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
+import com.chelseaurquhart.securejson.ObjectSerializer.SerializationSettings;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -28,7 +29,9 @@ import java.util.Map;
 /**
  * @exclude
  */
-class ObjectWriter extends ObjectSerializer implements IObjectMutator {
+final class ObjectWriter implements IObjectMutator {
+    private final ObjectSerializer objectSerializer = new ObjectSerializer();
+
     @Override
     public Object accept(final Object parInput) {
         final Map<CharSequence, Object> myRootMap = buildLinkedHashMap();
@@ -47,29 +50,29 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
 
     private Object accept(final Object parInput, final Map<CharSequence, Object> parRelMap,
                           final Map<CharSequence, Object> parAbsMap) throws IOException, JSONException {
-        final Object myInput = resolve(parInput);
+        final Object myInput = objectSerializer.resolve(parInput);
 
-        if (isSimpleType(myInput)) {
+        if (objectSerializer.isSimpleType(myInput)) {
             return myInput;
-        } else if (isArrayType(myInput)) {
+        } else if (objectSerializer.isArrayType(myInput)) {
             final Object[] myArray = (Object[]) myInput;
             final Object[] myOutput = new Object[myArray.length];
             for (int myIndex = 0; myIndex < myArray.length; myIndex++) {
                 myOutput[myIndex] = accept(myArray[myIndex]);
             }
             return myOutput;
-        } else if (isCollectionType(myInput)) {
+        } else if (objectSerializer.isCollectionType(myInput)) {
             final Collection<?> myArray = (Collection<?>) myInput;
             final Collection<Object> myOutput = new ArrayList<Object>(myArray.size());
             for (final Object myEntry : myArray) {
                 myOutput.add(accept(myEntry));
             }
             return myOutput;
-        } else if (isMapType(myInput)) {
+        } else if (objectSerializer.isMapType(myInput)) {
             final Map<?, ?> myMap = (Map<?, ?>) myInput;
             final Map<CharSequence, Object> myOutput = new LinkedHashMap<CharSequence, Object>(myMap.size());
             for (final Map.Entry<?, ?> myEntry : myMap.entrySet()) {
-                final Object myKey = resolve(myEntry.getKey());
+                final Object myKey = objectSerializer.resolve(myEntry.getKey());
                 if (!(myKey instanceof CharSequence)) {
                     throw new JSONEncodeException(Messages.Key.ERROR_INVALID_MAP_KEY_TYPE_STRICT);
                 }
@@ -84,9 +87,9 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
     private Map<CharSequence, Object> addObjectToMap(final Object parInput, final Map<CharSequence, Object> parRelMap,
                                                      final Map<CharSequence, Object> parAbsMap) throws IOException,
             JSONException {
-        for (final Field myField : getFields(parInput.getClass())) {
-            final SerializationSettings mySerializationSettings = getSerializationSettings(myField);
-            final Object myFieldValue = accept(getValue(myField, parInput), parRelMap, parAbsMap);
+        for (final Field myField : objectSerializer.getFields(parInput.getClass())) {
+            final SerializationSettings mySerializationSettings = objectSerializer.getSerializationSettings(myField);
+            final Object myFieldValue = accept(objectSerializer.getValue(myField, parInput), parRelMap, parAbsMap);
             final Map<CharSequence, Object> myTargetMap;
             if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
                 myTargetMap = parAbsMap;
@@ -115,7 +118,7 @@ class ObjectWriter extends ObjectSerializer implements IObjectMutator {
                     throw new JSONEncodeException(Messages.Key.ERROR_ATTEMPT_TO_ADD_MAP_ENTRY_TO_NON_MAP);
                 }
 
-                myTargetMap = castToMap(myValue);
+                myTargetMap = objectSerializer.castToMap(myValue);
             } else {
                 if (myTargetMap.containsKey(parTarget[myIndex])) {
                     throw new JSONEncodeException(Messages.Key.ERROR_INVALID_SERIALIZATION_CONFIG);

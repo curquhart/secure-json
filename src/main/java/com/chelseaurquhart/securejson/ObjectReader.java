@@ -16,6 +16,8 @@
 
 package com.chelseaurquhart.securejson;
 
+import com.chelseaurquhart.securejson.ObjectSerializer.SerializationSettings;
+
 import net.jodah.typetools.TypeResolver;
 
 import java.io.IOException;
@@ -48,7 +50,9 @@ import java.util.Set;
  * @exclude
  */
 @SuppressWarnings("unchecked")
-class ObjectReader<T> extends ObjectSerializer {
+final class ObjectReader<T> {
+    private final ObjectSerializer objectSerializer = new ObjectSerializer();
+
     /**
      * A collection of types that we can ignore when we're recursively resolving targets.
      */
@@ -132,19 +136,18 @@ class ObjectReader<T> extends ObjectSerializer {
         settings = parSettings;
     }
 
-    @SuppressWarnings("unchecked")
-    final T accept(final Object parInput) throws IOException, JSONException {
+    T accept(final Object parInput) throws IOException, JSONException {
         return buildInstance(parInput, null);
     }
 
     private T buildInstance(final Object parInput, final Map<CharSequence, Object> parAbsMap) throws IOException,
             JSONException {
-        final T myInstance = construct(clazz);
+        final T myInstance = objectSerializer.construct(clazz);
 
         if (myInstance instanceof IJSONDeserializeAware) {
             ((IJSONDeserializeAware) myInstance).fromJSONable(parInput);
-        } else if (isMapType(parInput)) {
-            final Map<CharSequence, Object> myMap = castToMap(parInput);
+        } else if (objectSerializer.isMapType(parInput)) {
+            final Map<CharSequence, Object> myMap = objectSerializer.castToMap(parInput);
             final Map<CharSequence, Object> myAbsMap;
             if (parAbsMap == null) {
                 myAbsMap = myMap;
@@ -186,7 +189,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
     private void accept(final Object parInstance, final Map<CharSequence, Object> parRelMap,
                         final Map<CharSequence, Object> parAbsMap) throws IOException, JSONException {
-        for (final Field myField : getFields(clazz)) {
+        for (final Field myField : objectSerializer.getFields(clazz)) {
             accept(parInstance, myField, parRelMap, parAbsMap);
         }
     }
@@ -194,7 +197,7 @@ class ObjectReader<T> extends ObjectSerializer {
     private void accept(final Object parInstance, final Field parField, final Map<CharSequence, Object> parRelMap,
                         final Map<CharSequence, Object> parAbsMap)
             throws IOException, JSONException {
-        final SerializationSettings mySerializationSettings = getSerializationSettings(parField);
+        final SerializationSettings mySerializationSettings = objectSerializer.getSerializationSettings(parField);
         final Class<?> myType = parField.getType();
         final Object myValue;
         if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
@@ -203,7 +206,8 @@ class ObjectReader<T> extends ObjectSerializer {
             myValue = extractFromMap(parRelMap, mySerializationSettings.getTarget());
         }
 
-        setValueIfNotNull(parField, parInstance, buildValue(parField.getGenericType(), myType, myValue, parAbsMap));
+        objectSerializer.setValueIfNotNull(parField, parInstance, buildValue(parField.getGenericType(), myType,
+            myValue, parAbsMap));
 
         recursivelyAccept(parInstance, parField, myType, parAbsMap, null);
     }
@@ -214,18 +218,18 @@ class ObjectReader<T> extends ObjectSerializer {
         if (!canRecursivelyAccept(parType)) {
             return false;
         }
-        Object myInstance = getValue(parField, parInstance);
+        Object myInstance = objectSerializer.getValue(parField, parInstance);
         if (myInstance == null) {
-            myInstance = construct(getConcreteClass(parType));
+            myInstance = objectSerializer.construct(getConcreteClass(parType));
         }
 
         final ObjectData myData = new ObjectData();
-        for (final Field myField : getFields(parType)) {
+        for (final Field myField : objectSerializer.getFields(parType)) {
             recursivelyAcceptWithData(myInstance, myField, parField, myData, parAbsMap, parClassStack);
         }
 
         if (myData.foundData) {
-            setValueIfNotNull(parField, parInstance, myInstance);
+            objectSerializer.setValueIfNotNull(parField, parInstance, myInstance);
         }
 
         return myData.foundData;
@@ -234,7 +238,8 @@ class ObjectReader<T> extends ObjectSerializer {
     private void recursivelyAcceptWithData(final Object parInstance, final Field parParentField, final Field parField,
                                            final ObjectData parData, final Map<CharSequence, Object> parAbsMap,
                                            final Set<Class<?>> parClassStack) throws JSONException, IOException {
-        final SerializationSettings mySerializationSettings = getSerializationSettings(parParentField);
+        final SerializationSettings mySerializationSettings = objectSerializer.getSerializationSettings(
+            parParentField);
 
         final Object myValue;
         if (mySerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
@@ -253,7 +258,7 @@ class ObjectReader<T> extends ObjectSerializer {
                 final Object myResolvedValue = buildValue(parParentField.getGenericType(), myFieldType, myValue,
                         parAbsMap);
                 if (myResolvedValue != null) {
-                    setValueIfNotNull(parParentField, parInstance, myResolvedValue);
+                    objectSerializer.setValueIfNotNull(parParentField, parInstance, myResolvedValue);
                     parData.foundData = true;
                 }
             }
@@ -266,13 +271,13 @@ class ObjectReader<T> extends ObjectSerializer {
                                            final Field parParentField, final Field parField, final ObjectData parData,
                                            final Map<CharSequence, Object> parAbsMap, final Set<Class<?>> parClassStack)
             throws IOException, JSONException {
-        final Object mySubInstance = construct(getConcreteClass(parFieldType));
+        final Object mySubInstance = objectSerializer.construct(getConcreteClass(parFieldType));
 
         boolean myFoundSubData = false;
         if (parSerializationSettings.getStrategy() == Relativity.ABSOLUTE) {
             if (parValue != null) {
                 final Object myAcceptedValue = buildObjectReader(parField.getType()).accept(parValue);
-                setValueIfNotNull(parParentField, mySubInstance, buildValue(parField.getGenericType(),
+                objectSerializer.setValueIfNotNull(parParentField, mySubInstance, buildValue(parField.getGenericType(),
                         parField.getType(), myAcceptedValue, parAbsMap));
                 myFoundSubData = myAcceptedValue != null;
             }
@@ -416,7 +421,7 @@ class ObjectReader<T> extends ObjectSerializer {
 
         final Map<Object, Object> myMap;
         try {
-            myMap = construct(getConcreteClass((Class<Map<Object, Object>>) parType));
+            myMap = objectSerializer.construct(getConcreteClass((Class<Map<Object, Object>>) parType));
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
@@ -436,7 +441,7 @@ class ObjectReader<T> extends ObjectSerializer {
                                         final Collection<?> parValue) throws IOException, JSONException {
         final Collection<Object> myCollection;
         try {
-            myCollection = construct(getConcreteClass((Class<Collection<Object>>) parType));
+            myCollection = objectSerializer.construct(getConcreteClass((Class<Collection<Object>>) parType));
         } catch (final ClassCastException myException) {
             throw new JSONException(myException);
         }
@@ -558,7 +563,7 @@ class ObjectReader<T> extends ObjectSerializer {
             }
 
             if (myResult instanceof Map) {
-                myMap = castToMap(myResult);
+                myMap = objectSerializer.castToMap(myResult);
             } else {
                 myMap = null;
             }

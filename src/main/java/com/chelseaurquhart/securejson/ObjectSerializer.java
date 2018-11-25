@@ -35,8 +35,10 @@ import java.util.Map;
  * Serializer to/from Objects.
  * @exclude
  */
-class ObjectSerializer extends ObjectReflector {
-    final SerializationSettings getSerializationSettings(final Field parField) {
+final class ObjectSerializer {
+    private final ObjectReflector objectReflector = new ObjectReflector();
+
+    SerializationSettings getSerializationSettings(final Field parField) {
         final Serialize myAnnotation = parField.getAnnotation(Serialize.class);
         String[] mySerializationTarget = null;
         Relativity mySerializationTargetStrategy = Relativity.RELATIVE;
@@ -56,28 +58,28 @@ class ObjectSerializer extends ObjectReflector {
         return new SerializationSettings(mySerializationTarget, mySerializationTargetStrategy);
     }
 
-    final boolean isSimpleType(final Object parInput) {
+    boolean isSimpleType(final Object parInput) {
         return parInput == null || parInput instanceof Number || parInput instanceof CharSequence
             || parInput instanceof Boolean;
     }
 
-    final boolean isCollectionType(final Object parInput) {
+    boolean isCollectionType(final Object parInput) {
         return parInput instanceof Collection;
     }
 
-    final boolean isMapType(final Object parInput) {
+    boolean isMapType(final Object parInput) {
         return parInput instanceof Map;
     }
 
-    final boolean isArrayType(final Object parInput) {
+    boolean isArrayType(final Object parInput) {
         return parInput != null && isArrayType(parInput.getClass());
     }
 
-    final boolean isArrayType(final Class<?> parInput) {
+    boolean isArrayType(final Class<?> parInput) {
         return parInput.isArray();
     }
 
-    final Object resolve(final Object parInput) {
+    Object resolve(final Object parInput) {
         if (parInput instanceof IJSONSerializeAware) {
             try {
                 return resolve(((IJSONSerializeAware) parInput).toJSONable());
@@ -89,7 +91,7 @@ class ObjectSerializer extends ObjectReflector {
         return parInput;
     }
 
-    final Collection<Field> getFields(final Class<?> parClass) {
+    Collection<Field> getFields(final Class<?> parClass) {
         final List<Field> myCollection = new LinkedList<Field>();
         for (final Field myField : parClass.getDeclaredFields()) {
             if (Modifier.isTransient(myField.getModifiers()) || myField.isSynthetic()) {
@@ -106,11 +108,11 @@ class ObjectSerializer extends ObjectReflector {
         return Collections.unmodifiableCollection(myCollection);
     }
 
-    final Object getValue(final Field parField, final Object parInstance) {
+    Object getValue(final Field parField, final Object parInstance) {
         return AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
-                final boolean myOriginalValue = isAccessible(parField, parInstance);
+                final boolean myOriginalValue = objectReflector.isAccessible(parField, parInstance);
                 try {
                     parField.setAccessible(true);
                     return parField.get(parInstance);
@@ -127,7 +129,7 @@ class ObjectSerializer extends ObjectReflector {
         });
     }
 
-    final void setValueIfNotNull(final Field parField, final Object parInstance, final Object parValue) {
+    void setValueIfNotNull(final Field parField, final Object parInstance, final Object parValue) {
         if (parValue == null) {
             return;
         }
@@ -135,7 +137,7 @@ class ObjectSerializer extends ObjectReflector {
         AccessController.doPrivileged(new PrivilegedAction<Field>() {
             @Override
             public Field run() {
-                final boolean myOriginalValue = isAccessible(parField, parInstance);
+                final boolean myOriginalValue = objectReflector.isAccessible(parField, parInstance);
                 try {
                     parField.setAccessible(true);
                     parField.set(parInstance, parValue);
@@ -167,7 +169,7 @@ class ObjectSerializer extends ObjectReflector {
                 public U run() {
                     // RuntimeException because we need to catch InaccessibleObjectException
                     // but also compile pre-java 9.
-                    final boolean myOriginalValue = isAccessible(myConstructor, null);
+                    final boolean myOriginalValue = objectReflector.isAccessible(myConstructor, null);
                     try {
                         myConstructor.setAccessible(true);
                     } catch (final RuntimeException myException) {
@@ -192,7 +194,7 @@ class ObjectSerializer extends ObjectReflector {
     }
 
     @SuppressWarnings("unchecked")
-    final Map<CharSequence, Object> castToMap(final Object parValue) throws JSONException {
+    Map<CharSequence, Object> castToMap(final Object parValue) throws JSONException {
         try {
             return (Map) parValue;
         } catch (final ClassCastException myException) {
