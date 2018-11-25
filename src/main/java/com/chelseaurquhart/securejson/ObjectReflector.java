@@ -21,7 +21,7 @@ import java.lang.reflect.AccessibleObject;
 /**
  * @exclude
  */
-class ObjectReflector {
+final class ObjectReflector {
     boolean isAccessible(final AccessibleObject parField, final Object parInstance) {
         return parField.isAccessible();
     }
