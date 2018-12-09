@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -82,11 +83,13 @@ final class ObjectWriter implements IObjectMutator {
         } else if (objectSerializer.isEnumType(myInput)) {
             return myInput.toString();
         } else {
-            return addObjectToMap(myInput, parRelMap, parAbsMap);
+            final Map<CharSequence, Object> myMap = new HashMap<CharSequence, Object>();
+            addObjectToMap(myInput, myMap, parAbsMap);
+            return myMap;
         }
     }
 
-    private Map<CharSequence, Object> addObjectToMap(final Object parInput, final Map<CharSequence, Object> parRelMap,
+    private void addObjectToMap(final Object parInput, final Map<CharSequence, Object> parRelMap,
                                                      final Map<CharSequence, Object> parAbsMap) throws IOException,
             JSONException {
         for (final Field myField : objectSerializer.getFields(parInput.getClass())) {
@@ -100,8 +103,6 @@ final class ObjectWriter implements IObjectMutator {
             }
             addToMap(myFieldValue, myTargetMap, parAbsMap, mySerializationSettings.getTarget());
         }
-
-        return parAbsMap;
     }
 
     private void addToMap(final Object parFieldValue, final Map<CharSequence, Object> parTargetMap,

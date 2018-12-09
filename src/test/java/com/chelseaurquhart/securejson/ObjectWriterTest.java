@@ -29,7 +29,9 @@ import java.util.LinkedList;
 public final class ObjectWriterTest {
     enum TestEnum {
         ONE,
-        TWO
+        TWO,
+        THREE,
+        FOUR
     }
 
     private ObjectWriterTest() {
@@ -38,18 +40,28 @@ public final class ObjectWriterTest {
     @Test
     void testSimpleObject() {
         final ObjectWriter myObjectWriter = new ObjectWriter();
-        Assert.assertEquals(myObjectWriter.accept(new Object() {
+        final Object myOutput = myObjectWriter.accept(new Object() {
             private CharSequence a = "b";
             private transient CharSequence b = "c";
             private TestEnum testEnum = TestEnum.ONE;
             private TestEnum testEnum2 = TestEnum.TWO;
-        }), new HashMap<CharSequence, Object>() {
+            private Inner inner = new Inner();
+        });
+        Assert.assertEquals(myOutput, new HashMap<CharSequence, Object>() {
             private static final long serialVersionUID = 1L;
 
             {
                 put("a", "b");
                 put("testEnum", "ONE");
                 put("testEnum2", "TWO");
+                put("inner", new HashMap<CharSequence, Object>() {{
+                    put("testEnum", "THREE");
+                    put("inner2", new HashMap<CharSequence, Object>() {{
+                        put("test", new HashMap<CharSequence, Object>() {{
+                            put("enum", "FOUR");
+                        }});
+                    }});
+                }});
             }
         });
     }
@@ -88,5 +100,17 @@ public final class ObjectWriterTest {
                 add("b");
             }
         });
+    }
+
+    @SuppressWarnings("PMD.UnusedPrivateField")
+    private static class Inner {
+        private TestEnum testEnum = TestEnum.THREE;
+        private Inner2 inner2 = new Inner2();
+    }
+
+    @SuppressWarnings("PMD.UnusedPrivateField")
+    private static class Inner2 {
+        @Serialize(name={"test", "enum"})
+        private TestEnum testEnum = TestEnum.FOUR;
     }
 }
