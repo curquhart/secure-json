@@ -499,6 +499,7 @@ public final class ObjectReaderTest {
                                 add("l");
                             }
                         });
+                        put("testEnum", "ONE");
                     }
                 });
 
@@ -572,6 +573,7 @@ public final class ObjectReaderTest {
                 add("l");
             }
         });
+        Assert.assertEquals(myConcreteTest.testEnum, ObjectWriterTest.TestEnum.ONE);
     }
 
     @SuppressWarnings("unchecked")
@@ -694,6 +696,7 @@ public final class ObjectReaderTest {
             private Collection<CharSequence> typedCollection;
             private AbstractCollection<?> genericAbstractCollection;
             private List<?> genericList;
+            private ObjectWriterTest.TestEnum testEnum;
         }
 
         private static final class InvalidClassTest {

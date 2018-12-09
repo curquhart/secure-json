@@ -320,7 +320,7 @@ final class ObjectReader<T> {
     }
 
     private boolean canRecursivelyAccept(final Class<?> parFieldType) {
-        if (parFieldType.isArray()) {
+        if (parFieldType.isArray() || parFieldType.isEnum()) {
             return false;
         }
         for (final Class<?> myRecursionType : IGNORE_RECURSION_TYPES) {
@@ -357,9 +357,27 @@ final class ObjectReader<T> {
             return buildNumberValue(myType, (Number) parValue);
         } else if (CharSequence.class.isAssignableFrom(myType)) {
             return buildStringValue(myType, (CharSequence) parValue, settings.isStrictStrings());
+        } else if (isEnum(myType, parValue)) {
+            return buildEnumValue(myType, (CharSequence) parValue);
         } else {
             return new ObjectReader<U>((Class<U>) myType, settings).buildInstance(parValue, parAbsMap);
         }
+    }
+
+    private Object buildEnumValue(final Class<?> parType, final CharSequence parValue) throws IOException,
+            JSONException {
+        for (final Object myObject : parType.getEnumConstants()) {
+            final String myValueString = myObject.toString();
+            if (myValueString != null && myValueString.contentEquals(parValue)) {
+                return myObject;
+            }
+        }
+
+        throw new JSONException(Messages.get(Messages.Key.ERROR_INVALID_TOKEN));
+    }
+
+    private boolean isEnum(final Class<?> parType, final Object parValue) {
+        return parType.isEnum() && parValue instanceof CharSequence;
     }
 
     private boolean isArray(final Class<?> parType, final Object parValue) {
