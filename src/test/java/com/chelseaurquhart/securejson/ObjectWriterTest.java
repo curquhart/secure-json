@@ -54,10 +54,19 @@ public final class ObjectWriterTest {
                 put("a", "b");
                 put("testEnum", "ONE");
                 put("testEnum2", "TWO");
-                put("inner", new HashMap<CharSequence, Object>() {{
+                put("inner", new HashMap<CharSequence, Object>() {
+                    private static final long serialVersionUID = 1L;
+
+                    {
                     put("testEnum", "THREE");
-                    put("inner2", new HashMap<CharSequence, Object>() {{
-                        put("test", new HashMap<CharSequence, Object>() {{
+                    put("inner2", new HashMap<CharSequence, Object>() {
+                        private static final long serialVersionUID = 1L;
+
+                        {
+                        put("test", new HashMap<CharSequence, Object>() {
+                            private static final long serialVersionUID = 1L;
+
+                            {
                             put("enum", "FOUR");
                         }});
                     }});
