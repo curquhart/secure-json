@@ -79,6 +79,10 @@ final class ObjectSerializer {
         return parInput.isArray();
     }
 
+    boolean isEnumType(final Object parInput) {
+        return parInput != null && parInput.getClass().isEnum();
+    }
+
     Object resolve(final Object parInput) {
         if (parInput instanceof IJSONSerializeAware) {
             try {

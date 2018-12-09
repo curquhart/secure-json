@@ -27,6 +27,11 @@ import java.util.LinkedList;
 @SuppressWarnings("PMD.CommentRequired")
 @Test(singleThreaded = true)
 public final class ObjectWriterTest {
+    enum TestEnum {
+        ONE,
+        TWO
+    }
+
     private ObjectWriterTest() {
     }
 
@@ -36,11 +41,15 @@ public final class ObjectWriterTest {
         Assert.assertEquals(myObjectWriter.accept(new Object() {
             private CharSequence a = "b";
             private transient CharSequence b = "c";
+            private TestEnum testEnum = TestEnum.ONE;
+            private TestEnum testEnum2 = TestEnum.TWO;
         }), new HashMap<CharSequence, Object>() {
             private static final long serialVersionUID = 1L;
 
             {
                 put("a", "b");
+                put("testEnum", "ONE");
+                put("testEnum2", "TWO");
             }
         });
     }

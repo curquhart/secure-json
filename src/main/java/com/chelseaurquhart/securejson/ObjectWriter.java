@@ -79,6 +79,8 @@ final class ObjectWriter implements IObjectMutator {
                 myOutput.put((CharSequence) myKey, accept(myEntry.getValue(), parRelMap, parAbsMap));
             }
             return myOutput;
+        } else if (objectSerializer.isEnumType(myInput)) {
+            return myInput.toString();
         } else {
             return addObjectToMap(myInput, parRelMap, parAbsMap);
         }
