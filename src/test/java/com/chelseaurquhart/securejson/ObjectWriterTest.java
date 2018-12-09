@@ -58,19 +58,19 @@ public final class ObjectWriterTest {
                     private static final long serialVersionUID = 1L;
 
                     {
-                    put("testEnum", "THREE");
-                    put("inner2", new HashMap<CharSequence, Object>() {
-                        private static final long serialVersionUID = 1L;
-
-                        {
-                        put("test", new HashMap<CharSequence, Object>() {
+                        put("testEnum", "THREE");
+                        put("inner2", new HashMap<CharSequence, Object>() {
                             private static final long serialVersionUID = 1L;
 
                             {
-                            put("enum", "FOUR");
-                        }});
+                                put("test", new HashMap<CharSequence, Object>() {
+                                    private static final long serialVersionUID = 1L;
+
+                                    {
+                                        put("enum", "FOUR");
+                                    }});
+                            }});
                     }});
-                }});
             }
         });
     }
@@ -119,7 +119,7 @@ public final class ObjectWriterTest {
 
     @SuppressWarnings("PMD.UnusedPrivateField")
     private static class Inner2 {
-        @Serialize(name={"test", "enum"})
+        @Serialize(name = {"test", "enum"})
         private TestEnum testEnum = TestEnum.FOUR;
     }
 }
