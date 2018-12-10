@@ -38,7 +38,6 @@ Test Java 11 OpenJDK:
   stage: JDK Build and Test
   script:
     - unset SONAR_TOKEN
-    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
     - ./gradlew --no-daemon check
 
 Test Java 12 OpenJDK:
@@ -49,7 +48,7 @@ Test Java 12 OpenJDK:
   allow_failure: true
   script:
     - unset SONAR_TOKEN
-    - ./gradlew wrapper --gradle-version=5.0-20181110000025+0000
+    - ./gradlew wrapper --gradle-version=5.0
     - ./gradlew --no-daemon check
 
 Publish Java 10 OpenJDK:
