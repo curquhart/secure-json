@@ -1,9 +1,11 @@
+import org.gradle.util.GradleVersion
+
 buildscript {
     ext.shadowEnabled = JavaVersion.current().java8Compatible
     ext.sonarQubeEnabled = JavaVersion.current().java8Compatible
     ext.isJava12 = JavaVersion.current().getMajorVersion() == '12'
     ext.spotBugsEnabled = JavaVersion.current().java8Compatible && !isJava12
-    ext.consoleCoverageReporterEnabled = JavaVersion.current().java8Compatible && !JavaVersion.current().java11Compatible
+    ext.consoleCoverageReporterEnabled = JavaVersion.current().java8Compatible && GradleVersion.current() < GradleVersion.version("5.0")
     ext.checkStyleEnabled = !JavaVersion.current().java11Compatible
 
     repositories {
