@@ -142,7 +142,13 @@ final class ObjectReader<T> {
 
     private T buildInstance(final Object parInput, final Map<CharSequence, Object> parAbsMap) throws IOException,
             JSONException {
-        final T myInstance = objectSerializer.construct(clazz);
+        final IFunction<Object, ?> myInitializer = settings.getClassInitializers().get(clazz);
+        final T myInstance;
+        if (myInitializer != null) {
+            myInstance = (T) myInitializer.accept(parInput);
+        } else {
+            myInstance = objectSerializer.construct(clazz);
+        }
 
         if (myInstance instanceof IJSONDeserializeAware) {
             ((IJSONDeserializeAware) myInstance).fromJSONable(parInput);
