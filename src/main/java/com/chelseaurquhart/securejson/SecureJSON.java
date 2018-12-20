@@ -23,6 +23,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * SecureJSON is a JSON serializer and deserializer with strict security in mind. It does not create strings due to
@@ -502,6 +504,8 @@ public final class SecureJSON {
         private boolean strictMapKeyTypes = Settings.DEFAULT_STRICT_MAP_KEY_TYPES;
         private IFunction<Integer, IWritableCharSequence> writableCharBufferFactory =
             Settings.DEFAULT_WRITABLE_CHAR_BUFFER_FACTORY;
+        private final Map<Class<?>, IFunction<Object, ?>> classInitializers
+            = new HashMap<Class<?>, IFunction<Object, ?>>();
 
         /**
          * Set the strictStrings option. If strictStrings is true, we will never convert CharSequence to string. If it
@@ -637,6 +641,33 @@ public final class SecureJSON {
         }
 
         /**
+         * Register a class initializer. This will allow classes to be constructed without using reflection, assuming
+         * that they inherit from IJSONDeserializeAware. Note that while the full input will be provided to extract
+         * any construction parameters, etc, the object should still implement IJSONDeserializeAware unless the
+         * intention is to allow reflection to do the rest of the property initializations.
+         *
+         * <p>Example:</p>::
+         *     <code>
+         *
+         *        import com.chelseaurquhart.securejson.SecureJSON;
+         *        final SecureJSON secureJSON = new SecureJSON.Builder()
+         *            .registerClassInitializer(SomeClass.class, () -> new SomeClass("required arg"))
+         *            .build();
+         *     </code>
+         *
+         * @param parClazz The class to register.
+         * @param parInitializer The initializer to register.
+         * @param <T> The type of class to register.
+         * @return A reference to this object.
+         */
+        public <T> Builder registerClassInitializer(final Class<T> parClazz,
+                                                    final IFunction<Object, T> parInitializer) {
+            classInitializers.put(parClazz, parInitializer);
+
+            return this;
+        }
+
+        /**
          * Build a SecureJSON instance using our settings.
          *
          * <p>Example:</p>::
@@ -678,6 +709,13 @@ public final class SecureJSON {
          */
         IFunction<Integer, IWritableCharSequence> getWritableCharBufferFactory() {
             return writableCharBufferFactory;
+        }
+
+        /**
+         * @exclude
+         */
+        Map<Class<?>, IFunction<Object, ?>> getClassInitializers() {
+            return classInitializers;
         }
     }
 

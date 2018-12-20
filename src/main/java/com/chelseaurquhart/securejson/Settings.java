@@ -16,6 +16,9 @@
 
 package com.chelseaurquhart.securejson;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @exclude
  */
@@ -34,17 +37,20 @@ class Settings {
     private final boolean strictStrings;
     private final boolean strictMapKeyTypes;
     private final IFunction<Integer, IWritableCharSequence> writableCharBufferFactory;
+    private final Map<Class<?>, IFunction<Object, ?>> classInitializers;
 
     Settings() {
         strictStrings = DEFAULT_STRICT_STRINGS;
         strictMapKeyTypes = DEFAULT_STRICT_MAP_KEY_TYPES;
         writableCharBufferFactory = DEFAULT_WRITABLE_CHAR_BUFFER_FACTORY;
+        classInitializers = new HashMap<Class<?>, IFunction<Object, ?>>();
     }
 
     Settings(final SecureJSON.Builder parBuilder) {
         strictStrings = parBuilder.isStrictStrings();
         strictMapKeyTypes = parBuilder.isStrictMapKeyTypes();
         writableCharBufferFactory = parBuilder.getWritableCharBufferFactory();
+        classInitializers = parBuilder.getClassInitializers();
     }
 
     boolean isStrictStrings() {
@@ -57,5 +63,9 @@ class Settings {
 
     IFunction<Integer, IWritableCharSequence> getWritableCharBufferFactory() {
         return writableCharBufferFactory;
+    }
+
+    Map<Class<?>, IFunction<Object, ?>> getClassInitializers() {
+        return classInitializers;
     }
 }

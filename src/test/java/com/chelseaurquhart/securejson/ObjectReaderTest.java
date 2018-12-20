@@ -45,6 +45,14 @@ import java.util.TreeMap;
 @SuppressWarnings("PMD.CommentRequired")
 @Test(singleThreaded = true)
 public final class ObjectReaderTest {
+    private static final Settings DEFAULT_SETTINGS = new Settings(
+        new SecureJSON.Builder()
+            .registerClassInitializer(NestingAbsClass.Level2.class, new IFunction<Object, NestingAbsClass.Level2>() {
+                @Override
+                public NestingAbsClass.Level2 accept(final Object parInput) {
+                    return new NestingAbsClass.Level2("test");
+                }
+            }));
     private static final Settings UNSTRICT_SETTINGS = new Settings(new SecureJSON.Builder().strictStrings(false));
 
     @BeforeTest
@@ -71,10 +79,10 @@ public final class ObjectReaderTest {
                 {
                     put("integerVal", 1);
                     put("shortVal", 2);
-                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                     myStringBuffer.append("testingString");
                     put("stringVal", myStringBuffer);
-                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                     myCSeqBuffer.append("testingCharSeq");
                     put("charSeqVal", myCSeqBuffer);
                     put("transientIntVal", 123);
@@ -124,10 +132,10 @@ public final class ObjectReaderTest {
                             put("integerVal", 11);
                             put("shortVal", 21);
                             final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                Settings.DEFAULTS);
+                                DEFAULT_SETTINGS);
                             myStringBuffer.append("testingString1");
                             put("stringVal", myStringBuffer);
-                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                             myCSeqBuffer.append("testingCharSeq1");
                             put("charSeqVal", myCSeqBuffer);
                             put("transientIntVal", 1234);
@@ -140,11 +148,11 @@ public final class ObjectReaderTest {
                             put("integerVal", 111);
                             put("shortVal", 211);
                             final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                Settings.DEFAULTS);
+                                DEFAULT_SETTINGS);
                             myStringBuffer.append("testingString2");
                             put("stringVal", myStringBuffer);
                             final ManagedSecureCharBuffer myCSeqBuffer =
-                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                             myCSeqBuffer.append("testingCharSeq2");
                             put("charSeqVal", myCSeqBuffer);
                             put("transientIntVal", 12345);
@@ -182,11 +190,11 @@ public final class ObjectReaderTest {
                                     put("integerVal", 111);
                                     put("shortVal", 211);
                                     final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                        Settings.DEFAULTS);
+                                        DEFAULT_SETTINGS);
                                     myStringBuffer.append("testingString2");
                                     put("stringVal", myStringBuffer);
                                     final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(
-                                        Settings.DEFAULTS);
+                                        DEFAULT_SETTINGS);
                                     myCSeqBuffer.append("testingCharSeq2");
                                     put("charSeqVal", myCSeqBuffer);
                                     put("transientIntVal", 1234);
@@ -231,11 +239,11 @@ public final class ObjectReaderTest {
                                             put("integerVal", 1111);
                                             put("shortVal", 2111);
                                             final ManagedSecureCharBuffer myStringBuffer =
-                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                                             myStringBuffer.append("testingString3");
                                             put("stringVal", myStringBuffer);
                                             final ManagedSecureCharBuffer myCSeqBuffer =
-                                                new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                                             myCSeqBuffer.append("testingCharSeq3");
                                             put("charSeqVal", myCSeqBuffer);
                                             put("transientIntVal", 12345);
@@ -253,11 +261,11 @@ public final class ObjectReaderTest {
                                                     put("integerVal", 111);
                                                     put("shortVal", 211);
                                                     final ManagedSecureCharBuffer myStringBuffer =
-                                                        new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                        new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                                                     myStringBuffer.append("testingString2");
                                                     put("stringVal", myStringBuffer);
                                                     final ManagedSecureCharBuffer myCSeqBuffer =
-                                                        new ManagedSecureCharBuffer(Settings.DEFAULTS);
+                                                        new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
                                                     myCSeqBuffer.append("testingCharSeq2");
                                                     put("charSeqVal", myCSeqBuffer);
                                                     put("transientIntVal", 1234);
@@ -299,7 +307,7 @@ public final class ObjectReaderTest {
     @SuppressWarnings("unchecked")
     public void testComplexType() throws IOException, JSONException {
         final ComplexTypeClass myComplexTypeClass = new ObjectReader<ComplexTypeClass>(
-            ComplexTypeClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+            ComplexTypeClass.class, DEFAULT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
                 private static final long serialVersionUID = 1L;
 
                 {
@@ -382,7 +390,7 @@ public final class ObjectReaderTest {
     @SuppressWarnings("unchecked")
     public void testAbsoluteNesting() throws IOException, JSONException {
         final NestingAbsClass myNestingAbsClass = new ObjectReader<NestingAbsClass>(
-                NestingAbsClass.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+                NestingAbsClass.class, DEFAULT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
                     private static final long serialVersionUID = 1L;
 
                     {
@@ -415,6 +423,7 @@ public final class ObjectReaderTest {
 
         Assert.assertEquals(myNestingAbsClass.level1, 11);
         Assert.assertEquals(myNestingAbsClass.level2.level2, 21);
+        Assert.assertEquals(myNestingAbsClass.level2.arg, "test");
         Assert.assertEquals(myNestingAbsClass.level2.rel, 41);
         Assert.assertEquals(myNestingAbsClass.level2.level3.level3, 31);
         Assert.assertEquals(myNestingAbsClass.level2.level3.rel, 51);
@@ -425,7 +434,7 @@ public final class ObjectReaderTest {
     @Test
     public void testConcreteConstruction() throws IOException, JSONException {
         final NestingAbsClass.ConcreteTest myConcreteTest = new ObjectReader<NestingAbsClass.ConcreteTest>(
-                NestingAbsClass.ConcreteTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+                NestingAbsClass.ConcreteTest.class, DEFAULT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
                     private static final long serialVersionUID = 1L;
 
                     {
@@ -580,7 +589,7 @@ public final class ObjectReaderTest {
     @Test(expectedExceptions = JSONException.JSONRuntimeException.class)
     public void testUnknownType() throws IOException, JSONException {
         new ObjectReader<NestingAbsClass.InvalidClassTest>(
-            NestingAbsClass.InvalidClassTest.class, Settings.DEFAULTS).accept(new HashMap<CharSequence, Object>() {
+            NestingAbsClass.InvalidClassTest.class, DEFAULT_SETTINGS).accept(new HashMap<CharSequence, Object>() {
                 private static final long serialVersionUID = 1L;
 
                 {
@@ -666,6 +675,11 @@ public final class ObjectReaderTest {
         private Level2 level2;
 
         private static final class Level2 {
+            final transient String arg;
+            private Level2(final String parArg) {
+                arg = parArg;
+            }
+
             @Serialize(name = "2", relativeTo = Relativity.ABSOLUTE)
             private int level2;
             @Serialize(name = {"l3"})
