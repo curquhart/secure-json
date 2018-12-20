@@ -651,7 +651,7 @@ public final class SecureJSON {
          *
          *        import com.chelseaurquhart.securejson.SecureJSON;
          *        final SecureJSON secureJSON = new SecureJSON.Builder()
-         *            .registerClassInitializer(SomeClass.class, () -> new SomeClass("required arg"))
+         *            .registerClassInitializer(SomeClass.class, () -&gt; new SomeClass("required arg"))
          *            .build();
          *     </code>
          *
