@@ -77,6 +77,16 @@ public final class JSONWriterTest {
                 "{}"
             ),
             new Parameters(
+                "json value (bad json to additionally test that no processing is done)",
+                new IJSONValue() {
+                    @Override
+                    public CharSequence getValue() {
+                        return "bad json";
+                    }
+                },
+                "bad json"
+            ),
+            new Parameters(
                 "nesting",
                 new LinkedHashMap<String, Object>() {
                     private static final long serialVersionUID = 1L;
