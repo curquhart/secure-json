@@ -67,7 +67,7 @@ class JSONWriter implements Closeable, IAutoCloseable {
         if (parInput == null) {
             parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
         } else if (parInput instanceof IJSONValue) {
-            parSecureBuffer.append(((IJSONValue) parInput).getValue());
+            parSecureBuffer.append(Objects.requireNonNull((IJSONValue) parInput).getValue());
         } else if (parInput instanceof Collection) {
             writeCollection(parSecureBuffer, (Collection) parInput);
         } else if (parInput.getClass().isArray()) {
