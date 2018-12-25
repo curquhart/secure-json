@@ -54,44 +54,52 @@ class JSONWriter implements Closeable, IAutoCloseable {
     }
 
     void write(final Object parInput, final ICharacterWriter parSecureBuffer) throws IOException, InvalidTypeException {
-        final Object myInput = mutateInput(parInput);
-
-        if (myInput instanceof IJSONSerializeAware) {
-            write(((IJSONSerializeAware) myInput).toJSONable(), parSecureBuffer);
+        if (parInput instanceof IJSONSerializeAware) {
+            final Object myJsonable = ((IJSONSerializeAware) parInput).toJSONable();
+            if (myJsonable == parInput) {
+                throw new JSONException.JSONRuntimeException(
+                        new JSONEncodeException(Messages.Key.ERROR_RECURSION_DETECTED));
+            }
+            write(myJsonable, parSecureBuffer);
             return;
         }
 
-        if (myInput == null) {
+        if (parInput == null) {
             parSecureBuffer.append(JSONSymbolCollection.Token.NULL.getSymbol().toString());
-        } else if (myInput instanceof IJSONValue) {
-            parSecureBuffer.append(((IJSONValue) myInput).getValue());
-        } else if (myInput instanceof Collection) {
-            writeCollection(parSecureBuffer, (Collection) myInput);
-        } else if (myInput.getClass().isArray()) {
-            writeArray(parSecureBuffer, myInput);
-        } else if (myInput instanceof Map) {
-            writeMap(parSecureBuffer, (Map) myInput);
-        } else if (myInput instanceof Number && myInput instanceof CharSequence) {
-            parSecureBuffer.append((CharSequence) myInput);
-        } else if (myInput instanceof Number) {
+        } else if (parInput instanceof IJSONValue) {
+            parSecureBuffer.append(((IJSONValue) parInput).getValue());
+        } else if (parInput instanceof Collection) {
+            writeCollection(parSecureBuffer, (Collection) parInput);
+        } else if (parInput.getClass().isArray()) {
+            writeArray(parSecureBuffer, parInput);
+        } else if (parInput instanceof Map) {
+            writeMap(parSecureBuffer, (Map) parInput);
+        } else if (parInput instanceof Number && parInput instanceof CharSequence) {
+            parSecureBuffer.append((CharSequence) parInput);
+        } else if (parInput instanceof Number) {
             // nothing we can do here, need to convert to string
-            parSecureBuffer.append(myInput.toString());
-        } else if (myInput instanceof Boolean && (Boolean) myInput) {
+            parSecureBuffer.append(parInput.toString());
+        } else if (parInput instanceof Boolean && (Boolean) parInput) {
             parSecureBuffer.append(JSONSymbolCollection.Token.TRUE.getSymbol().toString());
-        } else if (myInput instanceof Boolean) {
+        } else if (parInput instanceof Boolean) {
             parSecureBuffer.append(JSONSymbolCollection.Token.FALSE.getSymbol().toString());
-        } else if (myInput instanceof CharSequence) {
+        } else if (parInput instanceof CharSequence) {
             parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
-            writeQuoted((CharSequence) myInput, parSecureBuffer);
+            writeQuoted((CharSequence) parInput, parSecureBuffer);
             parSecureBuffer.append(JSONSymbolCollection.Token.QUOTE.getShortSymbol());
         } else {
-            throw new InvalidTypeException();
+            final Object myInput = mutateInput(parInput);
+            if (myInput == parInput) {
+                throw new InvalidTypeException();
+            } else {
+                write(myInput, parSecureBuffer);
+            }
         }
     }
 
     private Object mutateInput(final Object parInput) {
         final Object myOutput;
-        if (objectMutator != null && !(parInput instanceof IJSONValue)) {
+        if (objectMutator != null) {
             myOutput = objectMutator.accept(parInput);
         } else {
             myOutput = parInput;

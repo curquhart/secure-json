@@ -101,13 +101,19 @@ public final class JSONWriterTest {
 
                                     {
                                         put("x", 12);
+                                        put("y", new IJSONValue() {
+                                            @Override
+                                            public CharSequence getValue() {
+                                                return "bad value";
+                                            }
+                                        });
                                     }
                                 });
                             }
                         });
                     }
                 },
-                "{\"a\":[{\"x\":12}]}"
+                "{\"a\":[{\"x\":12,\"y\":bad value}]}"
             ),
             new Parameters(
                 "emoji",
@@ -161,6 +167,16 @@ public final class JSONWriterTest {
                 "null"
             ),
             new Parameters(
+                "Recursion is detected",
+                new IJSONSerializeAware() {
+                    @Override
+                    public Object toJSONable() {
+                        return this;
+                    }
+                },
+                "null"
+            ).exception(new JSONEncodeException(Messages.Key.ERROR_RECURSION_DETECTED)),
+            new Parameters(
                 "Throws exception",
                 new IJSONSerializeAware() {
                     @Override
@@ -170,7 +186,7 @@ public final class JSONWriterTest {
                 },
                 null
             )
-                .exception(new JSONEncodeException(new UnsupportedOperationException()))
+                .exception(new UnsupportedOperationException())
         };
     }
 
@@ -182,6 +198,10 @@ public final class JSONWriterTest {
             Assert.assertEquals(StringUtil.deepCharSequenceToString(myWriter.write(parParameters.inputObject)),
                     StringUtil.deepCharSequenceToString(parParameters.expected));
             Assert.assertNull(parParameters.expectedException);
+        } catch (final JSONException.JSONRuntimeException myException) {
+            Assert.assertNotNull(parParameters.expectedException);
+            Assert.assertEquals(Util.unwrapException(myException).getMessage(),
+                    parParameters.expectedException.getMessage());
         } catch (final JSONException myException) {
             Assert.assertNotNull(parParameters.expectedException);
             Assert.assertEquals(Util.unwrapException(myException).getMessage(),
