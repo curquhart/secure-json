@@ -25,7 +25,6 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
@@ -96,7 +95,7 @@ public final class JSONWriterTest {
                             private static final long serialVersionUID = 1L;
 
                             {
-                                add(new HashMap<String, Object>() {
+                                add(new LinkedHashMap<String, Object>() {
                                     private static final long serialVersionUID = 1L;
 
                                     {
