@@ -27,6 +27,7 @@ public final class StringBuilderBuffer implements IWritableCharSequence {
     private static final int INITIAL_CAPACITY = 32;
     @SuppressWarnings("PMD.AvoidStringBufferField")
     private final StringBuilder stringBuilder;
+    private final boolean eraseOnClose;
 
     /**
      * Construct a StringBuilderBuffer instance with an initial capacity.
@@ -34,11 +35,23 @@ public final class StringBuilderBuffer implements IWritableCharSequence {
      * instead.
      */
     StringBuilderBuffer(final int parInitialCapacity) {
+        this(parInitialCapacity, true);
+    }
+
+    /**
+     * Construct a StringBuilderBuffer instance with an initial capacity.
+     * @param parInitialCapacity The initial capacity to use. If unspecified, the INITIAL_CAPACITY constant will be used
+     * instead.
+     * @param parEraseOnClose If true, all buffers will be erased when we finish with it. Otherwise, close will be a
+     * NOOP.
+     */
+    StringBuilderBuffer(final int parInitialCapacity, final boolean parEraseOnClose) {
         if (parInitialCapacity > 0) {
             stringBuilder = new StringBuilder(parInitialCapacity);
         } else {
             stringBuilder = new StringBuilder(INITIAL_CAPACITY);
         }
+        eraseOnClose = parEraseOnClose;
     }
 
     /**
@@ -83,7 +96,9 @@ public final class StringBuilderBuffer implements IWritableCharSequence {
      */
     @Override
     public void close() {
-        stringBuilder.setLength(0);
+        if (eraseOnClose) {
+            stringBuilder.setLength(0);
+        }
     }
 
     /**
