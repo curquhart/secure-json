@@ -87,7 +87,12 @@ public final class SecureJSON {
         writeJSON(new IThrowableConsumer<JSONWriter>() {
             @Override
             public void accept(final JSONWriter parWriter) throws IOException, JSONException {
-                parConsumer.accept(parWriter.write(parInput));
+                final CharSequence myWritten = parWriter.write(parInput);
+                if (myWritten instanceof IStringable) {
+                    parConsumer.accept(myWritten.toString());
+                } else {
+                    parConsumer.accept(myWritten);
+                }
             }
         });
     }

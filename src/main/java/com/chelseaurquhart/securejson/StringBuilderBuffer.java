@@ -23,7 +23,7 @@ package com.chelseaurquhart.securejson;
  * information, but is sensible for most cases.
  *
  */
-public final class StringBuilderBuffer implements IWritableCharSequence {
+public final class StringBuilderBuffer implements IWritableCharSequence, IStringable {
     private static final int INITIAL_CAPACITY = 32;
     @SuppressWarnings("PMD.AvoidStringBufferField")
     private final StringBuilder stringBuilder;
@@ -129,5 +129,10 @@ public final class StringBuilderBuffer implements IWritableCharSequence {
     @Override
     public CharSequence subSequence(final int parStart, final int parEnd) {
         return stringBuilder.subSequence(parStart, parEnd);
+    }
+
+    @Override
+    public String toString() {
+        return stringBuilder.toString();
     }
 }

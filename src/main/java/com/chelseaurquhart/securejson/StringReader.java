@@ -57,7 +57,12 @@ class StringReader extends WritableCharSequenceList implements IReader<CharSeque
             .accept(ManagedSecureCharBuffer.INITIAL_CAPACITY);
         addSecureBuffer(mySecureBuffer);
 
-        return readString(parIterator, mySecureBuffer);
+        final CharSequence myOutput = readString(parIterator, mySecureBuffer);
+        if (myOutput instanceof IStringable) {
+            return myOutput.toString();
+        } else {
+            return myOutput;
+        }
     }
 
     private CharSequence readString(final ICharacterIterator parIterator, final IWritableCharSequence parSecureBuffer)
