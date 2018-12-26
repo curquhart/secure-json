@@ -18,33 +18,27 @@ package com.chelseaurquhart.securejson;
 
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @exclude
  */
-final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSequence, ICharacterWriter {
-    private static final int INITIAL_CAPACITY = 32;
+final class ManagedSecureCharBuffer implements IWritableCharSequence {
+    /**
+     * @exclude
+     */
+    static final int INITIAL_CAPACITY = 32;
 
     private final transient int initialCapacity;
     private final transient List<CharSequence> buffers;
     private final transient List<IWritableCharSequence> writeBuffers;
-    private transient byte[] bytes;
-    private final transient Settings settings;
     private transient Capacity capacityRestriction;
     private transient IWritableCharSequence writeBuffer;
 
-    ManagedSecureCharBuffer(final Settings parSettings) {
-        this(0, parSettings);
-    }
-
-    ManagedSecureCharBuffer(final int parInitialCapacity, final Settings parSettings) {
+    ManagedSecureCharBuffer(final int parInitialCapacity) {
         if (parInitialCapacity > 0) {
             initialCapacity = parInitialCapacity;
         } else {
@@ -52,17 +46,14 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
         }
         buffers = new LinkedList<CharSequence>();
         writeBuffers = new LinkedList<IWritableCharSequence>();
-        settings = parSettings;
         capacityRestriction = Capacity.UNKNOWN;
     }
 
     private ManagedSecureCharBuffer(final int parInitialCapacity, final List<CharSequence> parBuffers,
-                                    final List<IWritableCharSequence> parWriteBuffers,
-                                    final Settings parSettings) {
+                                    final List<IWritableCharSequence> parWriteBuffers) {
         initialCapacity = parInitialCapacity;
         buffers = parBuffers;
         writeBuffers = parWriteBuffers;
-        settings = parSettings;
         capacityRestriction = Capacity.UNKNOWN;
     }
 
@@ -72,7 +63,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
 
         if (writeBuffer == null || (capacityRestriction == Capacity.RESTRICTED
                 && writeBuffer.length() + 1 >= writeBuffer.getCapacity())) {
-            writeBuffer = settings.getWritableCharBufferFactory().accept(myMaxSize);
+            writeBuffer = new ObfuscatedByteBuffer(myMaxSize);
             if (writeBuffer.isRestrictedToCapacity()) {
                 capacityRestriction = Capacity.RESTRICTED;
             } else {
@@ -99,50 +90,6 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
         }
         buffers.clear();
         writeBuffers.clear();
-        closeBytes();
-    }
-
-    byte[] getBytes() {
-        closeBytes();
-
-        CharBuffer myCharBuffer = null;
-        ByteBuffer myByteBuffer = null;
-        final int myLength = length();
-        try {
-            myCharBuffer = CharBuffer.allocate(myLength);
-            for (final CharSequence myBuffer : buffers) {
-                final int mySubLength = myBuffer.length();
-                for (int myIndex = 0; myIndex < mySubLength; myIndex++) {
-                    myCharBuffer.append(myBuffer.charAt(myIndex));
-                }
-            }
-            myCharBuffer.position(0);
-            myByteBuffer = StandardCharsets.UTF_8.encode(myCharBuffer);
-            if (myByteBuffer.limit() == myByteBuffer.capacity() && myByteBuffer.hasArray()) {
-                // it is more efficient to take the underlying array as-is, but we must check limit vs capacity because
-                // it may have some extra characters.
-                bytes = myByteBuffer.array();
-                // do not reset the buffer below because we're using the internal buffer!
-                myByteBuffer = null;
-            } else {
-                final int myLimit = myByteBuffer.limit();
-                bytes = new byte[myLimit];
-                myByteBuffer.get(bytes, 0, myByteBuffer.limit());
-            }
-        } finally {
-            if (myCharBuffer != null) {
-                final char[] myNulls = new char[myLength];
-                myCharBuffer.position(0);
-                myCharBuffer.put(myNulls);
-            }
-            if (myByteBuffer != null) {
-                final byte[] myNulls = new byte[myByteBuffer.limit()];
-                myByteBuffer.position(0);
-                myByteBuffer.put(myNulls);
-            }
-        }
-
-        return bytes;
     }
 
     @Override
@@ -167,7 +114,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
             myOffset += myLength;
         }
 
-        throw new ArrayIndexOutOfBoundsException();
+        throw new StringIndexOutOfBoundsException();
     }
 
     @Override
@@ -181,7 +128,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
         for (final CharSequence myBuffer : buffers) {
             final int myLength = myBuffer.length();
             if (myLength < 0) {
-                throw new ArrayIndexOutOfBoundsException();
+                throw new StringIndexOutOfBoundsException();
             }
             final boolean myHasBuffers = !myBuffers.isEmpty();
             final int myEnd = Math.min(myStart + myRemainingLength, myLength);
@@ -206,10 +153,20 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
             } catch (final IOException myException) {
                 throw new JSONRuntimeException(myException);
             }
-            throw new ArrayIndexOutOfBoundsException(myMessage);
+            throw new StringIndexOutOfBoundsException(myMessage);
         }
 
-        return new ManagedSecureCharBuffer(initialCapacity, myBuffers, writeBuffers, settings);
+        return new ManagedSecureCharBuffer(initialCapacity, myBuffers, writeBuffers);
+    }
+
+    @Override
+    public boolean isRestrictedToCapacity() {
+        return false;
+    }
+
+    @Override
+    public int getCapacity() {
+        return initialCapacity;
     }
 
     private void validateBounds(final int parStart, final int parEnd) {
@@ -220,7 +177,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
             } catch (final IOException myException) {
                 throw new JSONRuntimeException(myException);
             }
-            throw new ArrayIndexOutOfBoundsException(myMessage);
+            throw new StringIndexOutOfBoundsException(myMessage);
         }
 
     }
@@ -228,13 +185,6 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
     @Override
     public String toString() {
         throw new UnsupportedOperationException();
-    }
-
-    private void closeBytes() {
-        if (bytes != null) {
-            Arrays.fill(bytes, (byte) 0);
-            bytes = null;
-        }
     }
 
     /**
@@ -277,7 +227,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
         public char charAt(final int parIndex) {
             final int myOffset = offset + parIndex;
             if (myOffset > capacity) {
-                throw new ArrayIndexOutOfBoundsException();
+                throw new StringIndexOutOfBoundsException();
             }
 
             return (char) ((compositionFirst.get(myOffset) << JSONSymbolCollection.BITS_IN_BYTE)
@@ -297,7 +247,7 @@ final class ManagedSecureCharBuffer implements Closeable, IAutoCloseable, CharSe
         public CharSequence subSequence(final int parStart, final int parEnd) {
             final int myLength = offset + parEnd;
             if (myLength > length() || parStart < 0) {
-                throw new ArrayIndexOutOfBoundsException();
+                throw new StringIndexOutOfBoundsException();
             }
             return new ObfuscatedByteBuffer(offset + parStart, capacity, myLength, compositionFirst,
                 compositionSecond);

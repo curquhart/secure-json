@@ -44,7 +44,7 @@ final class JSONReader implements Closeable, IAutoCloseable {
             myStringReader = parBuilder.stringReaderImpl;
         }
         if (parBuilder.numberReaderImpl == null) {
-            myNumberReader = new NumberReader(parBuilder.settingsImpl);
+            myNumberReader = new NumberReader();
         } else {
             myNumberReader = parBuilder.numberReaderImpl;
         }

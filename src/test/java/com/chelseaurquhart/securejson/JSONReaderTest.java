@@ -45,7 +45,7 @@ public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromString(final NumberProvider.Parameters<?> parParameters) {
         final JSONReader myReader = new JSONReader.Builder(Settings.DEFAULTS)
-            .numberReader(new NumberReader(parParameters.mathContext, Settings.DEFAULTS))
+            .numberReader(new NumberReader(parParameters.mathContext))
             .build();
 
         runTest(myReader, parParameters.number, parParameters.expected, parParameters.expectedException);
@@ -54,7 +54,7 @@ public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromStream(final NumberProvider.Parameters<?> parParameters) {
         final JSONReader myReader = new JSONReader.Builder(Settings.DEFAULTS)
-            .numberReader(new NumberReader(parParameters.mathContext, Settings.DEFAULTS))
+            .numberReader(new NumberReader(parParameters.mathContext))
             .build();
 
         runTest(myReader, inputToStream(parParameters.number, null), parParameters.expected,
@@ -597,8 +597,7 @@ public final class JSONReaderTest {
         Parameters(final String parTestName, final CharSequence parInputString, final T parExpected,
                    final Exception parExpectedException) {
             testName = parTestName;
-            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length(),
-                Settings.DEFAULTS);
+            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length());
             mySecureBuffer.append(parInputString);
             inputString = mySecureBuffer;
             expected = parExpected;

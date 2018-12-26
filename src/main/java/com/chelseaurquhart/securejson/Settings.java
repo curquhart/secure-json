@@ -29,7 +29,7 @@ class Settings {
             new IFunction<Integer, IWritableCharSequence>() {
         @Override
         public IWritableCharSequence accept(final Integer parCapacity) {
-            return new ManagedSecureCharBuffer.ObfuscatedByteBuffer(parCapacity);
+            return new ManagedSecureCharBuffer(parCapacity);
         }
     };
     static final Settings DEFAULTS = new Settings();

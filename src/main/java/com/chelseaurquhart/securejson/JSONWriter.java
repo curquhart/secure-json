@@ -31,7 +31,7 @@ import java.util.Map;
  */
 class JSONWriter implements Closeable, IAutoCloseable {
     private static final int INITIAL_CAPACITY = 512;
-    private final transient List<ManagedSecureCharBuffer> secureBuffers;
+    private final transient List<IWritableCharSequence> secureBuffers;
     private final transient IObjectMutator objectMutator;
     private final transient Settings settings;
 
@@ -40,13 +40,13 @@ class JSONWriter implements Closeable, IAutoCloseable {
     }
 
     JSONWriter(final IObjectMutator parObjectMutator, final Settings parSettings) {
-        secureBuffers = new ArrayList<ManagedSecureCharBuffer>();
+        secureBuffers = new ArrayList<IWritableCharSequence>();
         objectMutator = parObjectMutator;
         settings = parSettings;
     }
 
-    ManagedSecureCharBuffer write(final Object parInput) throws IOException, InvalidTypeException {
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(INITIAL_CAPACITY, settings);
+    IWritableCharSequence write(final Object parInput) throws IOException, InvalidTypeException {
+        final IWritableCharSequence mySecureBuffer = settings.getWritableCharBufferFactory().accept(INITIAL_CAPACITY);
         secureBuffers.add(mySecureBuffer);
 
         write(parInput, mySecureBuffer);
@@ -213,7 +213,7 @@ class JSONWriter implements Closeable, IAutoCloseable {
 
     @Override
     public void close() throws IOException {
-        for (final ManagedSecureCharBuffer mySecureBuffer : secureBuffers) {
+        for (final IWritableCharSequence mySecureBuffer : secureBuffers) {
             mySecureBuffer.close();
         }
     }

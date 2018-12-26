@@ -99,12 +99,12 @@ public final class HugeDecimalTest {
                 .expectedCharSequence("-1"),
             new Parameters(
                 "number that can be represented only in HugeDecimal",
-                new HugeDecimal("1e100000000000", new NumberReader(Settings.DEFAULTS))
+                new HugeDecimal("1e100000000000", new NumberReader())
             )
                 .expectedCharSequence("1e100000000000"),
             new Parameters(
                 "error handling",
-                new HugeDecimal("abc", new NumberReader(Settings.DEFAULTS))
+                new HugeDecimal("abc", new NumberReader())
             )
                 .expectedCharSequence("abc")
             // all expected number types being null means exception expected for each.
@@ -262,16 +262,16 @@ public final class HugeDecimalTest {
         Assert.assertEquals(myNumber.subSequence(0, 3), "123");
         Assert.assertEquals(myNumber.subSequence(0, 2), "12");
 
-        final HugeDecimal mySequence = new HugeDecimal("123", new NumberReader(Settings.DEFAULTS));
+        final HugeDecimal mySequence = new HugeDecimal("123", new NumberReader());
         Assert.assertEquals(mySequence.subSequence(0, 3), "123");
         Assert.assertEquals(mySequence.subSequence(0, 2), "12");
     }
 
     @Test
     public void testCompareByBigDecimal() {
-        final HugeDecimal myNumberLHS = new HugeDecimal("123.10e450", new NumberReader(Settings.DEFAULTS));
-        final HugeDecimal myNumberRHS = new HugeDecimal("123.1e450", new NumberReader(Settings.DEFAULTS));
-        final HugeDecimal myNumberRHSAlt = new HugeDecimal("123.11e450", new NumberReader(Settings.DEFAULTS));
+        final HugeDecimal myNumberLHS = new HugeDecimal("123.10e450", new NumberReader());
+        final HugeDecimal myNumberRHS = new HugeDecimal("123.1e450", new NumberReader());
+        final HugeDecimal myNumberRHSAlt = new HugeDecimal("123.11e450", new NumberReader());
         Assert.assertTrue(myNumberLHS.compareByBigDecimal(myNumberRHS));
         Assert.assertFalse(myNumberLHS.compareByBigDecimal(myNumberRHSAlt));
     }
@@ -289,7 +289,7 @@ public final class HugeDecimalTest {
             myCharSequenceValue = parParameters.input.toString();
         }
         final HugeDecimal myHugeDecimalFromString = new HugeDecimal(myCharSequenceValue,
-            new NumberReader(Settings.DEFAULTS));
+            new NumberReader());
         parConsumer.accept(myHugeDecimalFromString);
     }
 

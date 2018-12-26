@@ -141,7 +141,7 @@ public final class JSONWriterTest {
             ),
             new Parameters(
                 "HugeDecimal with sequence",
-                new HugeDecimal("123", new NumberReader(Settings.DEFAULTS)),
+                new HugeDecimal("123", new NumberReader()),
                 "123"
             ),
             new Parameters(

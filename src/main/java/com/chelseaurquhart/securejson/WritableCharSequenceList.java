@@ -24,23 +24,23 @@ import java.util.List;
 /**
  * @exclude
  */
-class ManagedSecureBufferList implements Closeable, IAutoCloseable {
-    private final transient List<ManagedSecureCharBuffer> secureBuffers;
+class WritableCharSequenceList implements Closeable, IAutoCloseable {
+    private final transient List<IWritableCharSequence> secureBuffers;
 
-    ManagedSecureBufferList() {
-        secureBuffers = new ArrayList<ManagedSecureCharBuffer>();
+    WritableCharSequenceList() {
+        secureBuffers = new ArrayList<IWritableCharSequence>();
     }
 
     @Override
     public void close() throws IOException {
-        for (final ManagedSecureCharBuffer myBuffer : secureBuffers) {
+        for (final IWritableCharSequence myBuffer : secureBuffers) {
             myBuffer.close();
         }
 
         secureBuffers.clear();
     }
 
-    void addSecureBuffer(final ManagedSecureCharBuffer parSecureBuffer) {
+    void addSecureBuffer(final IWritableCharSequence parSecureBuffer) {
         secureBuffers.add(parSecureBuffer);
     }
 }

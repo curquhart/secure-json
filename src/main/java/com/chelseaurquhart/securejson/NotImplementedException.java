@@ -20,7 +20,7 @@ import java.io.IOException;
 import com.chelseaurquhart.securejson.JSONException.JSONRuntimeException;
 
 /**
- * Base class for all SecureJSON exceptions.
+ * Exception indicating something is not implemented.
  */
 public class NotImplementedException extends UnsupportedOperationException {
     private static final long serialVersionUID = 1L;

@@ -93,44 +93,6 @@ public final class SecureJSON {
     }
 
     /**
-     * Convert an object to a JSON byte array. If it cannot be converted, throws JSONEncodeException. After the consumer
-     * returns, the buffer will be destroyed so it MUST be fully consumed.
-     *
-     * <p>Example:</p>::
-     *     <code>
-     *
-     *        import com.chelseaurquhart.securejson.SecureJSON;
-     *        final SecureJSON secureJSON = new SecureJSON();
-     *        try {
-     *            secureJSON.toJSONBytes(Arrays.asList("1", 2, "three"), new IConsumer&lt;byte[]&gt;() {
-     *                &#64;Override
-     *                public void accept(final byte[] input) {
-     *                    // do something with input
-     *                }
-     *            });
-     *        } catch (final JSONEncodeException e) {
-     *        }
-     *        // Warning: even if you copied input to a local variable above, it is destroyed before this
-     *        // line and you will no longer be able to access it.
-     *     </code>
-     *
-     * @param parInput The input object to toJSONAble to JSON.
-     * @param parConsumer The consumer to provide the JSON character sequence to when completed.
-     * @throws JSONEncodeException On encode failure.
-     */
-    public void toJSONBytes(final Object parInput, final IConsumer<byte[]> parConsumer)
-            throws JSONEncodeException {
-        Objects.requireNonNull(parConsumer);
-
-        writeJSON(new IThrowableConsumer<JSONWriter>() {
-            @Override
-            public void accept(final JSONWriter parWriter) throws IOException, JSONException {
-                parConsumer.accept(parWriter.write(parInput).getBytes());
-            }
-        });
-    }
-
-    /**
      * Convert an object to a JSON string, writing to the provided stream and specifying the character set.
      *
      * <p>Example:</p>::

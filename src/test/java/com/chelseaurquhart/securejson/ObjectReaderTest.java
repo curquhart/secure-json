@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -79,10 +80,10 @@ public final class ObjectReaderTest {
                 {
                     put("integerVal", 1);
                     put("shortVal", 2);
-                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(32);
                     myStringBuffer.append("testingString");
                     put("stringVal", myStringBuffer);
-                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(32);
                     myCSeqBuffer.append("testingCharSeq");
                     put("charSeqVal", myCSeqBuffer);
                     put("transientIntVal", 123);
@@ -131,11 +132,10 @@ public final class ObjectReaderTest {
                         {
                             put("integerVal", 11);
                             put("shortVal", 21);
-                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                DEFAULT_SETTINGS);
+                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(32);
                             myStringBuffer.append("testingString1");
                             put("stringVal", myStringBuffer);
-                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                            final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(32);
                             myCSeqBuffer.append("testingCharSeq1");
                             put("charSeqVal", myCSeqBuffer);
                             put("transientIntVal", 1234);
@@ -147,12 +147,11 @@ public final class ObjectReaderTest {
                         {
                             put("integerVal", 111);
                             put("shortVal", 211);
-                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                DEFAULT_SETTINGS);
+                            final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(32);
                             myStringBuffer.append("testingString2");
                             put("stringVal", myStringBuffer);
                             final ManagedSecureCharBuffer myCSeqBuffer =
-                                new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                                new ManagedSecureCharBuffer(32);
                             myCSeqBuffer.append("testingCharSeq2");
                             put("charSeqVal", myCSeqBuffer);
                             put("transientIntVal", 12345);
@@ -189,12 +188,10 @@ public final class ObjectReaderTest {
                                 {
                                     put("integerVal", 111);
                                     put("shortVal", 211);
-                                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(
-                                        DEFAULT_SETTINGS);
+                                    final ManagedSecureCharBuffer myStringBuffer = new ManagedSecureCharBuffer(32);
                                     myStringBuffer.append("testingString2");
                                     put("stringVal", myStringBuffer);
-                                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(
-                                        DEFAULT_SETTINGS);
+                                    final ManagedSecureCharBuffer myCSeqBuffer = new ManagedSecureCharBuffer(32);
                                     myCSeqBuffer.append("testingCharSeq2");
                                     put("charSeqVal", myCSeqBuffer);
                                     put("transientIntVal", 1234);
@@ -239,11 +236,11 @@ public final class ObjectReaderTest {
                                             put("integerVal", 1111);
                                             put("shortVal", 2111);
                                             final ManagedSecureCharBuffer myStringBuffer =
-                                                new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                                                new ManagedSecureCharBuffer(32);
                                             myStringBuffer.append("testingString3");
                                             put("stringVal", myStringBuffer);
                                             final ManagedSecureCharBuffer myCSeqBuffer =
-                                                new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                                                new ManagedSecureCharBuffer(32);
                                             myCSeqBuffer.append("testingCharSeq3");
                                             put("charSeqVal", myCSeqBuffer);
                                             put("transientIntVal", 12345);
@@ -261,11 +258,11 @@ public final class ObjectReaderTest {
                                                     put("integerVal", 111);
                                                     put("shortVal", 211);
                                                     final ManagedSecureCharBuffer myStringBuffer =
-                                                        new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                                                        new ManagedSecureCharBuffer(32);
                                                     myStringBuffer.append("testingString2");
                                                     put("stringVal", myStringBuffer);
                                                     final ManagedSecureCharBuffer myCSeqBuffer =
-                                                        new ManagedSecureCharBuffer(DEFAULT_SETTINGS);
+                                                        new ManagedSecureCharBuffer(32);
                                                     myCSeqBuffer.append("testingCharSeq2");
                                                     put("charSeqVal", myCSeqBuffer);
                                                     put("transientIntVal", 1234);
@@ -623,6 +620,71 @@ public final class ObjectReaderTest {
             Assert.assertFalse(myHashSet.contains("testing"));
             Assert.assertFalse(myHashSet.contains(new String("test".getBytes(StandardCharsets.UTF_8),
                 StandardCharsets.UTF_8)));
+        }
+
+        @Test
+        public void testEmpty() {
+            final ObjectReader.IdentityHashSet<String> myHashSet = new ObjectReader.IdentityHashSet<String>();
+            Assert.assertTrue(myHashSet.isEmpty());
+
+            myHashSet.add("test");
+            Assert.assertTrue(myHashSet.contains("test"));
+            Assert.assertFalse(myHashSet.contains("testing"));
+            Assert.assertFalse(myHashSet.contains(new String("test".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8)));
+            Assert.assertFalse(myHashSet.isEmpty());
+        }
+
+        @Test
+        public void testNotImplemented() {
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().toArray();
+                }
+            });
+
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().toArray(new String[0]);
+                }
+            });
+
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().remove(null);
+                }
+            });
+
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().containsAll(Collections.EMPTY_LIST);
+                }
+            });
+
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().addAll(new ArrayList<String>());
+                }
+            });
+
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().retainAll(new ArrayList<String>());
+                }
+            });
+
+            Assert.assertThrows(NotImplementedException.class, new Assert.ThrowingRunnable() {
+                @Override
+                public void run() {
+                    new ObjectReader.IdentityHashSet<String>().removeAll(new ArrayList<String>());
+                }
+            });
         }
     }
 

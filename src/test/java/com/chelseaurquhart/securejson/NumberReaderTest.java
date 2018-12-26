@@ -49,12 +49,12 @@ public final class NumberReaderTest {
 
     private Number charSequenceToNumber(final CharSequence parNumber, final MathContext parMathContext)
             throws IOException, JSONException {
-        return new NumberReader(parMathContext, Settings.DEFAULTS).charSequenceToNumber(parNumber, 0);
+        return new NumberReader(parMathContext).charSequenceToNumber(parNumber, 0);
     }
 
     @Test(expectedExceptions = NotImplementedException.class)
     public void testAddValue() throws IOException, JSONException {
-        final IReader<?> myNumberReader = new NumberReader(Settings.DEFAULTS);
+        final IReader<?> myNumberReader = new NumberReader();
         myNumberReader.addValue(null, null, null);
     }
 }

@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @exclude
  */
-class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
+class NumberReader extends WritableCharSequenceList implements IReader<Number> {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);
 
@@ -38,16 +38,14 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     private static final BigDecimal MAX_VALUE = new BigDecimal("1.0e300", MathContext.UNLIMITED);
 
     private final transient MathContext mathContext;
-    private final transient Settings settings;
 
-    NumberReader(final Settings parSettings) {
-        this(DEFAULT_MATH_CONTEXT, parSettings);
+    NumberReader() {
+        this(DEFAULT_MATH_CONTEXT);
     }
 
-    NumberReader(final MathContext parMathContext, final Settings parSettings) {
+    NumberReader(final MathContext parMathContext) {
         super();
         this.mathContext = parMathContext;
-        settings = parSettings;
     }
 
     @Override
@@ -63,7 +61,7 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     @Override
     public Number read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
             throws IOException, JSONException {
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(0);
         addSecureBuffer(mySecureBuffer);
 
         final int myOffset = parIterator.getOffset();
