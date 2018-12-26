@@ -34,7 +34,7 @@ public final class StringBuilderBuffer implements IWritableCharSequence, IString
      * @param parInitialCapacity The initial capacity to use. If unspecified, the INITIAL_CAPACITY constant will be used
      * instead.
      */
-    StringBuilderBuffer(final int parInitialCapacity) {
+    public StringBuilderBuffer(final int parInitialCapacity) {
         this(parInitialCapacity, true);
     }
 
@@ -45,7 +45,7 @@ public final class StringBuilderBuffer implements IWritableCharSequence, IString
      * @param parEraseOnClose If true, all buffers will be erased when we finish with it. Otherwise, close will be a
      * NOOP.
      */
-    StringBuilderBuffer(final int parInitialCapacity, final boolean parEraseOnClose) {
+    public StringBuilderBuffer(final int parInitialCapacity, final boolean parEraseOnClose) {
         if (parInitialCapacity > 0) {
             stringBuilder = new StringBuilder(parInitialCapacity);
         } else {
