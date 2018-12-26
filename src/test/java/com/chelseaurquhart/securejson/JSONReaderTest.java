@@ -597,8 +597,7 @@ public final class JSONReaderTest {
         Parameters(final String parTestName, final CharSequence parInputString, final T parExpected,
                    final Exception parExpectedException) {
             testName = parTestName;
-            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length(),
-                Settings.DEFAULTS);
+            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInputString.length());
             mySecureBuffer.append(parInputString);
             inputString = mySecureBuffer;
             expected = parExpected;

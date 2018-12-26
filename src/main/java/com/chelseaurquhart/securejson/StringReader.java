@@ -24,7 +24,7 @@ import java.io.IOException;
 /**
  * @exclude
  */
-class StringReader extends ManagedSecureBufferList implements IReader<CharSequence> {
+class StringReader extends WritableCharSequenceList implements IReader<CharSequence> {
     private static final int TWO_DIGIT_MIN = 10;
 
     private final Settings settings;
@@ -53,13 +53,19 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
         }
         parIterator.next();
 
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
+        final IWritableCharSequence mySecureBuffer = settings.getWritableCharBufferFactory()
+            .accept(ManagedSecureCharBuffer.INITIAL_CAPACITY);
         addSecureBuffer(mySecureBuffer);
 
-        return readString(parIterator, mySecureBuffer);
+        final CharSequence myOutput = readString(parIterator, mySecureBuffer);
+        if (myOutput instanceof IStringable) {
+            return myOutput.toString();
+        } else {
+            return myOutput;
+        }
     }
 
-    private CharSequence readString(final ICharacterIterator parIterator, final ManagedSecureCharBuffer parSecureBuffer)
+    private CharSequence readString(final ICharacterIterator parIterator, final IWritableCharSequence parSecureBuffer)
             throws IOException, JSONException {
         final boolean myCanReadRange = parIterator.canReadRange();
         int myRangeStart = parIterator.getOffset();
@@ -91,7 +97,7 @@ class StringReader extends ManagedSecureBufferList implements IReader<CharSequen
     }
 
     private void readEscape(final ICharacterIterator parIterator, final int parRangeStart,
-                            final boolean parCanReadRange, final ManagedSecureCharBuffer parSecureBuffer)
+                            final boolean parCanReadRange, final IWritableCharSequence parSecureBuffer)
             throws IOException, JSONException {
         final int myOffset = parIterator.getOffset();
         if (parCanReadRange && myOffset != parRangeStart) {

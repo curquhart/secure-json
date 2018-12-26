@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @exclude
  */
-class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
+class NumberReader extends WritableCharSequenceList implements IReader<Number> {
     static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(MathContext.DECIMAL64.getPrecision(),
         RoundingMode.UNNECESSARY);
 
@@ -63,8 +63,9 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
     @Override
     public Number read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
             throws IOException, JSONException {
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(settings);
-        addSecureBuffer(mySecureBuffer);
+        final IWritableCharSequence myWriter = settings.getWritableCharBufferFactory()
+            .accept(ManagedSecureCharBuffer.INITIAL_CAPACITY);
+        addSecureBuffer(myWriter);
 
         final int myOffset = parIterator.getOffset();
         final boolean myCanReadRange = parIterator.canReadRange();
@@ -79,16 +80,16 @@ class NumberReader extends ManagedSecureBufferList implements IReader<Number> {
                 if (myCanReadRange) {
                     parIterator.next();
                 } else {
-                    mySecureBuffer.append(parIterator.next());
+                    myWriter.append(parIterator.next());
                 }
             }
         }
 
         try {
             if (myCanReadRange) {
-                mySecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset()));
+                myWriter.append(parIterator.range(myRangeStart, parIterator.getOffset()));
             }
-            return charSequenceToNumber(mySecureBuffer, myOffset);
+            return charSequenceToNumber(myWriter, myOffset);
         } catch (final ArithmeticException myException) {
             throw new MalformedNumberException(parIterator);
         }

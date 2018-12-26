@@ -131,8 +131,7 @@ public final class StringProvider {
             return null;
         }
 
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length(),
-            Settings.DEFAULTS);
+        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length());
         mySecureBuffer.append(parInput);
 
         return mySecureBuffer;

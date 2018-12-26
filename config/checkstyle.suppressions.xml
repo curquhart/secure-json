@@ -5,7 +5,7 @@
         "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
-    <suppress checks="MethodLength|MagicNumber|ParameterNumber|JavadocType|FinalClass|IllegalCatch|IllegalThrows" files="test/java/.*(Test|NumberProvider|StringProvider)\.java$"/>
+    <suppress checks="MethodLength|MagicNumber|ParameterNumber|JavadocType|FinalClass|IllegalCatch|IllegalThrows" files="test/java/.*(Test|NumberProvider|StringProvider|CharBufferProvider)\.java$"/>
     <suppress checks="AvoidInlineConditionals|VisibilityModifier" files="test/java/.*(NumberProvider|StringProvider)\.java$"/>
     <suppress checks="IllegalCatch" files="ObjectSerializer\.java$"/>
 </suppressions>

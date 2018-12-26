@@ -213,8 +213,7 @@ public final class EncodingAwareCharacterIteratorTest {
         }
 
         EACIIterator(final CharSequence parInput) {
-            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length(),
-                    Settings.DEFAULTS);
+            final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(parInput.length());
             mySecureBuffer.append(parInput);
             input = mySecureBuffer;
         }
