@@ -20,7 +20,7 @@ package com.chelseaurquhart.securejson;
  * IStringable is used as an optimization when building strings. If a ICharacterWriter implements IStringable,
  * we will return it (once it is finished and is no longer mutable) as a String instead of a CharSequence.
  */
-interface IStringable {
+public interface IStringable {
     /**
      * Convert this object to a string.
      *
