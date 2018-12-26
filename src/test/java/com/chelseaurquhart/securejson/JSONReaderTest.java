@@ -45,7 +45,7 @@ public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromString(final NumberProvider.Parameters<?> parParameters) {
         final JSONReader myReader = new JSONReader.Builder(Settings.DEFAULTS)
-            .numberReader(new NumberReader(parParameters.mathContext))
+            .numberReader(new NumberReader(parParameters.mathContext, Settings.DEFAULTS))
             .build();
 
         runTest(myReader, parParameters.number, parParameters.expected, parParameters.expectedException);
@@ -54,7 +54,7 @@ public final class JSONReaderTest {
     @Test(dataProviderClass = NumberProvider.class, dataProvider = NumberProvider.DATA_PROVIDER_NAME)
     public void testReadNumberFromStream(final NumberProvider.Parameters<?> parParameters) {
         final JSONReader myReader = new JSONReader.Builder(Settings.DEFAULTS)
-            .numberReader(new NumberReader(parParameters.mathContext))
+            .numberReader(new NumberReader(parParameters.mathContext, Settings.DEFAULTS))
             .build();
 
         runTest(myReader, inputToStream(parParameters.number, null), parParameters.expected,

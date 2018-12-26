@@ -38,14 +38,16 @@ class NumberReader extends WritableCharSequenceList implements IReader<Number> {
     private static final BigDecimal MAX_VALUE = new BigDecimal("1.0e300", MathContext.UNLIMITED);
 
     private final transient MathContext mathContext;
+    private final transient Settings settings;
 
-    NumberReader() {
-        this(DEFAULT_MATH_CONTEXT);
+    NumberReader(final Settings parSettings) {
+        this(DEFAULT_MATH_CONTEXT, parSettings);
     }
 
-    NumberReader(final MathContext parMathContext) {
+    NumberReader(final MathContext parMathContext, final Settings parSettings) {
         super();
         this.mathContext = parMathContext;
+        settings = parSettings;
     }
 
     @Override
@@ -61,8 +63,9 @@ class NumberReader extends WritableCharSequenceList implements IReader<Number> {
     @Override
     public Number read(final ICharacterIterator parIterator, final JSONReader.IContainer<?, ?> parCollection)
             throws IOException, JSONException {
-        final ManagedSecureCharBuffer mySecureBuffer = new ManagedSecureCharBuffer(0);
-        addSecureBuffer(mySecureBuffer);
+        final IWritableCharSequence myWriter = settings.getWritableCharBufferFactory()
+            .accept(ManagedSecureCharBuffer.INITIAL_CAPACITY);
+        addSecureBuffer(myWriter);
 
         final int myOffset = parIterator.getOffset();
         final boolean myCanReadRange = parIterator.canReadRange();
@@ -77,16 +80,16 @@ class NumberReader extends WritableCharSequenceList implements IReader<Number> {
                 if (myCanReadRange) {
                     parIterator.next();
                 } else {
-                    mySecureBuffer.append(parIterator.next());
+                    myWriter.append(parIterator.next());
                 }
             }
         }
 
         try {
             if (myCanReadRange) {
-                mySecureBuffer.append(parIterator.range(myRangeStart, parIterator.getOffset()));
+                myWriter.append(parIterator.range(myRangeStart, parIterator.getOffset()));
             }
-            return charSequenceToNumber(mySecureBuffer, myOffset);
+            return charSequenceToNumber(myWriter, myOffset);
         } catch (final ArithmeticException myException) {
             throw new MalformedNumberException(parIterator);
         }
